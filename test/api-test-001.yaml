@@ -1,0 +1,1256 @@
+swagger: '2.0'
+info:
+  title: RestManagementAPI
+  description: These APIs allow to handle Algo Framework
+  version: 1.2.0
+  contact:
+    name: XXX
+    email: YYY@ZZZ.com
+    url: https://abc.com
+host: localhost:8080
+x-generator-properties:
+  business-unit: ktrd
+  module-name: AutoHedgerApiModule
+  api-name: RestApi
+  front-basePath: /long-base-path-behind-reverse-proxy/api/v1
+schemes:
+ - http
+ - https
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+#############################################################################
+#                                   Paths                                   #
+#############################################################################
+paths:
+  /createStrategy:
+    get:
+      operationId: createStrategyRest
+      description: Create the strategy of the parameter received
+      parameters:
+        - name: strategyName
+          in: query
+          description: The name of the strategy
+          required: true
+          type: string
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /initStrategy:
+    post:
+      operationId: initStrategyRest
+      description: Init the strategy
+      parameters:
+        - name: parametersDto
+          in: body
+          description: Receive the initial parameters
+          required: true
+          schema:
+            $ref: '#/definitions/InitiParametersDto'
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /startStrategy/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+
+    get:
+      operationId: startStrategyRest
+      description: Start the strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /pauseStrategy/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+
+    get:
+      operationId: pauseStrategyRest
+      description: Pause the strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /stopStrategy/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: stopStrategyRest
+      description: Stop the strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /removeStrategy/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: removeStrategyRest
+      description: Remove the strategy
+      parameters:
+
+
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /availableStrategies:
+    get:
+      operationId: getAvailableStrategiesRest
+      description: Get the available strategies
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+
+      responses:
+        - 200:
+            description: The available strategies
+            schema:
+              type: array
+              items:
+                type: string
+
+  /activeStrategies:
+    get:
+      operationId: getActiveStrategiesRest
+      description: Get the active strategies
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+
+      responses:
+        - 200:
+            description: The active strategies
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/StrategyDto'
+
+  /activeStrategiesOfType:
+    get:
+      operationId: getActiveStrategiesOfTypeRest
+      description: Get the active strategies of type
+      parameters:
+        - name: strategyName
+          description: The name of the strategy
+          in: query
+          type: string
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+      responses:
+        - 200:
+            description: The active strategies of type
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/StrategyDto'
+
+  /{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getStrategyRest
+      description: Get the strategy data
+      parameters:
+
+
+      responses:
+        - 200:
+            description: The strategy dto
+            schema:
+              $ref: '#/definitions/StrategyDto'
+
+  /panicStrategy/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: panicButtonStrategyRest
+      description: Panic over strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the created strategy
+            schema:
+              $ref: '#/definitions/StrategyIdDto'
+
+  /panicAll:
+    get:
+      operationId: panicButtonRest
+      description: Panic over all strategies
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+      responses:
+        - 200:
+            description: Nothing to return
+
+  /getDefinedParameters/{strategyName}:
+    parameters:
+      - name: strategyName
+        in: path
+        description: The name of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getDefinedParametersRest
+      description: Get the defined parameters of a strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of parameters
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/ParametersDto'
+
+  /{strategyId}/updateParameters:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: updateParametersRest
+      description: Update parameters of an strategy
+      parameters:
+        - name: parameters
+          in: body
+          description: The updated parameters
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/StringStringMap'
+      responses:
+        - 200:
+            description: Nothing to return
+
+
+  /orders/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getOrdersByStrategyRest
+      description: Get the orders by strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of orders
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/OrderMonitoring'
+
+  /executions/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getExecutionsByStrategyRest
+      description: Get the executions by strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of executions
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/ExecutionMonitoring'
+
+  /strategyLog/{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getStrategyLogMessagesRest
+      description: Get the log messages of the strategy
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of messages
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/StrategyLogDto'
+
+  /status:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getMarketStatus
+      description: Get the status of the markets
+      parameters:
+
+      responses:
+        - 200:
+            description: An map with the markets and their status
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/StringStringMap'
+
+  /errorEvents:
+    parameters:
+    - name: ivUser
+      x-alias: iv-user
+      in: header
+      description: user code.
+      x-auto-injected: true
+      type: string
+    get:
+      operationId: getErrorMessagesRest
+      description: Get the error message for Intranet
+      parameters:
+
+      responses:
+        - 200:
+            description: A JSON with the error messages
+            schema:
+              type: string
+
+
+# Auto Hedger endpoints
+
+  /autohedger/groups/create:
+    post:
+      operationId: createGroup
+      description: Create a group for grants
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+        - name: authorizedGroup
+          in: body
+          description: The group of users
+          required: true
+          schema:
+            $ref: '#/definitions/AuthorizedGroup'
+      responses:
+        - 200:
+            description: The identificator of the created group
+            schema:
+              $ref: '#/definitions/StringStringMap'
+
+  /autohedger/groups/update:
+    post:
+      operationId: updateGroup
+      description: Update a group for grants
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+        - name: authorizedGroup
+          in: body
+          description: The group of users
+          required: true
+          schema:
+            $ref: '#/definitions/AuthorizedGroup'
+      responses:
+        - 200:
+            description: The identificator of the updated group
+            schema:
+              $ref: '#/definitions/StringStringMap'
+
+  /autohedger/groups/{groupId}:
+    parameters:
+      - name: groupId
+        in: path
+        description: The identifier of the group
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getGroupById
+      description: Get the group of an identifier
+      parameters:
+
+      responses:
+        - 200:
+            description: Weight
+            schema:
+              $ref: '#/definitions/AuthorizedGroup'
+    post:
+      operationId: deleteAuthorizedGroup
+      description: Delete an Authorized group
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the group deleted
+            schema:
+              $ref: '#/definitions/StringBooleanMap'
+
+  /autohedger/groups:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+
+    get:
+      operationId: getAuthorizedGroups
+      description: Get the authorized groups
+      responses:
+        - 200:
+            description: An array of groups
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/AuthorizedGroup'
+
+  /autohedger/groupsUser:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getAuthorizedGroupsOfUser
+      description: Get the authorized groups of the user
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of groups of the user
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/AuthorizedGroup'
+
+  /autohedger/weight/{identifier}:
+    parameters:
+      - name: identifier
+        in: path
+        description: The identifier of the weight
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getWeightById
+      description: Get the weight of an identifier
+      parameters:
+
+      responses:
+        - 200:
+            description: Weight
+            schema:
+              $ref: '#/definitions/Weight'
+    post:
+      operationId: deleteWeight
+      description: Delete a weight
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the weight deleted
+            schema:
+              $ref: '#/definitions/StringBooleanMap'
+
+  /autohedger/weight:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getAllWeights
+      description: Get all weights of the user
+      parameters:
+
+      responses:
+        - 200:
+            description: An array of Weights
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/Weight'
+
+  /autohedger/weight/create:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: createWeight
+      description: Create a weight
+      parameters:
+        - name: ivUser
+          x-alias: iv-user
+          in: header
+          description: user code.
+          x-auto-injected: true
+          type: string
+        - name: weight
+          in: body
+          description: The weight to save
+          required: true
+          schema:
+            $ref: '#/definitions/Weight'
+      responses:
+        - 200:
+            description: The identifier of the instrument created
+            schema:
+              $ref: '#/definitions/StringStringMap'
+
+
+  /autohedger/weight/update:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: updateWeight
+      description: Update the weight
+      parameters:
+        - name: weight
+          in: body
+          description: The weight to update
+          required: true
+          schema:
+            $ref: '#/definitions/Weight'
+      responses:
+        - 200:
+            description: Nothing to return
+
+  /autohedger/instruments:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getInstruments
+      description: Get the instrument of the user or with type 'other'
+      parameters:
+
+      responses:
+        - 200:
+            description: The instrument founded
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/InstrumentDto'
+
+  /autohedger/instruments/delete/{marketId}/{nameInstrument}:
+    parameters:
+      - name: nameInstrument
+        in: path
+        description: The name of the instrument
+        required: true
+        type: string
+      - name: marketId
+        in: path
+        description: The identifier of the market
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: deleteInstrument
+      description: Delete an Instrument
+      parameters:
+
+      responses:
+        - 200:
+            description: The identifier of the instrument deleted
+            schema:
+              $ref: '#/definitions/StringBooleanMap'
+
+  /autohedger/instruments/create:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: createInstrument
+      description: Create an Instrument
+      parameters:
+        - name: instrument
+          in: body
+          description: The instrument to save
+          required: true
+          schema:
+            $ref: '#/definitions/InstrumentDto'
+      responses:
+        - 200:
+            description: The identifier of the instrument created
+            schema:
+              $ref: '#/definitions/StringStringMap'
+
+  /autohedger/instruments/update:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: updateInstrument
+      description: Update an Instrument
+      parameters:
+        - name: instrument
+          in: body
+          description: The instrument to update
+          required: true
+          schema:
+            $ref: '#/definitions/InstrumentDto'
+      responses:
+        - 200:
+            description: Nothing to return
+
+  /autohedger/start/{type}:
+    parameters:
+      - name: type
+        in: path
+        description: The type (Bond, Swap or All)
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: autoHedgerTypeStart
+      description: Activate type
+      parameters:
+
+      responses:
+        - 200:
+            description: Nothing to return
+
+  /autohedger/stop/{type}:
+    parameters:
+      - name: type
+        in: path
+        description: The type (Bond or Swap)
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    post:
+      operationId: autoHedgerTypeStop
+      description: Activate type
+      parameters:
+
+      responses:
+        - 200:
+            description: Nothing to return
+
+  /autohedger/status:
+    parameters:
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getAutoHedgerStatus
+      description: Get the status of the autoHedger
+      parameters:
+
+      responses:
+        - 200:
+            description: The status of auto Hedger
+            schema:
+              $ref: '#/definitions/StringBooleanMap'
+
+  /autohedger/executions/{strategyId}/{orderId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      - name: orderId
+        in: path
+        description: The identifier of the order
+        required: true
+        type: string
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-auto-injected: true
+        type: string
+    get:
+      operationId: getExecutionsByStrategyAndOrder
+      description: Get the executions by order
+      parameters:
+
+      responses:
+        - 200:
+            description: The executions of the order
+            schema:
+              type: array
+              items:
+                $ref: '#/definitions/ExecutionMonitoring'
+
+################################################################################
+#                                 Definitions                                  #
+################################################################################
+definitions:
+  StrategyIdDto:
+    type: object
+    properties:
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+
+  StringBooleanMap:
+    type: object
+    properties:
+      key:
+        type: string
+        description: A String with the key of the map
+      value:
+        type: boolean
+        description: A Boolean with the value of the map
+
+  StringStringMap:
+    type: object
+    properties:
+      key:
+        type: string
+        description: A String with the key of the map
+      value:
+        type: string
+        description: A String with the value of the map
+
+  InitiParametersDto:
+    type: object
+    properties:
+      template:
+        type: string
+        description: The template of the parameters
+      strategyId:
+        type: string
+        description: The identifier of the strategy
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/StringStringMap'
+        description: Collection with the strategy parameters
+
+  StrategyDto:
+    type: object
+    properties:
+      strategyName:
+        type: string
+        description: A String with the name of the strategy
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      dateTime:
+        type: integer
+        format: int64
+        description: A Long with the current time milliseconds
+      createdTime:
+        type: integer
+        format: int64
+        description: A Long with the time milliseconds when the strategy was created
+      owner:
+        type: string
+        description: A String with the owner of the strategy
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/StringStringMap'
+        description: Collection with the strategy parameters
+      state:
+        type: string
+        description: A String with the state of the strategy
+      flowInstrument:
+        type: string
+        description: A String with the flow instrument, ('-' for manual strategies)
+      hedgeInstrument:
+        type: string
+        description: A String with the hedge instrument
+      flowVolume:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the flow volume ('-' for manual strategies)
+      hedgeSide:
+        type: string
+        description: A String with the hedge side
+      volume:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the executed volume
+      remainQty:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the remain quantity
+      averagePrice:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the average price
+      groupId:
+        type: string
+        description: A String with the idenfitier of the authorized group
+
+  ParametersDto:
+    type: object
+    properties:
+      parameterName:
+        type: string
+        description: A String with the name
+      mutableAtRuntime:
+        type: boolean
+        description: A boolean whether or not the parameter is mutable at runtime
+      mutableAtStartup:
+        type: boolean
+        description: A boolean whether or not the parameter is mutable at startup
+      type:
+        type: string
+        description: A String with the type of the parameter
+      allowedValues:
+        type: array
+        items:
+          type: string
+        description: A list of allowed values
+      dataSourceMode:
+        type: string
+        description: A String with the data source mode
+
+  MonitoringDto:
+    type: object
+    properties:
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      clOrderId:
+        type: string
+        description: A String with the clOrderId
+      origClOrderId:
+        type: string
+        description: A String with the origClOrderId
+      orderId:
+        type: string
+        description: A String with the orderId
+      side:
+        type: string
+        description: A String with the side
+      instrument:
+        type: string
+        description: A String with the instrument
+      price:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the price
+      startAt:
+        type: integer
+        format: int64
+        description: Milliseconds of the start time
+      endAt:
+        type: integer
+        format: int64
+        description: Milliseconds of the stop time
+
+  OrderMonitoring:
+    allOf:
+      - $ref: '#/definitions/MonitoringDto'
+      - type: object
+        properties:
+          type:
+            type: string
+            description: A String with the type
+          quantity:
+            type: number
+            x-as-bigdecimal: true
+            description: A BigDecimal with the quantity
+          monitoringType:
+            type: string
+            description: A OrderInternalType with the monitoring type
+
+  ExecutionMonitoring:
+    allOf:
+      - $ref: '#/definitions/MonitoringDto'
+      - type: object
+        properties:
+          status:
+            type: string
+            description: A String with the status
+          leavesQty:
+            type: number
+            x-as-bigdecimal: true
+            description: A BigDecimal with the leavesQty
+          cumQty:
+            type: number
+            x-as-bigdecimal: true
+            description: A BigDecimal with the cumQty
+          typeExecution:
+            type: string
+            description: A String with type of execution Cancelled, Filled, completely filled ...
+          lastQty:
+            type: number
+            x-as-bigdecimal: true
+            description: A BigDecimal with the LastQty
+
+  StrategyLogDto:
+    type: object
+    properties:
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      level:
+        type: string
+        description: A String with the log level of the message
+      message:
+        type: string
+        description: A String with the message
+      dateTime:
+        type: integer
+        format: int64
+        description: A Long with the time of the event in milliseconds
+
+# Auto Hedger Dtos
+  Strategy:
+    type: object
+    properties:
+      strategyName:
+        type: string
+        description: A String with the name
+      rate:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the rate
+
+  AuthorizedGroup:
+    type: object
+    properties:
+      groupId:
+        type: string
+        description: A String with the identifier of the group
+      groupName:
+        type: string
+        description: A String with the name of the group
+      users:
+        type: array
+        description: An array with the authorized users
+        items:
+          type: string
+
+  InstrumentDto:
+    type: object
+    properties:
+      nameInstrument:
+        type: string
+        description: A String with the hedge instrument name
+      description:
+        type: string
+        description: A String with the description of the instrument
+      type:
+        type: string
+        description: A String with the type defined by the user
+      typeInstrument:
+        type: string
+        description: A String with the type of the instrument (swap, bond or other)
+      maturity:
+        type: string
+        description: A String with the maturity
+      marketId:
+        type: string
+        description: A String with the identifier of the market
+      startAt:
+        type: integer
+        format: int64
+        description: Milliseconds of the start time
+      stopAt:
+        type: integer
+        format: int64
+        description: Milliseconds of the start time
+      authorizedGroup:
+        type: string
+        description: The identifier of the authorized group of the instrument
+      initTime:
+        type: string
+        description: The time when the instrument is available in the market
+      endTime:
+        type: string
+        description: The time when the instrument is not available in the market
+      timeZone:
+        type: string
+        description: The timezone of the init/end time
+
+  Weight:
+    type: object
+    properties:
+      weightId:
+        type: string
+        description: A String with the identifier of the weight
+      instrument:
+        $ref: '#/definitions/InstrumentDto'
+        description: An InstrumentDto of the weight
+      factor:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the factor value
+      weight:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the weight value
+      hedgeWeight:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the hedge weight value
+      hedgeInstrument:
+        $ref: '#/definitions/InstrumentDto'
+        description: An InstrumentDto for hedging
+      kind:
+        type: string
+        description: A String with the kind of limit (Nominal, Future or DV01)
+      limitUp:
+        type: integer
+        format: int64
+        description: A Integer with the limit up hedge value
+      limitDown:
+        type: integer
+        format: int64
+        description: A Integer with the limit down hedge value
+      strategy:
+        type: string
+        description: A String with the threshold strategy
+      limitStrategies:
+        type: array
+        items:
+          $ref: '#/definitions/Strategy'
+        description: An array with the strategies
+
+# Web sockets Dto
+
+  StrategyStatusMessage:
+    type: object
+    properties:
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      strategyState:
+        type: string
+        description: A String with the new state of the strategy
+      dateTime:
+        type: integer
+        format: int64
+        description: A Long with the current time milliseconds
+      message:
+        type: string
+        description: A String with the message
+
+  ParameterChangedMessage:
+    type: object
+    properties:
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      parameterName:
+        type: string
+        description: A String with the name of the parameter
+      value:
+        type: string
+        description: A String with the value of the parameter

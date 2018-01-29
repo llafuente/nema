@@ -1,0 +1,32 @@
+{
+  "name": "nema",
+  "version": "1.0.0",
+  "description": "`nema` is an api server/client from a swagger definition (raml is planned).",
+  "main": "index.js",
+  "bin": {
+    "nema": "nema.js"
+  },
+  "scripts": {
+    "test": "npm run build && ava --verbose ./dist/test/*.js",
+    "coverage": "npm run build && npm ava --verbose ./compiled-js/test/*.js",
+    "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
+    "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",
+    "build": "tsc -p ./tsconfig.json"
+  },
+  "author": "Luis Lafuente Morales",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "2.13.0",
+    "ejs": "2.5.7",
+    "lodash": "4.17.4",
+    "yamljs": "0.3.0"
+  },
+  "devDependencies": {
+    "@types/lodash": "4.14.96",
+    "@types/node": "9.3.0",
+    "ava": "0.24.0",
+    "prettier": "1.10.2",
+    "tslint": "5.9.1",
+    "typescript": "2.4.2"
+  }
+}

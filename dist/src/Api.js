@@ -31,7 +31,6 @@ class Api {
         api.authorEmail = swagger.info.contact.email || "";
         api.authorURL = swagger.info.contact.url || "";
         _.each(swagger.paths, (pathItem, uri) => {
-            console.log(pathItem);
             const url = path.posix.join(api.basePath, uri);
             ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
                 const method = pathItem[verb];
@@ -59,13 +58,13 @@ class Api {
     }
     addModel(model, override) {
         if (!override && this.models[model.name] !== undefined) {
-            throw new Error(`try to override an already defined model: ${model.name}`);
+            throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
         }
         this.models[model.name] = model;
     }
     addMethod(method, override) {
         if (!override && this.methods[method.operationId] !== undefined) {
-            throw new Error(`try to override an already defined method: ${method.operationId}`);
+            throw new Error(`try to override an already defined method: ${method.operationId} from ${this.methods[method.operationId]} to ${method.api.filename}`);
         }
         this.methods[method.operationId] = method;
     }

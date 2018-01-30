@@ -32,8 +32,6 @@ export class Method {
     produces: string[],
     method: any
   ): Method{
-    //console.log("Method.parse", url, parameters, parameters.length, method);
-
     const m = new Method();
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
@@ -46,7 +44,6 @@ export class Method {
     m.produces = produces;
 
     m.parameters = parameters.map((x) => {
-      //console.log(x);
       return Parameter.parse(x);
     });
 
@@ -67,12 +64,20 @@ export class Method {
     });
 
     // TODO check format!
-    console.log(method);
     if (method["x-front-resolve"]) {
       console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
     }
 
     m.resolve = method["x-front-resolve"] || method["x-nema-resolve"] || null;
+
+    if (method["x-override-front"]) {
+      console.warn(`deprecated usage: x-override-front, parsing ${api.filename}`);
+    }
+
+    // very unsafe :)
+    const override = method["x-override-front"] || method["x-nema-override"] || {};
+    console.log("override", override);
+    _.assign(m, override);
 
     return m;
   }

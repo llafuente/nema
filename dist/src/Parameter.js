@@ -20,7 +20,6 @@ const SwaggerToParameterType = {
 };
 class Parameter {
     static parse(obj) {
-        //console.log("Parameter.parse", obj);
         const p = new Parameter();
         p.name = obj.name;
         p.headerName = obj["x-alias"];

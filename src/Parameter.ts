@@ -27,8 +27,6 @@ export class Parameter {
   type: Type;
 
   static parse(obj: any): Parameter {
-    //console.log("Parameter.parse", obj);
-
     const p = new Parameter();
     p.name = obj.name;
     p.headerName = obj["x-alias"];

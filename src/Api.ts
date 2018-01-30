@@ -55,7 +55,6 @@ export class Api {
     api.authorURL = swagger.info.contact.url || "";
 
     _.each(swagger.paths, (pathItem, uri) => {
-      console.log(pathItem);
       const url = path.posix.join(api.basePath, uri);
 
       ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
@@ -99,7 +98,7 @@ export class Api {
 
   addModel(model: Model, override: boolean) {
     if (!override && this.models[model.name] !== undefined) {
-      throw new Error(`try to override an already defined model: ${model.name}`);
+      throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
     }
 
     this.models[model.name] = model;
@@ -107,7 +106,7 @@ export class Api {
 
   addMethod(method: Method, override: boolean) {
     if (!override && this.methods[method.operationId] !== undefined) {
-      throw new Error(`try to override an already defined method: ${method.operationId}`);
+      throw new Error(`try to override an already defined method: ${method.operationId} from ${this.methods[method.operationId]} to ${method.api.filename}`);
     }
 
     this.methods[method.operationId] = method;

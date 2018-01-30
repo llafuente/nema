@@ -17,7 +17,6 @@ class Method {
         this.resolve = null;
     }
     static parse(api, verb, url, parameters, consumes, produces, method) {
-        //console.log("Method.parse", url, parameters, parameters.length, method);
         const m = new Method();
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         m.verb = verb.toLowerCase();
@@ -27,7 +26,6 @@ class Method {
         m.consumes = consumes;
         m.produces = produces;
         m.parameters = parameters.map((x) => {
-            //console.log(x);
             return Parameter_1.Parameter.parse(x);
         });
         // Keep compat with our legacy generator
@@ -45,11 +43,17 @@ class Method {
             m.responses.push(Response_1.Response.parse(responseType, response));
         });
         // TODO check format!
-        console.log(method);
         if (method["x-front-resolve"]) {
             console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
         }
         m.resolve = method["x-front-resolve"] || method["x-nema-resolve"] || null;
+        if (method["x-override-front"]) {
+            console.warn(`deprecated usage: x-override-front, parsing ${api.filename}`);
+        }
+        // very unsafe :)
+        const override = method["x-override-front"] || method["x-nema-override"] || {};
+        console.log("override", override);
+        _.assign(m, override);
         return m;
     }
     countParams(filter = null) {

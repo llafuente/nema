@@ -250,7 +250,6 @@ export class ${method.resolve.name} implements Resolve<${method.getResponse(200)
   getParameter(snapshot: ActivatedRouteSnapshot, key: string): any {
     do {
       const d = snapshot.params as any;
-      // console.log("route.params", snapshot.params);
       if (d && d[key] !== undefined) {
         return d[key];
       }
@@ -287,7 +286,6 @@ export class ${api.apiName} extends ApiBase {
   }
 `);
         api.eachMethod((method) => {
-            //console.log(method.operationId);
             // Verb
             s.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
             s.push(`${method.operationId}URI: string  = ${JSON.stringify(method.url)};`);

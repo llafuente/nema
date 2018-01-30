@@ -17,6 +17,12 @@ export class Method {
   consumes: string[] = [];
   produces: string[] = [];
 
+  resolve: {
+    name: string,
+    parameters: {[name: string]: string},
+    errorURL: {[name: string]: string},
+  } = null;
+
   static parse(
     api: Api,
     verb: string,
@@ -59,6 +65,14 @@ export class Method {
     _.each(method.responses, (response, responseType) => {
       m.responses.push(Response.parse(responseType, response))
     });
+
+    // TODO check format!
+    console.log(method);
+    if (method["x-front-resolve"]) {
+      console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
+    }
+
+    m.resolve = method["x-front-resolve"] || method["x-nema-resolve"] || null;
 
     return m;
   }

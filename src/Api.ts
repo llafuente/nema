@@ -7,6 +7,8 @@ import { Type } from "./Type";
 import { Model } from "./Model";
 
 export class Api {
+  filename: string;
+
   angularModuleName: string;
   nodeModuleName: string;
   apiName: string;
@@ -29,8 +31,9 @@ export class Api {
 
   }
 
-  static parse(swagger: any): Api {
+  static parseSwagger(filename: string, swagger: any): Api {
     const api = new Api();
+    api.filename = filename;
     // TODO is generating front ? -> override basePath
     // keep compat with old generator, sry
     swagger["x-generator-properties"] = swagger["x-generator-properties"] || {};
@@ -52,7 +55,7 @@ export class Api {
     api.authorURL = swagger.info.contact.url || "";
 
     _.each(swagger.paths, (pathItem, uri) => {
-      //console.log(pathItem);
+      console.log(pathItem);
       const url = path.posix.join(api.basePath, uri);
 
       ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
@@ -91,12 +94,12 @@ export class Api {
       throw e;
     }
 
-    return Api.parse(swaggerJSON);
+    return Api.parseSwagger(filename, swaggerJSON);
   }
 
   addModel(model: Model, override: boolean) {
     if (!override && this.models[model.name] !== undefined) {
-      throw new Error("try to override an already defined model");
+      throw new Error(`try to override an already defined model: ${model.name}`);
     }
 
     this.models[model.name] = model;
@@ -104,7 +107,7 @@ export class Api {
 
   addMethod(method: Method, override: boolean) {
     if (!override && this.methods[method.operationId] !== undefined) {
-      throw new Error("try to override an already defined method");
+      throw new Error(`try to override an already defined method: ${method.operationId}`);
     }
 
     this.methods[method.operationId] = method;
@@ -117,6 +120,15 @@ export class Api {
   eachMethod(cb: (m: Method, operationId: string) => void) {
     _.each(this.methods, cb);
   }
+
+  eachResolve(cb: (m: Method, operationId: string) => void) {
+    this.eachMethod((m, operationId) => {
+      if (m.resolve) {
+        cb(m, operationId);
+      }
+    });
+  }
+
 
   aggregate(api: Api, overrideMethods, overrideModels) {
     api.eachMethod((m) => {

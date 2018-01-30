@@ -1,7 +1,8 @@
 import { Api } from "./Api";
 import { Model } from "./Model";
+import { Method } from "./Method";
 import { Type } from "./Type";
-import { ParameterType } from "./Parameter";
+import { Parameter, ParameterType } from "./Parameter";
 import * as _ from "lodash";
 import * as fs from "fs";
 import * as path from "path";
@@ -21,10 +22,15 @@ export class Generator {
     mkdirSafe(path.join(dstPath));
     mkdirSafe(path.join(dstPath, "src"));
     mkdirSafe(path.join(dstPath, "src/models"));
+    mkdirSafe(path.join(dstPath, "src/resolve"));
 
     api.eachModel((model, modelName) => {
       Generator.modelFile(api, model, path.join(dstPath, `src/models/${modelName}.ts`));
-    })
+    });
+
+    api.eachResolve((method, modelName) => {
+      Generator.resolveFile(api, method, path.join(dstPath, `src/resolve/${method.resolve.name}.ts`));
+    });
 
     Generator.templates(path.join(dstPath, "src"));
     fs.copyFileSync(path.join(process.cwd(), "templates", "tsconfig.json"), path.join(dstPath, "tsconfig.json"));
@@ -70,6 +76,10 @@ export class Generator {
 
   static modelFile(api: Api, model: Model, filename: string) {
     fs.writeFileSync(filename, Generator.model(api, model));
+  }
+
+  static resolveFile(api: Api, method: Method, filename: string) {
+    fs.writeFileSync(filename, Generator.resolve(api, method));
   }
 
   static moduleFile(api: Api, filename: string) {
@@ -232,6 +242,70 @@ export class ${api.angularModuleName} {}
   }
 
 
+  static resolve(api: Api, method: Method): string {
+    if (method.getResponse(200).type.type == "void") {
+      throw new Error("cannot create a resolve of a void method");
+    }
+
+    // api call parameters
+    const apiParameters = [];
+    function addParam(param: Parameter) {
+      apiParameters.push(`this.getParameter(route, ${JSON.stringify(method.resolve.parameters[param.name])}),`);
+    }
+    method.eachPathParam(addParam);
+    method.eachHeaderParam(addParam, true);
+    method.eachQueryParam(addParam);
+    method.eachBodyParam(addParam);
+
+return `
+import { Injectable } from "@angular/core";
+import { Router } from "@angular/router";
+import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
+import { Observable } from "rxjs/Rx";
+import { ${api.apiName} } from "../${api.apiName}";
+import { ${method.getResponse(200).type.toTypeScriptType()} } from "../models/${method.getResponse(200).type.toTypeScriptType()}";
+
+@Injectable()
+export class ${method.resolve.name} implements Resolve<${method.getResponse(200).type.toTypeScriptType()}> {
+
+  constructor(
+    private api: ${api.apiName},
+    private router: Router
+  ) {
+  }
+
+  resolve(route: ActivatedRouteSnapshot) {
+    console.info("resolve: ${method.operationId}");
+
+    const x = this.api.${method.operationId}(${apiParameters.join(",")});
+
+    x.subscribe((response) => {
+      return response;
+    }, (err) => {
+      this.router.navigate([${JSON.stringify(method.resolve.errorURL)}]);
+    });
+
+    return x;
+  }
+
+  getParameter(snapshot: ActivatedRouteSnapshot, key: string): any {
+    do {
+      const d = snapshot.params as any;
+      // console.log("route.params", snapshot.params);
+      if (d && d[key] !== undefined) {
+        return d[key];
+      }
+
+      snapshot = snapshot.parent;
+    } while (snapshot);
+
+    return null;
+  }
+}
+`;
+
+
+  }
   static api(api: Api): string {
     const s = [
 `import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";

@@ -14,6 +14,7 @@ class Method {
         this.responses = [];
         this.consumes = [];
         this.produces = [];
+        this.resolve = null;
     }
     static parse(api, verb, url, parameters, consumes, produces, method) {
         //console.log("Method.parse", url, parameters, parameters.length, method);
@@ -43,6 +44,12 @@ class Method {
         _.each(method.responses, (response, responseType) => {
             m.responses.push(Response_1.Response.parse(responseType, response));
         });
+        // TODO check format!
+        console.log(method);
+        if (method["x-front-resolve"]) {
+            console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
+        }
+        m.resolve = method["x-front-resolve"] || method["x-nema-resolve"] || null;
         return m;
     }
     countParams(filter = null) {

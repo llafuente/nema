@@ -19,8 +19,12 @@ class Generator {
         mkdirSafe(path.join(dstPath));
         mkdirSafe(path.join(dstPath, "src"));
         mkdirSafe(path.join(dstPath, "src/models"));
+        mkdirSafe(path.join(dstPath, "src/resolve"));
         api.eachModel((model, modelName) => {
             Generator.modelFile(api, model, path.join(dstPath, `src/models/${modelName}.ts`));
+        });
+        api.eachResolve((method, modelName) => {
+            Generator.resolveFile(api, method, path.join(dstPath, `src/resolve/${method.resolve.name}.ts`));
         });
         Generator.templates(path.join(dstPath, "src"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "tsconfig.json"), path.join(dstPath, "tsconfig.json"));
@@ -58,6 +62,9 @@ class Generator {
     }
     static modelFile(api, model, filename) {
         fs.writeFileSync(filename, Generator.model(api, model));
+    }
+    static resolveFile(api, method, filename) {
+        fs.writeFileSync(filename, Generator.resolve(api, method));
     }
     static moduleFile(api, filename) {
         fs.writeFileSync(filename, Generator.module(api));
@@ -196,6 +203,66 @@ export class ${api.angularModuleName} {}
 `);
         return s.join("\n");
     }
+    static resolve(api, method) {
+        if (method.getResponse(200).type.type == "void") {
+            throw new Error("cannot create a resolve of a void method");
+        }
+        // api call parameters
+        const apiParameters = [];
+        function addParam(param) {
+            apiParameters.push(`this.getParameter(route, ${JSON.stringify(method.resolve.parameters[param.name])}),`);
+        }
+        method.eachPathParam(addParam);
+        method.eachHeaderParam(addParam, true);
+        method.eachQueryParam(addParam);
+        method.eachBodyParam(addParam);
+        return `
+import { Injectable } from "@angular/core";
+import { Router } from "@angular/router";
+import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
+import { Observable } from "rxjs/Rx";
+import { ${api.apiName} } from "../${api.apiName}";
+import { ${method.getResponse(200).type.toTypeScriptType()} } from "../models/${method.getResponse(200).type.toTypeScriptType()}";
+
+@Injectable()
+export class ${method.resolve.name} implements Resolve<${method.getResponse(200).type.toTypeScriptType()}> {
+
+  constructor(
+    private api: ${api.apiName},
+    private router: Router
+  ) {
+  }
+
+  resolve(route: ActivatedRouteSnapshot) {
+    console.info("resolve: ${method.operationId}");
+
+    const x = this.api.${method.operationId}(${apiParameters.join(",")});
+
+    x.subscribe((response) => {
+      return response;
+    }, (err) => {
+      this.router.navigate([${JSON.stringify(method.resolve.errorURL)}]);
+    });
+
+    return x;
+  }
+
+  getParameter(snapshot: ActivatedRouteSnapshot, key: string): any {
+    do {
+      const d = snapshot.params as any;
+      // console.log("route.params", snapshot.params);
+      if (d && d[key] !== undefined) {
+        return d[key];
+      }
+
+      snapshot = snapshot.parent;
+    } while (snapshot);
+
+    return null;
+  }
+}
+`;
+    }
     static api(api) {
         const s = [
             `import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
@@ -252,6 +319,10 @@ export class ${api.apiName} extends ApiBase {
             method.eachBodyParam((p) => {
                 bodyParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
             });
+            // .replace(/\+/g, '%2B'); fix: + handling that it's bugged in Angular 5
+            // keep an eye in the thread to see if fix is merged, may collide with the
+            // workaround
+            // https://github.com/angular/angular/issues/11058
             s.push(`
       ${method.operationId}URL(
         ${pathParams.join("\n")}
@@ -263,7 +334,7 @@ export class ${api.apiName} extends ApiBase {
         const $url = this.getFullURL(this.${method.operationId}URI)
         ${pathParamsReplace.join("\n")};
 
-        return $url + "?" + $params.toString();
+        return $url + "?" + $params.toString().replace(/\+/g, '%2B');
       }
 
       ${method.operationId}(

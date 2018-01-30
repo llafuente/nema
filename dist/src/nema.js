@@ -33,7 +33,7 @@ program
     .option("--angular5-api", "TARGET: Generate an Angular 5 Module Api client")
     .option("--override-models", "Override all models while agreggating")
     .option("--override-methods", "Override all methods while agreggating")
-    .option("--swagger [path]", "Path to swagger yml", function (val, memo) {
+    .option("--swagger [path]", "Path to swagger yml, repeat to aggregate", function (val, memo) {
     memo.push(val);
     return memo;
 }, [])

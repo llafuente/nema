@@ -10,8 +10,9 @@ class Api {
         this.methods = {};
         this.models = {};
     }
-    static parse(swagger) {
+    static parseSwagger(filename, swagger) {
         const api = new Api();
+        api.filename = filename;
         // TODO is generating front ? -> override basePath
         // keep compat with old generator, sry
         swagger["x-generator-properties"] = swagger["x-generator-properties"] || {};
@@ -30,7 +31,7 @@ class Api {
         api.authorEmail = swagger.info.contact.email || "";
         api.authorURL = swagger.info.contact.url || "";
         _.each(swagger.paths, (pathItem, uri) => {
-            //console.log(pathItem);
+            console.log(pathItem);
             const url = path.posix.join(api.basePath, uri);
             ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
                 const method = pathItem[verb];
@@ -54,17 +55,17 @@ class Api {
             console.error(e);
             throw e;
         }
-        return Api.parse(swaggerJSON);
+        return Api.parseSwagger(filename, swaggerJSON);
     }
     addModel(model, override) {
         if (!override && this.models[model.name] !== undefined) {
-            throw new Error("try to override an already defined model");
+            throw new Error(`try to override an already defined model: ${model.name}`);
         }
         this.models[model.name] = model;
     }
     addMethod(method, override) {
         if (!override && this.methods[method.operationId] !== undefined) {
-            throw new Error("try to override an already defined method");
+            throw new Error(`try to override an already defined method: ${method.operationId}`);
         }
         this.methods[method.operationId] = method;
     }
@@ -73,6 +74,13 @@ class Api {
     }
     eachMethod(cb) {
         _.each(this.methods, cb);
+    }
+    eachResolve(cb) {
+        this.eachMethod((m, operationId) => {
+            if (m.resolve) {
+                cb(m, operationId);
+            }
+        });
     }
     aggregate(api, overrideMethods, overrideModels) {
         api.eachMethod((m) => {

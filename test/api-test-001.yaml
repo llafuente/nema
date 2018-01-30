@@ -249,7 +249,11 @@ paths:
       operationId: getStrategyRest
       description: Get the strategy data
       parameters:
-
+      x-front-resolve:
+        name: StrategiesResolve
+        errorURL: /error
+        parameters:
+          strategyId: strategyId
 
       responses:
         - 200:

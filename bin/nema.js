@@ -1,1 +1,1 @@
-require("../dist/nema.js");
+require("../dist/src/nema.js");

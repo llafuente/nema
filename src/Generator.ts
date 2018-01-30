@@ -17,7 +17,7 @@ function mkdirSafe(folder) {
 
 export class Generator {
 
-  static generate(api: Api, dstPath: string) {
+  static angular5(api: Api, dstPath: string) {
     mkdirSafe(path.join(dstPath));
     mkdirSafe(path.join(dstPath, "src"));
     mkdirSafe(path.join(dstPath, "src/models"));
@@ -156,21 +156,18 @@ export class Generator {
 
 
     function addParams(t: Type, name: string)  {
-      if (t.isPrimitive()) {
-        randomInstanceNewParams.push(`Random.${t.type}(),`);
-      } else {
-        randomInstanceNewParams.push(`${t.toTypeScriptType()}.randomInstance(),`);
-      }
-
       if (t.type == "array") {
-        emptyInstanceNewParams.push(`[],`);
         parseNewParams.push(`(json.${name} || []).map((x) => ${t.items.toTypeScriptType()}.parse(x)),`);
+        emptyInstanceNewParams.push(`[],`);
+        randomInstanceNewParams.push(`[],`);
       } else if (t.isPrimitive()) {
-        emptyInstanceNewParams.push(`null,`);
         parseNewParams.push(`Cast.${t.type}(json.${name}),`);
+        emptyInstanceNewParams.push(`null,`);
+        randomInstanceNewParams.push(`Random.${t.type}(),`);
       } else { // model
         parseNewParams.push(`${t.toTypeScriptType()}.parse(json.${name}),`);
         emptyInstanceNewParams.push(`${t.toTypeScriptType()}.emptyInstance(),`);
+        randomInstanceNewParams.push(`${t.toTypeScriptType()}.randomInstance(),`);
       }
     }
 
@@ -227,7 +224,7 @@ export class Generator {
   exports: [
     IsErrorPipe,
   ]
-});
+})
 export class ${api.angularModuleName} {}
 `);
 

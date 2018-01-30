@@ -5,3 +5,4 @@ package-lock.json
 # typescript generated files need to be commited
 #/dist
 /test/generated-001/
+/tmp/

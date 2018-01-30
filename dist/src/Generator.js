@@ -5,7 +5,7 @@ const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
 const child_process_1 = require("child_process");
-function mkdirp(folder) {
+function mkdirSafe(folder) {
     try {
         fs.mkdirSync(folder);
     }
@@ -15,10 +15,10 @@ function mkdirp(folder) {
     }
 }
 class Generator {
-    static generate(api, dstPath) {
-        mkdirp(path.join(dstPath));
-        mkdirp(path.join(dstPath, "src"));
-        mkdirp(path.join(dstPath, "src/models"));
+    static angular5(api, dstPath) {
+        mkdirSafe(path.join(dstPath));
+        mkdirSafe(path.join(dstPath, "src"));
+        mkdirSafe(path.join(dstPath, "src/models"));
         api.eachModel((model, modelName) => {
             Generator.modelFile(api, model, path.join(dstPath, `src/models/${modelName}.ts`));
         });
@@ -42,7 +42,6 @@ class Generator {
         });
     }
     static lint(dstPath) {
-        console.log(["-c", "./tslint.json", "--project", path.join(dstPath + "/tsconfig.json"), dstPath, "--fix"].join(" "));
         child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/tslint.cmd"), ["-c", "./tslint.json", "--project", path.join(dstPath + "/tsconfig.json"), "--fix"], {
             cwd: process.cwd(),
             env: process.env,
@@ -129,23 +128,20 @@ class Generator {
         const randomInstanceNewParams = [];
         const emptyInstanceNewParams = [];
         function addParams(t, name) {
-            if (t.isPrimitive()) {
-                randomInstanceNewParams.push(`Random.${t.type}(),`);
-            }
-            else {
-                randomInstanceNewParams.push(`${t.toTypeScriptType()}.randomInstance(),`);
-            }
             if (t.type == "array") {
-                emptyInstanceNewParams.push(`[],`);
                 parseNewParams.push(`(json.${name} || []).map((x) => ${t.items.toTypeScriptType()}.parse(x)),`);
+                emptyInstanceNewParams.push(`[],`);
+                randomInstanceNewParams.push(`[],`);
             }
             else if (t.isPrimitive()) {
-                emptyInstanceNewParams.push(`null,`);
                 parseNewParams.push(`Cast.${t.type}(json.${name}),`);
+                emptyInstanceNewParams.push(`null,`);
+                randomInstanceNewParams.push(`Random.${t.type}(),`);
             }
             else {
                 parseNewParams.push(`${t.toTypeScriptType()}.parse(json.${name}),`);
                 emptyInstanceNewParams.push(`${t.toTypeScriptType()}.emptyInstance(),`);
+                randomInstanceNewParams.push(`${t.toTypeScriptType()}.randomInstance(),`);
             }
         }
         if (model.extends) {
@@ -195,7 +191,7 @@ class Generator {
   exports: [
     IsErrorPipe,
   ]
-});
+})
 export class ${api.angularModuleName} {}
 `);
         return s.join("\n");

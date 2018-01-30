@@ -114,7 +114,7 @@ test.cb.serial("parse swagger", (t) => {
     ["type", "quantity", "monitoringType"], "type extends parsed ok"
   );
 
-  Generator.generate(swagger, `./test/generated-001/`);
+  Generator.angular5(swagger, `./test/generated-001/`);
 
   t.end()
 });

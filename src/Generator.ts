@@ -241,10 +241,12 @@ import { ApiBase } from "./ApiBase";
 import { CommonException } from "./CommonException";`,
     ];
 
+    // import all models
     api.eachModel((model, modelName) => {
       s.push(`import { ${modelName} } from "./models/${modelName}";`);
     });
 
+    // Api class
     s.push(
 `@Injectable()
 export class ${api.apiName} extends ApiBase {
@@ -299,7 +301,13 @@ export class ${api.apiName} extends ApiBase {
         bodyParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
       });
 
-      s.push(`${method.operationId}URL(
+      // .replace(/\+/g, '%2B'); fix: + handling that it's bugged in Angular 5
+      // keep an eye in the thread to see if fix is merged, may collide with the
+      // workaround
+      // https://github.com/angular/angular/issues/11058
+
+      s.push(`
+      ${method.operationId}URL(
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
       ): string {
@@ -309,10 +317,10 @@ export class ${api.apiName} extends ApiBase {
         const $url = this.getFullURL(this.${method.operationId}URI)
         ${pathParamsReplace.join("\n")};
 
-        return $url + "?" + $params.toString();
-      }`);
+        return $url + "?" + $params.toString().replace(/\+/g, '%2B');
+      }
 
-      s.push(`${method.operationId}(
+      ${method.operationId}(
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
         ${headerParams.join("\n")}

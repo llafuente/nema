@@ -204,9 +204,11 @@ import { Subject, Observable } from "rxjs";
 import { ApiBase } from "./ApiBase";
 import { CommonException } from "./CommonException";`,
         ];
+        // import all models
         api.eachModel((model, modelName) => {
             s.push(`import { ${modelName} } from "./models/${modelName}";`);
         });
+        // Api class
         s.push(`@Injectable()
 export class ${api.apiName} extends ApiBase {
   scheme: string = ${JSON.stringify(api.schemes[0])};
@@ -250,7 +252,8 @@ export class ${api.apiName} extends ApiBase {
             method.eachBodyParam((p) => {
                 bodyParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
             });
-            s.push(`${method.operationId}URL(
+            s.push(`
+      ${method.operationId}URL(
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
       ): string {
@@ -261,8 +264,9 @@ export class ${api.apiName} extends ApiBase {
         ${pathParamsReplace.join("\n")};
 
         return $url + "?" + $params.toString();
-      }`);
-            s.push(`${method.operationId}(
+      }
+
+      ${method.operationId}(
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
         ${headerParams.join("\n")}

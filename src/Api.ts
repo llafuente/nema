@@ -67,14 +67,14 @@ export class Api {
             method.consumes || swagger.consumes || [],
             method.produces || swagger.produces || [],
             method
-          ));
+          ), false);
 
         }
       })
     });
 
     _.each(swagger.definitions, (model, name) => {
-      api.addModel(Model.parse(api, name, model));
+      api.addModel(Model.parse(api, name, model), false);
     });
 
     return api;
@@ -94,16 +94,16 @@ export class Api {
     return Api.parse(swaggerJSON);
   }
 
-  addModel(model: Model) {
-    if (this.models[model.name] !== undefined) {
+  addModel(model: Model, override: boolean) {
+    if (!override && this.models[model.name] !== undefined) {
       throw new Error("try to override an already defined model");
     }
 
     this.models[model.name] = model;
   }
 
-  addMethod(method: Method) {
-    if (this.methods[method.operationId] !== undefined) {
+  addMethod(method: Method, override: boolean) {
+    if (!override && this.methods[method.operationId] !== undefined) {
       throw new Error("try to override an already defined method");
     }
 
@@ -118,5 +118,13 @@ export class Api {
     _.each(this.methods, cb);
   }
 
+  aggregate(api: Api, overrideMethods, overrideModels) {
+    api.eachMethod((m) => {
+      this.addMethod(m, overrideMethods);
+    });
 
+    api.eachModel((m) => {
+      this.addModel(m, overrideModels);
+    });
+  }
 }

@@ -35,12 +35,12 @@ class Api {
             ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
                 const method = pathItem[verb];
                 if (method) {
-                    api.addMethod(Method_1.Method.parse(api, verb, url, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method.consumes || swagger.consumes || [], method.produces || swagger.produces || [], method));
+                    api.addMethod(Method_1.Method.parse(api, verb, url, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method.consumes || swagger.consumes || [], method.produces || swagger.produces || [], method), false);
                 }
             });
         });
         _.each(swagger.definitions, (model, name) => {
-            api.addModel(Model_1.Model.parse(api, name, model));
+            api.addModel(Model_1.Model.parse(api, name, model), false);
         });
         return api;
     }
@@ -56,14 +56,14 @@ class Api {
         }
         return Api.parse(swaggerJSON);
     }
-    addModel(model) {
-        if (this.models[model.name] !== undefined) {
+    addModel(model, override) {
+        if (!override && this.models[model.name] !== undefined) {
             throw new Error("try to override an already defined model");
         }
         this.models[model.name] = model;
     }
-    addMethod(method) {
-        if (this.methods[method.operationId] !== undefined) {
+    addMethod(method, override) {
+        if (!override && this.methods[method.operationId] !== undefined) {
             throw new Error("try to override an already defined method");
         }
         this.methods[method.operationId] = method;
@@ -73,6 +73,14 @@ class Api {
     }
     eachMethod(cb) {
         _.each(this.methods, cb);
+    }
+    aggregate(api, overrideMethods, overrideModels) {
+        api.eachMethod((m) => {
+            this.addMethod(m, overrideMethods);
+        });
+        api.eachModel((m) => {
+            this.addModel(m, overrideModels);
+        });
     }
 }
 exports.Api = Api;

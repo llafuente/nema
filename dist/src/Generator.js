@@ -361,7 +361,7 @@ export class ${api.apiName} {
                 queryParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
                 queryParamsNames.push(`${p.name}`);
                 queryParamsCheck.push(`
-        if (${p.name} !== null) {
+        if (${p.name} != null) {
             $params = $params.set(${JSON.stringify(p.name)}, ${p.name}.toString())
         }
         `);

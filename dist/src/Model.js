@@ -6,7 +6,7 @@ class Model {
     constructor() {
         this.api = null;
     }
-    static parse(api, name, obj) {
+    static parseSwagger(api, name, obj) {
         const m = new Model();
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         if (obj.allOf) {
@@ -16,7 +16,7 @@ class Model {
         m.name = name;
         m.interfaceName = `I${name}`;
         m.description = obj.description;
-        m.type = Type_1.Type.parse(obj, obj.schema);
+        m.type = Type_1.Type.parseSwagger(obj, obj.schema);
         return m;
     }
     eachProperty(cb) {

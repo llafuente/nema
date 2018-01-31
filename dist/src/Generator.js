@@ -17,22 +17,27 @@ function mkdirSafe(folder) {
 class Generator {
     static angular5(api, dstPath) {
         api.sort();
+        // create generation paths
         mkdirSafe(path.join(dstPath));
         mkdirSafe(path.join(dstPath, "src"));
         mkdirSafe(path.join(dstPath, "src/models"));
         mkdirSafe(path.join(dstPath, "src/resolve"));
+        // generate all models
         api.eachModel((model, modelName) => {
             Generator.modelFile(api, model, path.join(dstPath, `src/models/${modelName}.ts`));
         });
+        // generate all resolves
         api.eachResolve((method, modelName) => {
             Generator.resolveFile(api, method, path.join(dstPath, `src/resolve/${method.resolve.name}.ts`));
         });
+        // copy raw files (those that don't need to be generated)
         Generator.templates(path.join(dstPath, "src"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "tsconfig.json"), path.join(dstPath, "tsconfig.json"));
-        Generator.moduleFile(api, path.join(dstPath, `index.ts`));
         Generator.apiFile(api, path.join(dstPath, `src/${api.apiName}.ts`));
+        Generator.moduleFile(api, path.join(dstPath, `index.ts`));
         Generator.packageJSONFile(api, path.join(dstPath, `package.json`));
         Generator.pretty(dstPath);
+        // this may take a long time...
         //Generator.lint(dstPath);
     }
     static pretty(dstPath) {
@@ -53,8 +58,6 @@ class Generator {
     }
     static templates(dstPath) {
         ["Cast.ts", "CommonException.ts", "IsError.pipe.ts", "Random.ts"].forEach((filename) => {
-            //const c = fs.readFileSync(path.join(process.cwd(), "templates", filename), { encoding: "utf8"});
-            //fs.writeFileSync(path.join(dstPath, filename), c, { encoding: "utf8" });
             fs.copyFileSync(path.join(process.cwd(), "templates", filename), path.join(dstPath, filename));
         });
     }
@@ -75,6 +78,7 @@ class Generator {
     }
     static model(api, model) {
         const s = [];
+        // imports
         s.push(`import { Random } from "../Random";\nimport { Cast } from "../Cast";`);
         //import extended model if needed
         if (model.extends) {
@@ -97,6 +101,7 @@ class Generator {
                 s.push(`import { ${t.toBaseType()} } from "./${t.toBaseType()}";`);
             }
         });
+        // end imports
         // start interface
         s.push(`export interface ${model.interfaceName} {`);
         _.each(model.type.properties, (t, name) => {
@@ -237,6 +242,7 @@ export class ${api.angularModuleName} {}
         if (method.getResponse(200).type.type == "void") {
             throw new Error("cannot create a resolve of a void method");
         }
+        // TODO validate parameters - map
         // api call parameters
         const apiParameters = [];
         function addParam(param) {
@@ -398,7 +404,7 @@ export class ${api.apiName} {
         ${headerParams.join("\n")}
         ${bodyParams.join("\n")}
       ): Subject<${responseTypeTS}> {`);
-            const hasHeaders = method.consumes.length || method.countParams(Parameter_1.ParameterType.HEADER);
+            const hasHeaders = method.consumes.length || method.countParams(Parameter_1.ParameterType.HEADER, true);
             if (hasHeaders) {
                 s.push(`let $headers = new HttpHeaders();`);
                 // TODO this need to be reviewed, to choose one, our APIs just have one and this works...
@@ -433,15 +439,19 @@ export class ${api.apiName} {
             if (method.producesJSON()) {
                 s.push(`responseType: "json" as "json",`);
             }
-            if (method.producesText()) {
+            else if (method.producesText()) {
                 s.push(`responseType: "text" as "text",`);
+            }
+            else if (responseTypeTS != "void") {
+                console.log(method, responseTypeTS);
+                throw new Error(`invalid produces, only: application/json, text/plain, text/html, found: ${method.produces}`);
             }
             s.push(`withCredentials: true // enable CORS
       }`);
             const httpParams = ["$url"];
             /* undefined as second paramater if no body parameter found! */
             if (method.requireBody()) {
-                if (method.countParams(Parameter_1.ParameterType.BODY) == 0) {
+                if (method.countParams(Parameter_1.ParameterType.BODY, true) == 0) {
                     httpParams.push("undefined");
                 }
                 else {

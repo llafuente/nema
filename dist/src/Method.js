@@ -16,7 +16,7 @@ class Method {
         this.produces = [];
         this.resolve = null;
     }
-    static parse(api, verb, url, parameters, consumes, produces, method) {
+    static parseSwagger(api, verb, url, parameters, consumes, produces, method) {
         const m = new Method();
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         m.verb = verb.toLowerCase();
@@ -26,7 +26,7 @@ class Method {
         m.consumes = consumes;
         m.produces = produces;
         m.parameters = parameters.map((x) => {
-            return Parameter_1.Parameter.parse(x);
+            return Parameter_1.Parameter.parseSwagger(x);
         });
         // Keep compat with our legacy generator
         // this is out of the swagger standard, sry
@@ -40,7 +40,7 @@ class Method {
             method.responses = responses;
         }
         _.each(method.responses, (response, responseType) => {
-            m.responses.push(Response_1.Response.parse(responseType, response));
+            m.responses.push(Response_1.Response.parseSwagger(responseType, response));
         });
         // TODO check format!
         if (method["x-front-resolve"]) {
@@ -55,10 +55,10 @@ class Method {
         _.assign(m, override);
         return m;
     }
-    countParams(filter = null) {
+    countParams(filter = null, skipAutoInjected) {
         let count = 0;
         for (let p of this.parameters) {
-            if (filter === null || filter === p.in) {
+            if ((filter === null || filter === p.in) && (skipAutoInjected || p.autoInjected === true)) {
                 ++count;
             }
         }

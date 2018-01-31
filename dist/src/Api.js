@@ -12,6 +12,9 @@ function ksort(obj) {
     });
     return ret;
 }
+/**
+ * Api definicion class
+ */
 class Api {
     constructor() {
         this.methods = {};
@@ -45,12 +48,12 @@ class Api {
             ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
                 const method = pathItem[verb];
                 if (method) {
-                    api.addMethod(Method_1.Method.parse(api, verb, url, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method.consumes || swagger.consumes || [], method.produces || swagger.produces || [], method), false);
+                    api.addMethod(Method_1.Method.parseSwagger(api, verb, url, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method.consumes || swagger.consumes || [], method.produces || swagger.produces || [], method), false);
                 }
             });
         });
         _.each(swagger.definitions, (model, name) => {
-            api.addModel(Model_1.Model.parse(api, name, model), false);
+            api.addModel(Model_1.Model.parseSwagger(api, name, model), false);
         });
         return api;
     }

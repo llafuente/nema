@@ -4,22 +4,50 @@ const _ = require("lodash");
 exports.Models = {};
 class Type {
     constructor() {
+        this.type = null;
         this.description = undefined;
+        /**
+         * Object properties
+         */
         this.properties = undefined;
+        /**
+         * Array sub type
+         */
         this.items = undefined;
+        /**
+         * reference to another model
+         */
         this.referenceModel = undefined;
     }
-    static parse(obj, modelName = null) {
+    /**
+     * parse type from swagger
+     */
+    static parseSwagger(obj, modelName = null) {
         const t = new Type();
-        t.type = obj.type;
+        // sanity checks
+        if (t.type == "object" && !obj.properties) {
+            console.log(modelName, obj);
+            throw new Error("missing type.properties");
+        }
+        if (t.type == "array" && !obj.items) {
+            console.log(modelName, obj);
+            throw new Error("missing type.items");
+        }
+        if (t.type && obj.$ref) {
+            console.log(modelName, obj);
+            throw new Error("type has type and reference");
+        }
+        if (obj.type) {
+            t.type = obj.type.toLocaleLowerCase();
+        }
         t.description = obj.description;
-        if (obj.properties != null) {
+        if (t.type == "object") {
             t.properties = _.mapValues(obj.properties, (x) => {
-                return Type.parse(x);
+                return Type.parseSwagger(x);
             });
         }
-        if (obj.items != null) {
-            t.items = Type.parse(obj.items);
+        if (t.type == "array") {
+            t.items = Type.parseSwagger(obj.items);
         }
         if (obj.$ref) {
             t.referenceModel = obj.$ref.substring("#/definitions/".length);
@@ -32,12 +60,18 @@ class Type {
         }
         return t;
     }
+    /**
+     * Returns if the type is a primitive
+     */
     isPrimitive() {
         if (this.type == "array") {
             return this.items.isPrimitive();
         }
         return ["integer", "string", "boolean", "number"].indexOf(this.type) !== -1;
     }
+    /**
+     * get base type, only available for array or references.
+     */
     toBaseType() {
         switch (this.type) {
             case "array":
@@ -48,6 +82,9 @@ class Type {
         }
         throw new Error("???");
     }
+    /**
+     * Generate typescript code for this type
+     */
     toTypeScriptType() {
         // defer to subschema
         if (this.referenceModel) {

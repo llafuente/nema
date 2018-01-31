@@ -19,7 +19,7 @@ const SwaggerToParameterType = {
     "body": ParameterType.BODY,
 };
 class Parameter {
-    static parse(obj) {
+    static parseSwagger(obj) {
         const p = new Parameter();
         p.name = obj.name;
         p.headerName = obj["x-alias"];
@@ -27,7 +27,7 @@ class Parameter {
         p.description = obj.description;
         p.in = SwaggerToParameterType[obj.in];
         p.required = !!obj.required;
-        p.type = Type_1.Type.parse(obj.schema || obj);
+        p.type = Type_1.Type.parseSwagger(obj.schema || obj);
         return p;
     }
 }

@@ -23,7 +23,7 @@ export class Method {
     errorURL: {[name: string]: string},
   } = null;
 
-  static parse(
+  static parseSwagger(
     api: Api,
     verb: string,
     url:string,
@@ -44,7 +44,7 @@ export class Method {
     m.produces = produces;
 
     m.parameters = parameters.map((x) => {
-      return Parameter.parse(x);
+      return Parameter.parseSwagger(x);
     });
 
     // Keep compat with our legacy generator
@@ -60,7 +60,7 @@ export class Method {
     }
 
     _.each(method.responses, (response, responseType) => {
-      m.responses.push(Response.parse(responseType, response))
+      m.responses.push(Response.parseSwagger(responseType, response))
     });
 
     // TODO check format!
@@ -81,10 +81,10 @@ export class Method {
     return m;
   }
 
-  countParams(filter: ParameterType = null): number {
+  countParams(filter: ParameterType = null, skipAutoInjected: boolean): number {
     let count = 0;
     for (let p of this.parameters) {
-      if (filter === null || filter === p.in) {
+      if ((filter === null || filter === p.in) && (skipAutoInjected || p.autoInjected === true)) {
         ++count;
       }
     }

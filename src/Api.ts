@@ -15,7 +15,13 @@ function ksort(obj) {
   return ret;
 }
 
+/**
+ * Api definicion class
+ */
 export class Api {
+  /**
+   * source file filename
+   */
   filename: string;
 
   angularModuleName: string;
@@ -73,7 +79,7 @@ export class Api {
         const method = pathItem[verb];
 
         if (method) {
-          api.addMethod(Method.parse(
+          api.addMethod(Method.parseSwagger(
             api,
             verb,
             url,
@@ -88,7 +94,7 @@ export class Api {
     });
 
     _.each(swagger.definitions, (model, name) => {
-      api.addModel(Model.parse(api, name, model), false);
+      api.addModel(Model.parseSwagger(api, name, model), false);
     });
 
     return api;

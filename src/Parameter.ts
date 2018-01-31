@@ -18,15 +18,24 @@ const SwaggerToParameterType = {
 };
 
 export class Parameter {
-  name: string; // variable/real name (no dashes)
-  headerName: string; // real header name (may contain dashes)
+  /**
+   * variable/real name (no dashes)
+   */
+  name: string;
+  /**
+   * real header name (may contain dashes)
+   */
+  headerName: string;
   description: string;
   in: ParameterType;
   required: boolean;
-  autoInjected: boolean; // parameter injected by a proxy
+  /*
+   * Is parameter injected by a proxy
+   */
+  autoInjected: boolean;
   type: Type;
 
-  static parse(obj: any): Parameter {
+  static parseSwagger(obj: any): Parameter {
     const p = new Parameter();
     p.name = obj.name;
     p.headerName = obj["x-alias"];
@@ -34,7 +43,7 @@ export class Parameter {
     p.description = obj.description;
     p.in = SwaggerToParameterType[obj.in]
     p.required = !!obj.required;
-    p.type = Type.parse(obj.schema || obj);
+    p.type = Type.parseSwagger(obj.schema || obj);
 
     return p;
   }

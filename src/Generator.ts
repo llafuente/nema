@@ -19,6 +19,8 @@ function mkdirSafe(folder) {
 export class Generator {
 
   static angular5(api: Api, dstPath: string) {
+    api.sort();
+
     mkdirSafe(path.join(dstPath));
     mkdirSafe(path.join(dstPath, "src"));
     mkdirSafe(path.join(dstPath, "src/models"));
@@ -42,10 +44,7 @@ export class Generator {
     Generator.packageJSONFile(api, path.join(dstPath, `package.json`));
 
     Generator.pretty(dstPath);
-    //Generator.lint(`./test/generated/src/models/*.ts`);
-    //Generator.lint(`./test/generated/src/*.ts`);
-    //Generator.lint(`./test/generated/*.ts`);
-    Generator.lint(dstPath);
+    //Generator.lint(dstPath);
   }
 
   static pretty(dstPath: string) {
@@ -67,7 +66,7 @@ export class Generator {
   }
 
   static templates(dstPath: string) {
-    ["Cast.ts", "CommonException.ts", "IsError.pipe.ts", "Random.ts", "ApiBase.ts"].forEach((filename) => {
+    ["Cast.ts", "CommonException.ts", "IsError.pipe.ts", "Random.ts"].forEach((filename) => {
       //const c = fs.readFileSync(path.join(process.cwd(), "templates", filename), { encoding: "utf8"});
       //fs.writeFileSync(path.join(dstPath, filename), c, { encoding: "utf8" });
       fs.copyFileSync(path.join(process.cwd(), "templates", filename), path.join(dstPath, filename));
@@ -167,7 +166,11 @@ export class Generator {
 
     function addParams(t: Type, name: string)  {
       if (t.type == "array") {
-        parseNewParams.push(`(json.${name} || []).map((x) => ${t.items.toTypeScriptType()}.parse(x)),`);
+        if (t.items.isPrimitive()) {
+          parseNewParams.push(`(json.${name} || []).map((x) => Cast.${t.items.type}(x)),`);
+        } else {
+          parseNewParams.push(`(json.${name} || []).map((x) => ${t.items.toTypeScriptType()}.parse(x)),`);
+        }
         emptyInstanceNewParams.push(`[],`);
         randomInstanceNewParams.push(`[],`);
       } else if (t.isPrimitive()) {
@@ -186,21 +189,37 @@ export class Generator {
     }
     model.eachProperty(addParams);
 
-    s.push(`static parse(json: any): ${model.name} {`);
-    s.push(`  return new ${model.name}(`);
-    s.push(`  ${parseNewParams.join("\n")}`);
-    s.push(`  );`);
-    s.push(`}`);
-    s.push(`static randomInstance(): ${model.name} {`);
-    s.push(`  return new ${model.name}(`);
-    s.push(`  ${randomInstanceNewParams.join("\n")}`);
-    s.push(`  );`);
-    s.push(`}`);
-    s.push(`static emptyInstance(): ${model.name} {`);
-    s.push(`  return new ${model.name}(`);
-    s.push(`  ${emptyInstanceNewParams.join("\n")}`);
-    s.push(`  );`);
-    s.push(`}`);
+    s.push(`
+    static parse(json: any): ${model.name} {
+      return new ${model.name}(
+      ${parseNewParams.join("\n")}
+      );
+    }
+
+    static randomInstance(): ${model.name} {
+      return new ${model.name}(
+      ${randomInstanceNewParams.join("\n")}
+      );
+    }
+
+    static emptyInstance(): ${model.name} {
+      return new ${model.name}(
+      ${emptyInstanceNewParams.join("\n")}
+      );
+    }`);
+
+    // getters and setters
+    model.eachProperty((t: Type, name: string) => {
+      const ucase = name[0].toLocaleUpperCase() + name.substr(1);
+      s.push(`
+        get${ucase}(): ${t.toTypeScriptType()} {
+          return this.${name};
+        }
+        set${ucase}($value: ${t.toTypeScriptType()}) {
+          this.${name} = $value;
+        }
+      `)
+    });
 
     s.push(`}`);
 
@@ -209,16 +228,24 @@ export class Generator {
 
   static module(api: Api): string {
     const s = [
-`import { NgModule, InjectionToken } from "@angular/core";`,
-`import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";`,
-`export { CommonException } from "./src/CommonException";`,
-`import { IsErrorPipe } from "./src/IsError.pipe";`,
-`import { ${api.apiName} } from "./src/${api.apiName}";`,
+`import { NgModule, InjectionToken } from "@angular/core";
+import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";
+export { CommonException } from "./src/CommonException";
+import { IsErrorPipe } from "./src/IsError.pipe";
+import { ${api.apiName} } from "./src/${api.apiName}";
+export { ${api.apiName} } from "./src/${api.apiName}";
+`,
     ];
 
     api.eachModel((model, modelName) => {
       s.push(`export { ${modelName} } from "./src/models/${modelName}";`);
-    })
+    });
+    const resolves = [];
+    api.eachResolve((method, operationId) => {
+      s.push(`import { ${method.resolve.name} } from "./src/resolve/${method.resolve.name}";`);
+      s.push(`export { ${method.resolve.name} } from "./src/resolve/${method.resolve.name}";`);
+      resolves.push(method.resolve.name);
+    });
 
     s.push(`
 @NgModule({
@@ -229,7 +256,7 @@ export class Generator {
     IsErrorPipe,
   ],
   providers: [
-    ${api.apiName}
+    ${api.apiName}, ${resolves.join(",")}
   ],
   exports: [
     IsErrorPipe,
@@ -250,7 +277,7 @@ export class ${api.angularModuleName} {}
     // api call parameters
     const apiParameters = [];
     function addParam(param: Parameter) {
-      apiParameters.push(`this.getParameter(route, ${JSON.stringify(method.resolve.parameters[param.name])}),`);
+      apiParameters.push(`this.getParameter(route, ${JSON.stringify(method.resolve.parameters[param.name])})`);
     }
     method.eachPathParam(addParam);
     method.eachHeaderParam(addParam, true);
@@ -310,7 +337,6 @@ export class ${method.resolve.name} implements Resolve<${method.getResponse(200)
 `import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";
-import { ApiBase } from "./ApiBase";
 import { CommonException } from "./CommonException";`,
     ];
 
@@ -322,14 +348,39 @@ import { CommonException } from "./CommonException";`,
     // Api class
     s.push(
 `@Injectable()
-export class ${api.apiName} extends ApiBase {
+export class ${api.apiName} {
   scheme: string = ${JSON.stringify(api.schemes[0])};
   debug: boolean = false;
   basePath: string = ${JSON.stringify(api.basePath)};
   host: string = ${JSON.stringify(api.host)};
-  getValidSchemes(): string[] {
-    return ${JSON.stringify(api.schemes)};
+  onError: Subject<any> = new Subject<any>();
+
+  constructor(
+    public http: HttpClient,
+  ) {}
+
+  validSchemes: string[] = ${JSON.stringify(api.schemes)};
+
+
+  setDebug(d: boolean) {
+    this.debug = d;
   }
+
+  setScheme(scheme: string) {
+    if (this.validSchemes.indexOf(scheme) === -1) {
+      throw new Error(\`Invalid scheme[\${scheme}] must be one of: \${this.validSchemes.join(", ")}\`);
+    }
+    this.scheme = scheme;
+  }
+
+  setHost(host) {
+    this.host = host;
+  }
+
+  getFullURL(uri: string) : string {
+    return \`\${this.scheme}://\` + \`\${this.host}/\${this.basePath}\${uri}\`.replace(${"/\\/\\//g"}, "/");
+  }
+
 `);
 
     api.eachMethod((method) => {
@@ -378,6 +429,9 @@ export class ${api.apiName} extends ApiBase {
       // workaround
       // https://github.com/angular/angular/issues/11058
 
+      const responseType = method.getResponse(200).type;
+      const responseTypeTS = responseType.toTypeScriptType();
+
       s.push(`
       ${method.operationId}URL(
         ${pathParams.join("\n")}
@@ -389,7 +443,7 @@ export class ${api.apiName} extends ApiBase {
         const $url = this.getFullURL(this.${method.operationId}URI)
         ${pathParamsReplace.join("\n")};
 
-        return $url + "?" + $params.toString().replace(/\+/g, '%2B');
+        return $url + "?" + $params.toString().replace(/\\+/g, '%2B');
       }
 
       ${method.operationId}(
@@ -397,7 +451,7 @@ export class ${api.apiName} extends ApiBase {
         ${queryParams.join("\n")}
         ${headerParams.join("\n")}
         ${bodyParams.join("\n")}
-      ): Subject<${method.getResponse(200).type.toTypeScriptType()}|CommonException> {`);
+      ): Subject<${responseTypeTS}> {`);
 
       const hasHeaders = method.consumes.length || method.countParams(ParameterType.HEADER);
 
@@ -465,19 +519,18 @@ export class ${api.apiName} extends ApiBase {
         s.push(`const observable = this.http.${method.verb}(${httpParams.join(",")});`);
       }
 
-
       s.push(`
-        const ret = new Subject<${method.getResponse(200).type.toTypeScriptType()}|CommonException>();
-        observable.subscribe((response) => {
+        const ret = new Subject<${responseTypeTS}>();
+        observable.subscribe((response: ${responseTypeTS == "void" ? "null" : responseTypeTS}) => {
           console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response);
 
-          ret.next(response);
+          ret.next(${responseTypeTS == "void" ? "null" : "response"});
           ret.complete();
         }, (response) => {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);
           const error = CommonException.parse(response);
 
-          ret.next(error);
+          ret.next(error as any); // force cast
           ret.complete();
 
           // notify global error handler

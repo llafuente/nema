@@ -52,7 +52,6 @@ class Method {
         }
         // very unsafe :)
         const override = method["x-override-front"] || method["x-nema-override"] || {};
-        console.log("override", override);
         _.assign(m, override);
         return m;
     }

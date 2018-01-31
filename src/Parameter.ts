@@ -30,7 +30,7 @@ export class Parameter {
     const p = new Parameter();
     p.name = obj.name;
     p.headerName = obj["x-alias"];
-    p.autoInjected = !!obj["x-auto-injected"];
+    p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
     p.description = obj.description;
     p.in = SwaggerToParameterType[obj.in]
     p.required = !!obj.required;

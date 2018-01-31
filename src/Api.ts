@@ -6,6 +6,15 @@ import { Method } from "./Method";
 import { Type } from "./Type";
 import { Model } from "./Model";
 
+function ksort(obj) {
+  const ret = {};
+  Object.keys(obj).sort().forEach((k) => {
+    ret[k] = obj[k];
+  });
+
+  return ret;
+}
+
 export class Api {
   filename: string;
 
@@ -36,6 +45,9 @@ export class Api {
     api.filename = filename;
     // TODO is generating front ? -> override basePath
     // keep compat with old generator, sry
+    if (swagger["x-generator-properties"]) {
+      console.warn(`deprecated x-generator-properties at ${filename}`)
+    }
     swagger["x-generator-properties"] = swagger["x-generator-properties"] || {};
     swagger["x-nema"] = swagger["x-nema"] || {};
     swagger["info"] = swagger["info"] || {};
@@ -43,9 +55,9 @@ export class Api {
 
     api.host = swagger["host"];
     api.basePath = swagger["x-generator-properties"]["front-basePath"] || swagger["x-nema"]["front-basePath"] || swagger.basePath;
-    api.angularModuleName = swagger["x-generator-properties"]["angularModuleName"] || swagger["x-nema"]["angularModuleName"] || "ApiModule";
-    api.nodeModuleName = swagger["x-generator-properties"]["nodeModuleName"] || swagger["x-nema"]["nodeModuleName"] || "api-module";
-    api.apiName = swagger["x-generator-properties"]["apiName"] || swagger["x-nema"]["apiName"] || "Api";
+    api.angularModuleName = swagger["x-generator-properties"]["module-name"] || swagger["x-nema"]["angularModuleName"] || "ApiModule";
+    api.nodeModuleName = swagger["x-generator-properties"]["module-name"] || swagger["x-nema"]["nodeModuleName"] || "api-module";
+    api.apiName = swagger["x-generator-properties"]["api-name"] || swagger["x-nema"]["apiName"] || "Api";
     api.schemes = swagger["schemes"];
 
     api.version = swagger.info.version || "";
@@ -137,5 +149,10 @@ export class Api {
     api.eachModel((m) => {
       this.addModel(m, overrideModels);
     });
+  }
+
+  sort() {
+    this.methods = ksort(this.methods);
+    this.models = ksort(this.models);
   }
 }

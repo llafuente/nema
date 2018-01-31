@@ -5,6 +5,13 @@ const _ = require("lodash");
 const path = require("path");
 const Method_1 = require("./Method");
 const Model_1 = require("./Model");
+function ksort(obj) {
+    const ret = {};
+    Object.keys(obj).sort().forEach((k) => {
+        ret[k] = obj[k];
+    });
+    return ret;
+}
 class Api {
     constructor() {
         this.methods = {};
@@ -15,15 +22,18 @@ class Api {
         api.filename = filename;
         // TODO is generating front ? -> override basePath
         // keep compat with old generator, sry
+        if (swagger["x-generator-properties"]) {
+            console.warn(`deprecated x-generator-properties at ${filename}`);
+        }
         swagger["x-generator-properties"] = swagger["x-generator-properties"] || {};
         swagger["x-nema"] = swagger["x-nema"] || {};
         swagger["info"] = swagger["info"] || {};
         swagger["info"]["contact"] = swagger["info"]["contact"] || {};
         api.host = swagger["host"];
         api.basePath = swagger["x-generator-properties"]["front-basePath"] || swagger["x-nema"]["front-basePath"] || swagger.basePath;
-        api.angularModuleName = swagger["x-generator-properties"]["angularModuleName"] || swagger["x-nema"]["angularModuleName"] || "ApiModule";
-        api.nodeModuleName = swagger["x-generator-properties"]["nodeModuleName"] || swagger["x-nema"]["nodeModuleName"] || "api-module";
-        api.apiName = swagger["x-generator-properties"]["apiName"] || swagger["x-nema"]["apiName"] || "Api";
+        api.angularModuleName = swagger["x-generator-properties"]["module-name"] || swagger["x-nema"]["angularModuleName"] || "ApiModule";
+        api.nodeModuleName = swagger["x-generator-properties"]["module-name"] || swagger["x-nema"]["nodeModuleName"] || "api-module";
+        api.apiName = swagger["x-generator-properties"]["api-name"] || swagger["x-nema"]["apiName"] || "Api";
         api.schemes = swagger["schemes"];
         api.version = swagger.info.version || "";
         api.description = swagger.info.description || "";
@@ -88,6 +98,10 @@ class Api {
         api.eachModel((m) => {
             this.addModel(m, overrideModels);
         });
+    }
+    sort() {
+        this.methods = ksort(this.methods);
+        this.models = ksort(this.models);
     }
 }
 exports.Api = Api;

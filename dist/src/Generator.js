@@ -294,7 +294,7 @@ export class ${method.resolve.name} implements Resolve<${method.getResponse(200)
     }
     static api(api) {
         const s = [
-            `import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
+            `import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";
 import { CommonException } from "./CommonException";
@@ -415,14 +415,17 @@ export class ${api.apiName} {
             }
             s.push(`const $url: string = this.${method.operationId}URL(${pathParamsNames.concat(queryParamsNames).join(",")});`);
             /*
-      
-             Nasty thing below...
-             this.http.get() need to be used for "text" response
-             this.http.get<type>() need to be used for "json" response
-      
-             also the responseType literal need to be casted to itself: "text" as "text"
-      
-            */
+             * Nasty thing below...
+             * this.http.get() need to be used for "text" response
+             * this.http.get<type>() need to be used for "json" response
+             *
+             * also the responseType literal need to be casted to itself: "text" as "text"
+             *
+             * In case of errors
+             * subject will be null ([], {}, null), otherwise loadings never stop
+             * We cannot return CommonException class because if the subject is used
+             * in an ngFor will throw errors
+             */
             s.push(`const $options = {`);
             if (hasHeaders) {
                 s.push(`headers: $headers,`);
@@ -464,11 +467,11 @@ export class ${api.apiName} {
                 "null" :
                 responseType.getParser("response")});
           ret.complete();
-        }, (response) => {
+        }, (response: HttpErrorResponse) => {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);
-          const error = CommonException.parse(response);
+          const error = CommonException.parse(response.error);
 
-          ret.next(error as any); // force cast
+          ret.next(${responseType.getEmptyValue()}); // force cast
           ret.complete();
 
           // notify global error handler

@@ -90,7 +90,7 @@ export class Type {
   }
 
   /**
-   * Get generated code to parse type
+   * Get generated code: parse this type given the source variable
    */
   getParser(src) {
     if (this.type == "array") {
@@ -105,5 +105,17 @@ export class Type {
 
     // model
     return `${this.toTypeScriptType()}.parse(${src})`;
+  }
+  /*
+   * Get generated code: empty value
+   */
+  getEmptyValue(): string {
+    if (this.type == "array") {
+      return "[]";
+    }
+    if (this.isPrimitive() || !this.type) {
+      return "null";
+    }
+    return "{}";
   }
 }

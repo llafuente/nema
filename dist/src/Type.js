@@ -71,6 +71,9 @@ class Type {
         }
         return this.type;
     }
+    /**
+     * Get generated code: parse this type given the source variable
+     */
     getParser(src) {
         if (this.type == "array") {
             if (this.items.isPrimitive()) {
@@ -85,6 +88,18 @@ class Type {
         }
         // model
         return `${this.toTypeScriptType()}.parse(${src})`;
+    }
+    /*
+     * Get generated code: empty value
+     */
+    getEmptyValue() {
+        if (this.type == "array") {
+            return "[]";
+        }
+        if (this.isPrimitive() || !this.type) {
+            return "null";
+        }
+        return "{}";
     }
 }
 exports.Type = Type;

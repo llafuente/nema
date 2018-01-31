@@ -71,6 +71,21 @@ class Type {
         }
         return this.type;
     }
+    getParser(src) {
+        if (this.type == "array") {
+            if (this.items.isPrimitive()) {
+                return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
+            }
+            else {
+                return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
+            }
+        }
+        else if (this.isPrimitive()) {
+            return `Cast.${this.type}(${src})`;
+        }
+        // model
+        return `${this.toTypeScriptType()}.parse(${src})`;
+    }
 }
 exports.Type = Type;
 //# sourceMappingURL=Type.js.map

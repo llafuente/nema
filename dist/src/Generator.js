@@ -160,6 +160,10 @@ class Generator {
         model.eachProperty(addParams);
         s.push(`
     static parse(json: any): ${model.name} {
+      if (json == null) {
+        return ${model.name}.emptyInstance();
+      }
+
       return new ${model.name}(
       ${parseNewParams.join("\n")}
       );
@@ -293,7 +297,8 @@ export class ${method.resolve.name} implements Resolve<${method.getResponse(200)
             `import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";
-import { CommonException } from "./CommonException";`,
+import { CommonException } from "./CommonException";
+import { Cast } from "./Cast";`,
         ];
         // import all models
         api.eachModel((model, modelName) => {
@@ -445,7 +450,7 @@ export class ${api.apiName} {
             }
             httpParams.push("$options");
             if (method.producesJSON()) {
-                s.push(`const observable = this.http.${method.verb}<${method.getResponse(200).type.toTypeScriptType()}>(${httpParams.join(",")});`);
+                s.push(`const observable = this.http.${method.verb}<${responseType.toTypeScriptType()}>(${httpParams.join(",")});`);
             }
             else {
                 s.push(`const observable = this.http.${method.verb}(${httpParams.join(",")});`);
@@ -455,7 +460,9 @@ export class ${api.apiName} {
         observable.subscribe((response: ${responseTypeTS == "void" ? "null" : responseTypeTS}) => {
           console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response);
 
-          ret.next(${responseTypeTS == "void" ? "null" : "response"});
+          ret.next(${responseTypeTS == "void" ?
+                "null" :
+                responseType.getParser("response")});
           ret.complete();
         }, (response) => {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);

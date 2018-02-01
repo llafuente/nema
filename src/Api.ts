@@ -90,8 +90,11 @@ export class Api {
     swagger["info"]["contact"] = swagger["info"]["contact"] || {};
 
     api.host = swagger["host"];
-    api.basePath = swagger.basePath;
+    api.basePath = swagger.basePath || "/";
     api.schemes = swagger["schemes"];
+    if (!api.schemes) {
+      throw new Error(`schemes is required at ${filename}`);
+    }
 
     api.version = swagger.info.version || "";
     api.description = swagger.info.description || "";

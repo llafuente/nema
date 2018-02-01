@@ -21,7 +21,9 @@
   },
   "files": [
     "./src/nema.ts",
-    "./test/models.ts"
+    "./test/api.ts",
+    "./test/angular5client-resolve.ts",
+    "./test/no-cycles.ts"
   ],
   "exclude": [
     "node_modules"

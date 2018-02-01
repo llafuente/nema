@@ -1,35 +1,11 @@
 import { Api } from "../src/Api";
-import { Generator } from "../src/Generator";
+import { Angular5Client } from "../src/generators/Angular5Client";
 import test from "ava";
 
-function isCyclic (obj) {
-  var seenObjects = [];
-
-  function detect (obj) {
-    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-      if (seenObjects.indexOf(obj) !== -1) {
-        return true;
-      }
-      seenObjects.push(obj);
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key) && detect(obj[key])) {
-          console.log(obj, 'cycle at ' + key);
-          process.exit();
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  return detect(obj);
-}
 
 let swagger: Api;
 test.cb.serial("parse swagger", (t) => {
   swagger = Api.parseSwaggerFile("./test/api-test-001.yaml");
-
-  isCyclic(swagger);
 
   //console.log(JSON.stringify(swagger, null, 2));
 
@@ -114,7 +90,7 @@ test.cb.serial("parse swagger", (t) => {
     ["type", "quantity", "monitoringType"], "type extends parsed ok"
   );
 
-  Generator.angular5(swagger, `./test/generated-001/`);
+  Angular5Client.generate(swagger, `./test/api-test-001/`, false);
 
   t.end()
 });

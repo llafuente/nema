@@ -6,6 +6,9 @@ const _ = require("lodash");
 class Method {
     constructor() {
         this.api = null;
+        /*
+         * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
+         */
         this.url = null;
         this.operationId = null;
         this.verb = null;
@@ -58,7 +61,7 @@ class Method {
     countParams(filter = null, skipAutoInjected) {
         let count = 0;
         for (let p of this.parameters) {
-            if ((filter === null || filter === p.in) && (skipAutoInjected || p.autoInjected === true)) {
+            if ((filter === null || filter === p.in) && !(skipAutoInjected === true && p.autoInjected === true)) {
                 ++count;
             }
         }

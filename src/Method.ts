@@ -6,7 +6,9 @@ import * as _ from "lodash";
 
 export class Method {
   api: Api = null;
-
+  /*
+   * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
+   */
   url: string = null;
   operationId: string = null;
   verb: string = null;
@@ -84,7 +86,7 @@ export class Method {
   countParams(filter: ParameterType = null, skipAutoInjected: boolean): number {
     let count = 0;
     for (let p of this.parameters) {
-      if ((filter === null || filter === p.in) && (skipAutoInjected || p.autoInjected === true)) {
+      if ((filter === null || filter === p.in) && !(skipAutoInjected === true && p.autoInjected === true)) {
         ++count;
       }
     }

@@ -1,16 +1,14 @@
-# nema: Node Express Mongo Angular
+# nema: Node Express Mongo Angular (Generator)
 
-`nema` is an api server/client from a swagger definition, RAML is planned using,
-a converter
+`nema` is an generator that target:
 
-It also has a extended definition to create CRUD controllers.
+* server: Node Express Mongo stack [PLANNED]
+* client: Node, using request [PLANNED]
+* client: Angular 5 HttpClient [DONE]
 
-## Generators
+It generates from Swagger 2.0 YAMLS
 
-* Angular Client [WIP]
-* Node Express [TODO]
-* Node Mongo CRUD [TODO]
-* Angular CRUD [TODO]
+Nema includes some extensions explained below.
 
 ## Help
 
@@ -44,8 +42,13 @@ nema --swagger=./path-yo-file.yml --angular5-api
 
 You can aggregate many Swaggers into one unique generation.
 
-`nema` will take config from the first file, and add methods and models
-from the rest.
+`nema` will take module/generation configuration from the first file only and
+basePath, parameters etc. from each file.
+
+In the end you will have one unique module with all methods a models.
+
+Be aware of collisions :)
+
 
 ```
 nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
@@ -76,8 +79,16 @@ Swagger extension:
 
 ```
 paths:
-  /xxx
+  /strategy/{strategyId}
+    parameters:
+      - name: strategyId
+        in: path
+        description: Strategy identifier
+        required: true
+        type: string
     get:
+      name: getStrategy
+      description: Get a single strategy by Id
       x-front-resolve:
         name: StrategyResolve
         errorURL: /error
@@ -85,3 +96,8 @@ paths:
           strategyId: strategyId
 
 ```
+
+### TODO
+
+* client: Angular 5 HttpClient [DONE]
+  * handle required

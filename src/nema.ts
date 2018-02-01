@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Api } from "./Api";
-import { Generator } from "./Generator";
+import { Angular5Client } from "./generators/Angular5Client";
 import * as path from "path";
 import * as program from "commander";
 
@@ -40,6 +40,7 @@ program
   .option("--angular5-api", "TARGET: Generate an Angular 5 Module Api client")
   .option("--override-models", "Override all models while agreggating")
   .option("--override-methods", "Override all methods while agreggating")
+  .option("--lint", "Lint output, this may take a while")
   .option("--swagger [path]", "Path to swagger yml, repeat to aggregate", function (val, memo) {
     memo.push(val);
     return memo;
@@ -69,6 +70,7 @@ if (program.angular5Api) {
       dstPath = path.dirname(swagger);
     }
   });
-
-  Generator.angular5(api, dstPath);
+  //console.log(api);
+  //process.exit(0);
+  Angular5Client.generate(api, dstPath, !!program.lint);
 }

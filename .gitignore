@@ -3,6 +3,8 @@ node_modules/
 package-lock.json
 
 # typescript generated files need to be commited
-#/dist
-/test/generated-001/
+/dist/*.js.map
+/dist/*/*.js.map
+/test/api-test-001/
+/test/angular5client-resolve/
 /tmp/

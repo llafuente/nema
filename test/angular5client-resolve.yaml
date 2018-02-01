@@ -1,0 +1,126 @@
+swagger: '2.0'
+info:
+  title: RestManagementAPI
+  description: These APIs allow to handle Algo Framework
+  version: 1.2.0
+  contact:
+    name: XXX
+    email: YYY@ZZZ.com
+    url: https://abc.com
+host: localhost:8080
+x-nema:
+  apiName: RestApi
+  angularClientNodeModuleName: strategies-angular5-client-api
+  angularClientModuleName: StrategiesApiModule
+  frontBasePath: /long-base-path-behind-reverse-proxy/api/v1
+schemes:
+ - http
+ - https
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+#############################################################################
+#                                   Paths                                   #
+#############################################################################
+paths:
+  /{strategyId}:
+    parameters:
+      - name: strategyId
+        in: path
+        description: The identifier of the strategy
+        required: true
+        type: string
+      # this parameter is autoinjected, so should not be in the resolve
+      - name: ivUser
+        x-alias: iv-user
+        in: header
+        description: user code.
+        x-nema-auto-injected: true
+        type: string
+    get:
+      operationId: getStrategies
+      description: Get all strategies
+      parameters:
+      x-nema-resolve:
+        name: StrategiesResolve
+        errorURL: /error
+        parameters:
+          strategyId: strategyId
+
+      responses:
+        - 200:
+            description: The strategy dto
+            schema:
+              $ref: '#/definitions/StrategyDto'
+
+################################################################################
+#                                 Definitions                                  #
+################################################################################
+definitions:
+  StrategyDto:
+    type: object
+    properties:
+      strategyName:
+        type: string
+        description: A String with the name of the strategy
+      strategyId:
+        type: string
+        description: A String with the identifier of the strategy
+      dateTime:
+        type: integer
+        format: int64
+        description: A Long with the current time milliseconds
+      createdTime:
+        type: integer
+        format: int64
+        description: A Long with the time milliseconds when the strategy was created
+      owner:
+        type: string
+        description: A String with the owner of the strategy
+      parameters:
+        type: array
+        items:
+          $ref: '#/definitions/StringStringMap'
+        description: Collection with the strategy parameters
+      state:
+        type: string
+        description: A String with the state of the strategy
+      flowInstrument:
+        type: string
+        description: A String with the flow instrument, ('-' for manual strategies)
+      hedgeInstrument:
+        type: string
+        description: A String with the hedge instrument
+      flowVolume:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the flow volume ('-' for manual strategies)
+      hedgeSide:
+        type: string
+        description: A String with the hedge side
+      volume:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the executed volume
+      remainQty:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the remain quantity
+      averagePrice:
+        type: number
+        x-as-bigdecimal: true
+        description: A BigDecimal with the average price
+      groupId:
+        type: string
+        description: A String with the idenfitier of the authorized group
+  StringStringMap:
+    type: object
+    properties:
+      key:
+        type: string
+        description: A String with the key of the map
+      value:
+        type: string
+        description: A String with the value of the map

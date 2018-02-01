@@ -1,32 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../src/Api");
-const Generator_1 = require("../src/Generator");
+const Angular5Client_1 = require("../src/generators/Angular5Client");
 const ava_1 = require("ava");
-function isCyclic(obj) {
-    var seenObjects = [];
-    function detect(obj) {
-        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
-            if (seenObjects.indexOf(obj) !== -1) {
-                return true;
-            }
-            seenObjects.push(obj);
-            for (var key in obj) {
-                if (obj.hasOwnProperty(key) && detect(obj[key])) {
-                    console.log(obj, 'cycle at ' + key);
-                    process.exit();
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    return detect(obj);
-}
 let swagger;
 ava_1.default.cb.serial("parse swagger", (t) => {
     swagger = Api_1.Api.parseSwaggerFile("./test/api-test-001.yaml");
-    isCyclic(swagger);
     //console.log(JSON.stringify(swagger, null, 2));
     t.deepEqual(Object.keys(swagger.methods), [
         'createStrategyRest',
@@ -91,7 +70,7 @@ ava_1.default.cb.serial("parse swagger", (t) => {
     t.deepEqual(swagger.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["InitiParametersDto", "string"], "typescript type ok");
     t.deepEqual(swagger.models.OrderMonitoring.extends, "MonitoringDto", "type extends");
     t.deepEqual(Object.keys(swagger.models.OrderMonitoring.type.properties), ["type", "quantity", "monitoringType"], "type extends parsed ok");
-    Generator_1.Generator.angular5(swagger, `./test/generated-001/`);
+    Angular5Client_1.Angular5Client.generate(swagger, `./test/api-test-001/`, false);
     t.end();
 });
-//# sourceMappingURL=models.js.map
+//# sourceMappingURL=api.js.map

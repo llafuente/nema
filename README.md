@@ -1,4 +1,6 @@
 # nema: Node Express Mongo Angular (Generator)
+[![Build Status](https://travis-ci.org/llafuente/nema.svg?branch=master)](https://travis-ci.org/llafuente/nema)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/llafuente/nema/master/LICENSE)
 
 `nema` is an generator that target:
 
@@ -53,6 +55,12 @@ Be aware of collisions :)
 ```
 nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
 ```
+
+### Limitations / chages
+
+* Every object must be declared in definitions, even subtypes.
+* operationId is required
+* schemes is required
 
 ### Nema metadata
 

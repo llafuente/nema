@@ -247,7 +247,8 @@ export class ${api.angularClientModuleName} {}
         return s.join("\n");
     }
     static resolve(api, method) {
-        if (method.getResponse(200).type.type == "void") {
+        const responseType = method.getSuccessResponse();
+        if (responseType.type.type == "void") {
             throw new Error("cannot create a resolve of a void method");
         }
         // TODO validate parameters - map
@@ -266,10 +267,10 @@ import { Router } from "@angular/router";
 import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
 import { Observable } from "rxjs/Rx";
 import { ${api.apiName} } from "../${api.apiName}";
-import { ${method.getResponse(200).type.toTypeScriptType()} } from "../models/${method.getResponse(200).type.toTypeScriptType()}";
+import { ${responseType.type.toTypeScriptType()} } from "../models/${responseType.type.toTypeScriptType()}";
 
 @Injectable()
-export class ${method.resolve.name} implements Resolve<${method.getResponse(200).type.toTypeScriptType()}> {
+export class ${method.resolve.name} implements Resolve<${responseType.type.toTypeScriptType()}> {
 
   constructor(
     private api: ${api.apiName},
@@ -392,7 +393,7 @@ export class ${api.apiName} {
             // keep an eye in the thread to see if fix is merged, may collide with the
             // workaround
             // https://github.com/angular/angular/issues/11058
-            const responseType = method.getResponse(200).type;
+            const responseType = method.getSuccessResponse().type;
             const responseTypeTS = responseType.toTypeScriptType();
             s.push(`
       ${method.operationId}URL(
@@ -451,6 +452,9 @@ export class ${api.apiName} {
             }
             else if (method.producesText()) {
                 s.push(`responseType: "text" as "text",`);
+            }
+            else if (method.producesBlob()) {
+                s.push(`responseType: "blob" as "blob",`);
             }
             else if (responseTypeTS != "void") {
                 console.log(method, responseTypeTS);

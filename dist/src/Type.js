@@ -25,15 +25,19 @@ class Type {
     static parseSwagger(obj, modelName = null) {
         const t = new Type();
         // sanity checks
-        if (t.type == "object" && !obj.properties) {
+        if (!modelName && obj.type == "object" && !obj.properties) {
+            console.log(obj);
+            throw new Error("Object need to be in definitions at first level");
+        }
+        if (obj.type == "object" && !obj.properties) {
             console.log(modelName, obj);
             throw new Error("missing type.properties");
         }
-        if (t.type == "array" && !obj.items) {
+        if (obj.type == "array" && !obj.items) {
             console.log(modelName, obj);
             throw new Error("missing type.items");
         }
-        if (t.type && obj.$ref) {
+        if (obj.type && obj.$ref) {
             console.log(modelName, obj);
             throw new Error("type has type and reference");
         }
@@ -92,6 +96,8 @@ class Type {
             //return Models[this.referenceModel].toTypeScriptType();
         }
         switch (this.type) {
+            case "file":
+                return "Blob";
             case "string":
                 return "string";
             case "array":
@@ -112,6 +118,11 @@ class Type {
      * Get generated code: parse this type given the source variable
      */
     getParser(src) {
+        // file is really a Blob and don't need to be casted
+        if (this.type == "file") {
+            return src;
+        }
+        // loop through arrays casting it's values
         if (this.type == "array") {
             if (this.items.isPrimitive()) {
                 return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
@@ -121,9 +132,10 @@ class Type {
             }
         }
         else if (this.isPrimitive()) {
+            // primitive simple casting with null
             return `Cast.${this.type}(${src})`;
         }
-        // model
+        // use model.parse
         return `${this.toTypeScriptType()}.parse(${src})`;
     }
     /*

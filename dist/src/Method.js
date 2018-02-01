@@ -24,6 +24,10 @@ class Method {
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         m.verb = verb.toLowerCase();
         m.url = url;
+        if (!method.operationId) {
+            console.log(method);
+            throw new Error(`operationId is required at ${api.filename}`);
+        }
         m.operationId = method.operationId;
         m.description = method.description;
         m.consumes = consumes;
@@ -45,6 +49,18 @@ class Method {
         _.each(method.responses, (response, responseType) => {
             m.responses.push(Response_1.Response.parseSwagger(responseType, response));
         });
+        // check no multiple success responses allowed
+        let oks = 0;
+        m.responses.forEach((response) => {
+            if (response.httpCode >= 200 && response.httpCode < 300) {
+                ++oks;
+            }
+        });
+        if (oks > 1) {
+            console.log(method);
+            throw new Error(`invalid responses, multiple success responses found at ${api.filename}`);
+        }
+        //end-check
         // TODO check format!
         if (method["x-front-resolve"]) {
             console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
@@ -108,14 +124,30 @@ class Method {
     producesText() {
         return this.produces.indexOf("text/plain") !== -1 || this.produces.indexOf("text/html") !== -1;
     }
+    producesBlob() {
+        return this.produces.some((produce) => {
+            return produce.indexOf("image/") == 0;
+        });
+    }
     requireBody() {
         return ["post", "patch", "put"].indexOf(this.verb) !== -1;
+    }
+    getSuccessResponse() {
+        for (let response of this.responses) {
+            if (response.httpCode >= 200 && response.httpCode < 300) {
+                return response;
+            }
+        }
+        return this.getResponse(0);
     }
     getResponse(httpCode) {
         for (let response of this.responses) {
             if (response.httpCode == httpCode) {
                 return response;
             }
+        }
+        if (httpCode != 0) {
+            return this.getResponse(0);
         }
         return null;
     }

@@ -7,7 +7,7 @@ let api: Api;
 test.cb.serial("parse swagger file", (t) => {
   api = Api.parseSwaggerFile("./test/angular5client-resolve.yaml");
 
-  console.log(JSON.stringify(api.methods.getStrategies, null, 2));
+  //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
 
   api.sort();
 

@@ -54,6 +54,70 @@ Be aware of collisions :)
 nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
 ```
 
+### Nema metadata
+
+
+#### Global metadata
+
+```
+x-nema:
+  angularClientModuleName: XXX
+  angularClientNodeModuleName: xxx
+  apiName: XXXApi
+  frontBasePath: /reverse-proxy/api/v1 #optional
+```
+
+#### x-nema-resolve
+
+Example below
+
+#### method[get|post|...]: x-nema-override
+
+Override method properties, this allow to use other generator without collisions
+or aggregate multiple files renaming operationIds...
+
+```
+basePath: /books
+paths:
+  /{productId}:
+    get:
+      description: get book product
+      operationId: getProduct
+      x-override-front:
+        operationId: getBook
+```
+
+The final operation id will be: getBook
+*dev note*: getProduct won't be accesible at any target generation.
+
+#### parameters: x-nema-auto-injected / x-nema-header
+
+Some parameter could be injected by a reverse proxy, those are useful for
+backend, but you don't want it in your front application, you
+could don't know it
+
+Headers and variable names have different naming requirements:
+* `nema` will use name as variable name (so no dashes)
+* `nema` will use x-nema-header as the header final name (could have dashes)
+
+```
+paths:
+  /{productId}:
+    get:
+      description: get book product
+      operationId: getProduct
+      produces:
+        - application/json
+      parameters:
+        - name: reverseProxyIp
+          x-nema-header: reverse-proxy-ip
+          x-nema-auto-injected: true
+          in: header
+          description: BBVA user code.
+          required: true
+          type: string
+```
+
 ### Angular 5 Api client
 
 #### Resolves

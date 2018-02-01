@@ -38,7 +38,7 @@ export class Parameter {
   static parseSwagger(obj: any): Parameter {
     const p = new Parameter();
     p.name = obj.name;
-    p.headerName = obj["x-alias"];
+    p.headerName = obj["x-alias"] || obj["x-nema-header"];
     p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
     p.description = obj.description;
     p.in = SwaggerToParameterType[obj.in]

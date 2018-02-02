@@ -2,6 +2,7 @@
 
 import { Api } from "./Api";
 import { Angular5Client } from "./generators/Angular5Client";
+import { Mongoose } from "./generators/Mongoose";
 import * as path from "path";
 import * as program from "commander";
 
@@ -38,6 +39,7 @@ program
   .version(packageJSON.version)
   .description("Code generation from swagger")
   .option("--angular5-api", "TARGET: Generate an Angular 5 Module Api client")
+  .option("--mongoose", "TARGET: Generate Mongoose models and CRUD classes")
   .option("--override-models", "Override all models while agreggating")
   .option("--override-methods", "Override all methods while agreggating")
   .option("--lint", "Lint output, this may take a while")
@@ -53,24 +55,31 @@ if (!program.swagger) {
 }
 
 // TODO add more targets!!
-if (!program.angular5Api) {
+if (!program.angular5Api && !program.Mongoose) {
   red("no target to generate");
   process.exit(1);
 }
 
+
+let api;
+let dstPath;
+program.swagger.forEach((swagger) => {
+  if (api) {
+    api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
+  } else {
+    api = Api.parseSwaggerFile(swagger);
+    dstPath = path.dirname(swagger);
+  }
+});
+
+//console.log(api);
+//process.exit(0);
+
 if (program.angular5Api) {
   green("Generating: Angular5");
-  let api;
-  let dstPath;
-  program.swagger.forEach((swagger) => {
-    if (api) {
-      api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
-    } else {
-      api = Api.parseSwaggerFile(swagger);
-      dstPath = path.dirname(swagger);
-    }
-  });
-  //console.log(api);
-  //process.exit(0);
   Angular5Client.generate(api, dstPath, !!program.lint);
+}
+if (program.Mongoose) {
+  green("Generating: Mongoose");
+  Mongoose.generate(api, dstPath, !!program.lint);
 }

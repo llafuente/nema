@@ -27,7 +27,7 @@ class Parameter {
         p.description = obj.description;
         p.in = SwaggerToParameterType[obj.in];
         p.required = !!obj.required;
-        p.type = Type_1.Type.parseSwagger(obj.schema || obj);
+        p.type = Type_1.Type.parseSwagger(obj.schema || obj, null, false);
         return p;
     }
 }

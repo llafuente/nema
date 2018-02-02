@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../src/Api");
 const Angular5Client_1 = require("../src/generators/Angular5Client");
+const Mongoose_1 = require("../src/generators/Mongoose");
 const ava_1 = require("ava");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
@@ -28,7 +29,8 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
         'petDto',
         'veterinarianDto',
     ], "all methods added");
-    Angular5Client_1.Angular5Client.generate(api, `./test/pet-store/`, false);
+    Angular5Client_1.Angular5Client.generate(api, `./test/pet-store-client/`, false);
+    Mongoose_1.Mongoose.generate(api, `./test/pet-store-server/`, false);
     t.end();
 });
 //# sourceMappingURL=pet-store.js.map

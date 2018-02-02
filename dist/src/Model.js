@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Type_1 = require("./Type");
 const _ = require("lodash");
+const pluralize = require("pluralize");
 class Model {
     constructor() {
         this.api = null;
@@ -14,9 +15,19 @@ class Model {
             obj = obj.allOf[1];
         }
         m.name = name;
-        m.interfaceName = `I${name}`;
+        // this need review, i'm +1 , but also see unforseen consecuences
+        // remove Dto from name
+        //if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {
+        //  m.name = m.name.substr(0, m.name.length -3);
+        //}
+        m.type = Type_1.Type.parseSwagger(obj, obj.schema, true);
         m.description = obj.description;
-        m.type = Type_1.Type.parseSwagger(obj, obj.schema);
+        //m.dtoName = `${name}Dto`;
+        m.interfaceName = `I${name}`;
+        m.mongooseInterface = `I${name}Model`;
+        m.mongooseSchema = `${name}Schema`;
+        m.mongooseModel = `${name}Model`;
+        m.mongooseCollection = pluralize.plural(this.name.toLowerCase());
         return m;
     }
     eachProperty(cb) {

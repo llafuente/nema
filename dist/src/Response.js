@@ -6,7 +6,7 @@ class Response {
         const r = new Response();
         r.httpCode = httpCode == "default" ? 0 : parseInt(httpCode, 10);
         r.description = obj.description;
-        r.type = Type_1.Type.parseSwagger(obj.schema || obj);
+        r.type = Type_1.Type.parseSwagger(obj.schema || obj, null, false);
         return r;
     }
 }

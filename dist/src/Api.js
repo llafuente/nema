@@ -90,6 +90,7 @@ class Api {
         return Api.parseSwagger(filename, swaggerJSON);
     }
     addModel(model, override) {
+        //console.log(`addModel: ${model.name}`);
         if (!override && this.models[model.name] !== undefined) {
             throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
         }

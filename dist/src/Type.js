@@ -6,6 +6,7 @@ class Type {
     constructor() {
         this.type = null;
         this.description = undefined;
+        this.isDefinition = undefined;
         /**
          * Object properties
          */
@@ -22,8 +23,9 @@ class Type {
     /**
      * parse type from swagger
      */
-    static parseSwagger(obj, modelName = null) {
+    static parseSwagger(obj, modelName, isDefinition) {
         const t = new Type();
+        t.isDefinition = isDefinition;
         // sanity checks
         if (!modelName && obj.type == "object" && !obj.properties) {
             console.log(obj);
@@ -47,11 +49,11 @@ class Type {
         t.description = obj.description;
         if (t.type == "object") {
             t.properties = _.mapValues(obj.properties, (x) => {
-                return Type.parseSwagger(x);
+                return Type.parseSwagger(x, null, false);
             });
         }
         if (t.type == "array") {
-            t.items = Type.parseSwagger(obj.items);
+            t.items = Type.parseSwagger(obj.items, null, false);
         }
         if (obj.$ref) {
             t.referenceModel = obj.$ref.substring("#/definitions/".length);
@@ -113,6 +115,84 @@ class Type {
             return "void";
         }
         return this.type;
+    }
+    toMongooseType() {
+        const d = [];
+        switch (this.type) {
+            //case FieldType.ObjectId:
+            //  d.push(`type: mongoose.Schema.Types.ObjectId`);
+            //  break;
+            case "object":
+                d.push(`type: Object`);
+                const t = [];
+                for (const i in this.properties) {
+                    t.push(i + ":" + this.properties[i].toMongooseType());
+                }
+                if (this.isDefinition == null) {
+                    return t.join(",\n");
+                }
+                d.push(`properties: {${t.join(",\n")}}`);
+                break;
+            /*
+            case FieldType.AutoPrimaryKey:
+              d.push(`type: ${FieldType.Number}`);
+              break;
+      */
+            case "array":
+                d.push(`type: Array`);
+                d.push(`items: ${this.items.toMongooseType()}`);
+                break;
+            case "string":
+                d.push(`type: String`);
+                break;
+            case "integer":
+            case "number":
+                d.push(`type: Number`);
+                break;
+            default:
+                d.push(`type: ${this.type}`);
+        }
+        /*
+        // common
+        if (this.unique) {
+          d.push(`unique: ${this.unique}`);
+        }
+    
+        if (this.defaults !== undefined) {
+          d.push(`default: ${JSON.stringify(this.defaults)}`);
+        }
+    
+        if (this.refTo) {
+          d.push(`ref: "${this.refTo}"`);
+        }
+    
+        if (this.enums) {
+          d.push(`enum: ${JSON.stringify(this.enums)}`);
+        }
+    
+        if (this.required !== false) {
+          d.push(`required: ${this.required}`);
+        }
+        if (this.maxlength !== null) {
+          d.push(`maxlength: ${this.maxlength}`);
+        }
+        if (this.minlength !== null) {
+          d.push(`minlength: ${this.minlength}`);
+        }
+        if (this.min !== null) {
+          d.push(`min: ${this.min}`);
+        }
+        if (this.max !== null) {
+          d.push(`max: ${this.max}`);
+        }
+        if (this.lowercase !== false) {
+          d.push(`lowercase: ${this.lowercase}`);
+        }
+        if (this.uppercase !== false) {
+          d.push(`uppercase: ${this.uppercase}`);
+        }
+        */
+        return "{\n" + d.join(",\n") + "\n}";
     }
     /**
      * Get generated code: parse this type given the source variable

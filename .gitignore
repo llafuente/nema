@@ -1,11 +1,13 @@
 npm-debug.log
 node_modules/
 package-lock.json
+docs/ # not ready yet
 
 # typescript generated files need to be commited
 /dist/*.js.map
-/dist/*/*.js.map
+/dist/**/*.js.map
 /test/api-test-001/
 /test/angular5client-resolve/
-/test/pet-store/
+/test/pet-store-client/
+/test/pet-store-server/
 /tmp/

@@ -7,7 +7,7 @@ import * as path from "path";
 import { spawnSync } from "child_process";
 
 export function pretty(dstPath: string) {
-  spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", dstPath + "/**/*.ts"], {
+  spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", path.join(dstPath, "**/*.ts"), "--ignore-path", path.join(dstPath, "node_modules/*")], {
     cwd: process.cwd(),
     env: process.env,
     shell: true,

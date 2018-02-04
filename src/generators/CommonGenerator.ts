@@ -6,6 +6,47 @@ import * as fs from "fs";
 import * as path from "path";
 import { spawnSync } from "child_process";
 
+export interface ModificableTemplate {
+  tokens: string[];
+  template: string;
+};
+
+export function writeModificableTemplate(filename: string, tpl: ModificableTemplate) {
+  let contents: string = null;
+  let template = tpl.template;
+  try {
+    contents = fs.readFileSync(filename).toString();
+  } catch(e) {
+    console.log(e);
+  }
+
+  if (contents) {
+    tpl.tokens.forEach((token) => {
+      const startToken = `//<${token}>`;
+      const endToken = `//</${token}>`;
+
+      const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+
+      const m = contents.match(re);
+
+      // console.log(startToken, endToken);
+      // console.log(re);
+      // console.log("contents");
+      // console.log(contents);
+      // console.log("------------------------");
+      // console.log(m);
+
+      if (m !== null) {
+        //const tokenContents = m[0].substr(startToken.length, m[0].length - startToken.length - endToken.length);
+        template = template.replace(re, m[0]);
+      }
+
+
+    });
+  }
+  fs.writeFileSync(filename, template);
+}
+
 export function pretty(dstPath: string) {
   spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", path.join(dstPath, "**/*.ts"), "--ignore-path", path.join(dstPath, "node_modules/*")], {
     cwd: process.cwd(),

@@ -12,16 +12,16 @@
     "typeRoots": [
       "./node_modules/@types"
     ],
-    "lib": [
-      "dom",
-      "es6"
+    "types": [
+      "node",
+      "express",
+      "mongoose"
     ],
-    "types": [],
     "baseUrl": ".",
     "sourceMap": true
   },
   "files": [
-    "./index.ts"
+    "./src/index.ts"
   ],
   "exclude": [
     "node_modules"

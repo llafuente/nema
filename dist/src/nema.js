@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("./Api");
 const Angular5Client_1 = require("./generators/Angular5Client");
 const Mongoose_1 = require("./generators/Mongoose");
+const Express_1 = require("./generators/Express");
 const path = require("path");
 const program = require("commander");
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
@@ -33,6 +34,7 @@ program
     .description("Code generation from swagger")
     .option("--angular5-api", "TARGET: Generate an Angular 5 Module Api client")
     .option("--mongoose", "TARGET: Generate Mongoose models and CRUD classes")
+    .option("--express", "TARGET: Generate Express app/routes")
     .option("--override-models", "Override all models while agreggating")
     .option("--override-methods", "Override all methods while agreggating")
     .option("--lint", "Lint output, this may take a while")
@@ -67,8 +69,12 @@ if (program.angular5Api) {
     green("Generating: Angular5");
     Angular5Client_1.Angular5Client.generate(api, dstPath, !!program.lint);
 }
-if (program.Mongoose) {
+if (program.mongoose) {
     green("Generating: Mongoose");
     Mongoose_1.Mongoose.generate(api, dstPath, !!program.lint);
+}
+if (program.express) {
+    green("Generating: Express");
+    Express_1.Express.generate(api, dstPath, !!program.lint);
 }
 //# sourceMappingURL=nema.js.map

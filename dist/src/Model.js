@@ -26,6 +26,7 @@ class Model {
         m.interfaceName = `I${name}`;
         m.mongooseInterface = `I${name}Model`;
         m.mongooseSchema = `${name}Schema`;
+        m.mongooseRepository = `${name}Repository`;
         m.mongooseModel = `${name}Model`;
         m.mongooseCollection = pluralize.plural(this.name.toLowerCase());
         return m;

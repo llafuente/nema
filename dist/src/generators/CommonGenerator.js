@@ -4,8 +4,39 @@ const _ = require("lodash");
 const fs = require("fs");
 const path = require("path");
 const child_process_1 = require("child_process");
+;
+function writeModificableTemplate(filename, tpl) {
+    let contents = null;
+    let template = tpl.template;
+    try {
+        contents = fs.readFileSync(filename).toString();
+    }
+    catch (e) {
+        console.log(e);
+    }
+    if (contents) {
+        tpl.tokens.forEach((token) => {
+            const startToken = `//<${token}>`;
+            const endToken = `//</${token}>`;
+            const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+            const m = contents.match(re);
+            // console.log(startToken, endToken);
+            // console.log(re);
+            // console.log("contents");
+            // console.log(contents);
+            // console.log("------------------------");
+            // console.log(m);
+            if (m !== null) {
+                //const tokenContents = m[0].substr(startToken.length, m[0].length - startToken.length - endToken.length);
+                template = template.replace(re, m[0]);
+            }
+        });
+    }
+    fs.writeFileSync(filename, template);
+}
+exports.writeModificableTemplate = writeModificableTemplate;
 function pretty(dstPath) {
-    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", dstPath + "/**/*.ts"], {
+    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", path.join(dstPath, "**/*.ts"), "--ignore-path", path.join(dstPath, "node_modules/*")], {
         cwd: process.cwd(),
         env: process.env,
         shell: true,

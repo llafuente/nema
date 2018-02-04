@@ -1,6 +1,7 @@
 import { Api } from "../src/Api";
 import { Angular5Client } from "../src/generators/Angular5Client";
 import { Mongoose } from "../src/generators/Mongoose";
+import { Express } from "../src/generators/Express";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
 
@@ -35,5 +36,6 @@ test.cb.serial("parse swagger file", (t) => {
 
   Angular5Client.generate(api, `./test/pet-store-client/`, false);
   Mongoose.generate(api, `./test/pet-store-server/`, false);
+  Express.generate(api, `./test/pet-store-server/`, false);
   t.end()
 });

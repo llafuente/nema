@@ -112,6 +112,13 @@ export class Method {
     return count;
   }
 
+  eachParam(cb: (p:Parameter) => void) {
+    this.eachPathParam(cb);
+    this.eachHeaderParam(cb, true);
+    this.eachQueryParam(cb);
+    this.eachBodyParam(cb);
+  }
+
   eachPathParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.in == ParameterType.PATH) {

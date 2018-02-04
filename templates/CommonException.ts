@@ -12,7 +12,7 @@ export class CommonException {
     public message  : string,
     public exception: string,
     public path     : string,
-    public timestamp: number,
+    public timestamp: number|Date,
   ) { }
 
   static parse(json: any): CommonException {

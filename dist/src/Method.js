@@ -83,6 +83,12 @@ class Method {
         }
         return count;
     }
+    eachParam(cb) {
+        this.eachPathParam(cb);
+        this.eachHeaderParam(cb, true);
+        this.eachQueryParam(cb);
+        this.eachBodyParam(cb);
+    }
     eachPathParam(cb) {
         this.parameters.forEach((p) => {
             if (p.in == Parameter_1.ParameterType.PATH) {

@@ -180,7 +180,7 @@ export class ${api.apiName} {
   debug: boolean = false;
   basePath: string = ${JSON.stringify(api.basePath)};
   host: string = ${JSON.stringify(api.host)};
-  onError: Subject<any> = new Subject<any>();
+  onError: Subject<CommonException> = new Subject<CommonException>();
 
   constructor(
     public http: HttpClient,

@@ -1,4 +1,5 @@
 import * as _ from "lodash";
+import { TypescriptFile } from "./TypescriptFile";
 
 export const Models: {[name: string]: Type} = {};
 
@@ -216,7 +217,36 @@ export class Type {
 
     return "{\n" + d.join(",\n") + "\n}";
   }
+  /**
+   * Get generated code: parse this type given the source variable
+   */
+  getRandom(ts?: TypescriptFile) {
+    // file is really a Blob and don't need to be casted
+    if (this.type == "file") {
+      return "null";
+    }
 
+    // loop through arrays casting it's values
+    if (this.type == "array") {
+      if (this.items.isPrimitive()) {
+        return `Array(2).map((x) => Random.${this.items.type}(x))`;
+      } else {
+        if (ts !== null) {
+          ts.addImport(this.items.toBaseType(), `./src/models/${this.items.toBaseType()}`);
+        }
+        return `Array(2).map((x) => ${this.items.toTypeScriptType()}.randomInstance())`;
+      }
+    } else if (this.isPrimitive()) {
+      // primitive simple casting with null
+      return `Random.${this.type}()`;
+    }
+
+    // use model.parse
+    if (ts !== null) {
+      ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
+    }
+    return `${this.toTypeScriptType()}.randomInstance()`;
+  }
   /**
    * Get generated code: parse this type given the source variable
    */

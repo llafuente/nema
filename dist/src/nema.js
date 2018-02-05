@@ -75,6 +75,7 @@ if (program.mongoose) {
 }
 if (program.express) {
     green("Generating: Express");
-    Express_1.Express.generate(api, dstPath, !!program.lint);
+    const e = new Express_1.Express(dstPath);
+    e.generate(api, !!program.lint);
 }
 //# sourceMappingURL=nema.js.map

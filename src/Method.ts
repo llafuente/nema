@@ -159,6 +159,20 @@ export class Method {
     })
   }
 
+  getAccept() {
+    if (this.producesJSON()) {
+      return "application/json";
+    }
+    if (this.produces.indexOf("text/plain") !== -1) {
+      return "text/plain";
+    }
+    if (this.produces.indexOf("text/html") !== -1) {
+      return "text/html";
+    }
+
+    return this.produces[0];
+  }
+
   producesJSON(): boolean {
     return this.produces.indexOf("application/json") !== -1;
   }

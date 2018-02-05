@@ -15,6 +15,8 @@
     "types": [
       "node",
       "express",
+      "supertest",
+      "sinon",
       "mongoose"
     ],
     "baseUrl": ".",
@@ -22,6 +24,9 @@
   },
   "files": [
     "./src/index.ts"
+  ],
+  "include": [
+    "./test/*.test.ts"
   ],
   "exclude": [
     "node_modules"

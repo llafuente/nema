@@ -87,5 +87,6 @@ if (program.mongoose) {
 }
 if (program.express) {
   green("Generating: Express");
-  Express.generate(api, dstPath, !!program.lint);
+  const e = new Express(dstPath)
+  e.generate(api, !!program.lint);
 }

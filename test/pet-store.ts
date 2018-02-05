@@ -36,6 +36,6 @@ test.cb.serial("parse swagger file", (t) => {
 
   Angular5Client.generate(api, `./test/pet-store-client/`, false);
   Mongoose.generate(api, `./test/pet-store-server/`, false);
-  Express.generate(api, `./test/pet-store-server/`, false);
+  (new Express(`./test/pet-store-server/`)).generate(api, false);
   t.end()
 });

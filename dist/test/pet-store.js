@@ -32,7 +32,7 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     ], "all methods added");
     Angular5Client_1.Angular5Client.generate(api, `./test/pet-store-client/`, false);
     Mongoose_1.Mongoose.generate(api, `./test/pet-store-server/`, false);
-    Express_1.Express.generate(api, `./test/pet-store-server/`, false);
+    (new Express_1.Express(`./test/pet-store-server/`)).generate(api, false);
     t.end();
 });
 //# sourceMappingURL=pet-store.js.map

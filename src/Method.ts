@@ -104,6 +104,10 @@ export class Method {
   countParams(filter: ParameterType = null, skipAutoInjected: boolean): number {
     let count = 0;
     for (let p of this.parameters) {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if ((filter === null || filter === p.in) && !(skipAutoInjected === true && p.autoInjected === true)) {
         ++count;
       }
@@ -121,6 +125,10 @@ export class Method {
 
   eachPathParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.PATH) {
         cb(p);
       }
@@ -129,6 +137,10 @@ export class Method {
 
   eachQueryParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.QUERY) {
         cb(p);
       }
@@ -137,6 +149,10 @@ export class Method {
 
   eachHeaderParam(cb: (p:Parameter) => void, skipAutoInjected) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.HEADER && (!skipAutoInjected || (skipAutoInjected && !p.autoInjected))) {
         cb(p);
       }
@@ -145,6 +161,10 @@ export class Method {
 
   eachCookieParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.COOKIE) {
         cb(p);
       }

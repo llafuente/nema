@@ -5,6 +5,7 @@ import * as path from "path";
 import { Method } from "./Method";
 import { Type } from "./Type";
 import { Model } from "./Model";
+import { Parameter } from "./Parameter";
 
 function ksort(obj) {
   const ret = {};
@@ -46,6 +47,7 @@ export class Api {
 
   methods: { [name: string]: Method} = {};
   models: { [name: string]: Model} = {};
+  parameters: { [name: string]: Parameter} = {};
 
   constructor() {
 
@@ -125,6 +127,10 @@ export class Api {
       api.addModel(Model.parseSwagger(api, name, model), false);
     });
 
+    _.each(swagger.parameters, (param, paramName) => {
+      api.parameters[paramName] = Parameter.parseSwagger(param);
+    });
+
     return api;
   }
 
@@ -175,7 +181,6 @@ export class Api {
     });
   }
 
-
   aggregate(api: Api, overrideMethods, overrideModels) {
     api.eachMethod((m) => {
       this.addMethod(m, overrideMethods);
@@ -189,5 +194,29 @@ export class Api {
   sort() {
     this.methods = ksort(this.methods);
     this.models = ksort(this.models);
+  }
+
+  getReference(ref: string): Model|Parameter {
+    ref = ref.substr(2);
+    const c = ref.indexOf("/");
+    const where = ref.substr(0, c);
+    const target = ref.substr(c + 1);
+
+    switch(where) {
+      case "definitions":
+        if (!this.models[target]) {
+          throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);
+        }
+
+        return this.models[target];
+      case "parameters":
+        if (!this.parameters[target]) {
+          throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);
+        }
+
+        return this.parameters[target];
+      default:
+        throw new Error("getReference: target not handled");
+    }
   }
 }

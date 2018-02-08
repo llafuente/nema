@@ -26,6 +26,7 @@ class Type {
     static parseSwagger(obj, modelName, isDefinition) {
         const t = new Type();
         t.isDefinition = isDefinition;
+        obj = obj || { type: "void" };
         // sanity checks
         if (!modelName && obj.type == "object" && !obj.properties) {
             console.log(obj);
@@ -73,7 +74,7 @@ class Type {
         if (this.type == "array") {
             return this.items.isPrimitive();
         }
-        return ["integer", "string", "boolean", "number"].indexOf(this.type) !== -1;
+        return ["integer", "string", "boolean", "number", "void"].indexOf(this.type) !== -1;
     }
     /**
      * get base type, only available for array or references.
@@ -86,6 +87,7 @@ class Type {
         if (this.referenceModel) {
             return this.referenceModel;
         }
+        console.log(this);
         throw new Error("???");
     }
     /**

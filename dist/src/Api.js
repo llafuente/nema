@@ -4,6 +4,7 @@ const fs = require("fs");
 const _ = require("lodash");
 const Method_1 = require("./Method");
 const Model_1 = require("./Model");
+const Parameter_1 = require("./Parameter");
 function ksort(obj) {
     const ret = {};
     Object.keys(obj).sort().forEach((k) => {
@@ -18,6 +19,7 @@ class Api {
     constructor() {
         this.methods = {};
         this.models = {};
+        this.parameters = {};
     }
     static parseSwagger(filename, swagger) {
         const api = new Api();
@@ -75,6 +77,9 @@ class Api {
         _.each(swagger.definitions, (model, name) => {
             api.addModel(Model_1.Model.parseSwagger(api, name, model), false);
         });
+        _.each(swagger.parameters, (param, paramName) => {
+            api.parameters[paramName] = Parameter_1.Parameter.parseSwagger(param);
+        });
         return api;
     }
     static parseSwaggerFile(filename) {
@@ -126,6 +131,26 @@ class Api {
     sort() {
         this.methods = ksort(this.methods);
         this.models = ksort(this.models);
+    }
+    getReference(ref) {
+        ref = ref.substr(2);
+        const c = ref.indexOf("/");
+        const where = ref.substr(0, c);
+        const target = ref.substr(c + 1);
+        switch (where) {
+            case "definitions":
+                if (!this.models[target]) {
+                    throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);
+                }
+                return this.models[target];
+            case "parameters":
+                if (!this.parameters[target]) {
+                    throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);
+                }
+                return this.parameters[target];
+            default:
+                throw new Error("getReference: target not handled");
+        }
     }
 }
 exports.Api = Api;

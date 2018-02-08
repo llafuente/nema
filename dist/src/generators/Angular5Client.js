@@ -311,7 +311,7 @@ export class ${api.apiName} {
             }
             else if (responseTypeTS != "void") {
                 console.log(method, responseTypeTS);
-                throw new Error(`invalid produces, only: application/json, text/plain, text/html, found: ${method.produces}`);
+                throw new Error(`invalid produces, only: application/json, text/plain, text/html found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
             }
             s.push(`withCredentials: true // enable CORS
       }`);

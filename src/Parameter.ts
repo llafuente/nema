@@ -29,6 +29,9 @@ export class Parameter {
   description: string;
   in: ParameterType;
   required: boolean;
+
+  reference: string;
+
   /*
    * Is parameter injected by a proxy
    */
@@ -43,7 +46,14 @@ export class Parameter {
     p.description = obj.description;
     p.in = SwaggerToParameterType[obj.in]
     p.required = !!obj.required;
-    p.type = Type.parseSwagger(obj.schema || obj, null, false);
+
+    p.reference = obj.$ref || null;
+    // do not parse $ref as type...
+    if (p.reference) {
+      p.type = null;
+    } else {
+      p.type = Type.parseSwagger(obj.schema || obj, null, false);
+    }
 
     return p;
   }

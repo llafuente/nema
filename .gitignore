@@ -8,6 +8,8 @@ docs/ # not ready yet
 /dist/**/*.js.map
 /test/api-test-001/
 /test/angular5client-resolve/
+/test/angular5client-parameters/
 /test/pet-store-client/
 /test/pet-store-server/
 /tmp/
+$Recycle.Bin/

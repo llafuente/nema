@@ -257,6 +257,7 @@ export class Type {
       return src;
     }
 
+
     // loop through arrays casting it's values
     if (this.type == "array") {
       if (this.items.isPrimitive()) {
@@ -267,6 +268,10 @@ export class Type {
     } else if (this.isPrimitive()) {
       // primitive simple casting with null
       return `Cast.${this.type}(${src})`;
+    }
+
+    if (!this.type && !this.referenceModel) {
+      return "void(0)";
     }
 
     // use model.parse

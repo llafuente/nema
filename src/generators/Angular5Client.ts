@@ -397,7 +397,7 @@ export class ${api.apiName} {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);
           const error = CommonException.parse(response.error);
 
-          ret.next(${responseType.getEmptyValue()}); // force cast
+          ret.next(${responseType.getParser(responseType.getEmptyValue())}); // force cast
           ret.complete();
 
           // notify global error handler

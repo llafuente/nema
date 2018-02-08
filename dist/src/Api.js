@@ -68,6 +68,9 @@ class Api {
         api.authorEmail = swagger.info.contact.email || "";
         api.authorURL = swagger.info.contact.url || "";
         _.each(swagger.paths, (pathItem, uri) => {
+            if (["/swagger"].indexOf(uri) !== -1) {
+                throw new Error(`forbidden API uri: ${uri}`);
+            }
             ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
                 const method = pathItem[verb];
                 if (method) {

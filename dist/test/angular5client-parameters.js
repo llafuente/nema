@@ -7,7 +7,7 @@ const ava_1 = require("ava");
 let api;
 ava_1.default.cb.serial("parse global parameters", (t) => {
     api = Api_1.Api.parseSwaggerFile("./test/angular5client-parameters.yaml");
-    console.log(JSON.stringify(api.methods, null, 2));
+    //console.log(JSON.stringify(api.methods, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
         'getUser',

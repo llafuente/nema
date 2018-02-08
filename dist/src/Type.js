@@ -247,6 +247,9 @@ class Type {
             // primitive simple casting with null
             return `Cast.${this.type}(${src})`;
         }
+        if (!this.type && !this.referenceModel) {
+            return "void(0)";
+        }
         // use model.parse
         return `${this.toTypeScriptType()}.parse(${src})`;
     }

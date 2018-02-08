@@ -67,7 +67,9 @@ class Express {
     }
     routeTestFile(api, method, filename) {
         if (fs.existsSync(path.join(this.dstPath, filename))) {
-            console.log("file exist: ${filename}");
+            console.log(`file exist: ${filename}, skip creation`);
+        }
+        else {
             fs.writeFileSync(path.join(this.dstPath, filename), this.routeTest(api, method, filename));
         }
     }

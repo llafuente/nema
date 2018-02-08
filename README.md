@@ -4,13 +4,14 @@
 
 `nema` is an generator that target:
 
-* server: Node Express Mongo stack [PLANNED]
+* server: Node Express [WIP]
+* server: Mongoose [WIP]
 * client: Node, using request [PLANNED]
 * client: Angular 5 HttpClient [DONE]
 
 It generates from Swagger 2.0 YAMLS
 
-Nema includes some extensions explained below.
+`nema` includes some extensions to swagger explained below.
 
 ## Help
 
@@ -58,9 +59,13 @@ nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
 
 ### Limitations / chages
 
-* Every object must be declared in definitions, even subtypes.
-* operationId is required
-* schemes is required
+* Every `type` with `type:object` must be declared in definitions at first level.
+* `operationId` is required
+* `schemes` is required
+* do not support `$ref` to external sources
+* `/swagger` path is forbidden it's used by swagger-ui
+* parameters.name is a variable name, use parameter.x-nema-header for real
+header name
 
 ### Nema metadata
 
@@ -72,17 +77,17 @@ x-nema:
   angularClientModuleName: XXX
   angularClientNodeModuleName: xxx
   apiName: XXXApi
-  frontBasePath: /reverse-proxy/api/v1 #optional
+  frontBasePath: /reverse-proxy/api/v1 # optional
 ```
 
-#### x-nema-resolve
+#### paths[...].x-nema-resolve
 
-Example below
+Create an [angular 5 resolve see example below](#angular5-resolve)
 
-#### method[get|post|...]: x-nema-override
+#### paths[get|post|...]: x-nema-override
 
-Override method properties, this allow to use other generator without collisions
-or aggregate multiple files renaming operationIds...
+Override endpoint properties, this allow to use other generator without
+collisions or aggregate multiple files renaming operationIds...
 
 ```
 basePath: /books
@@ -128,6 +133,7 @@ paths:
 
 ### Angular 5 Api client
 
+<a name="angular5-resolve"></a>
 #### Resolves
 
 `nema` can create resolvers for any API if you left the required information
@@ -161,15 +167,10 @@ paths:
     get:
       name: getStrategy
       description: Get a single strategy by Id
-      x-front-resolve:
+      x-nema-resolve:
         name: StrategyResolve
         errorURL: /error
         parameters: # map route.snapshot.params with the method parameter name
           strategyId: strategyId
 
 ```
-
-### TODO
-
-* client: Angular 5 HttpClient [DONE]
-  * handle required

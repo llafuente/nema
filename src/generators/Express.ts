@@ -48,6 +48,8 @@ export class Express {
     fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "package.json"), path.join(this.dstPath, "package.json"));
     fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
 
+    fs.writeFileSync(path.join(this.dstPath, "./src/swagger.json.ts"), "export default " + JSON.stringify(api.originalSource, null, 2));
+
     this.routesFile(api, "./src/routes.ts");
     api.eachMethod((method, name) => {
       this.routeFile(api, method, `./src/routes/${method.operationId}.ts`);
@@ -79,7 +81,7 @@ export class Express {
   }
 
   routesFile(api: Api, filename: string) {
-    fs.writeFileSync(path.join(this.dstPath, filename), this.routes(api));
+    CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.routes(api));
   }
 
   routeFile(api: Api, method: Method, filename: string) {
@@ -88,17 +90,22 @@ export class Express {
 
   routeTestFile(api: Api, method: Method, filename: string) {
     if (fs.existsSync(path.join(this.dstPath, filename))) {
-      console.log("file exist: ${filename}");
+      console.log(`file exist: ${filename}, skip creation`);
+    } else {
       fs.writeFileSync(path.join(this.dstPath, filename), this.routeTest(api, method, filename));
     }
   }
 
 
 
-  routes(api: Api): string {
+  routes(api: Api): ModificableTemplate {
     const imports = [];
     const s = [];
-    imports.push(`import * as express from "express";`);
+    imports.push(
+`import * as express from "express";
+import swaggerDocument from "./swagger.json"; // swagger.json with a export dedault
+const swaggerUi = require('swagger-ui-express');
+`);
 
     api.eachMethod((method, operationId) => {
       imports.push(`import { ${method.operationId}Route } from "./routes/${method.operationId}";`);
@@ -106,15 +113,26 @@ export class Express {
       s.push(`r.${method.verb.toLowerCase()}(${JSON.stringify(method.url.replace(/{/g, ":").replace(/}/g, ""))}, ${method.operationId}Route);`);
     });
 
-    return `${imports.join("\n")}
+    return {
+      tokens: ["swagger-ui-options"],
+      template: `${imports.join("\n")}
 
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
   app.use(${JSON.stringify(api.basePath)}, r);
 
+  var options = {
+    //<swagger-ui-options>
+    //</swagger-ui-options>
+  };
+
+  app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+
+
   ${s.join("\n")}
 }
-`;
+`
+    };
   }
 
   route(api: Api, method: Method): ModificableTemplate {

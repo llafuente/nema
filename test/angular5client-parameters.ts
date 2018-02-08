@@ -7,7 +7,7 @@ let api: Api;
 test.cb.serial("parse global parameters", (t) => {
   api = Api.parseSwaggerFile("./test/angular5client-parameters.yaml");
 
-  console.log(JSON.stringify(api.methods, null, 2));
+  //console.log(JSON.stringify(api.methods, null, 2));
 
   api.sort();
 

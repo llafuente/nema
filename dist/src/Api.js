@@ -24,6 +24,7 @@ class Api {
     static parseSwagger(filename, swagger) {
         const api = new Api();
         api.filename = filename;
+        Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
         // TODO is generating front ? -> override basePath
         // keep compat with old generator, sry
         if (swagger["x-generator-properties"]) {

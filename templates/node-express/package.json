@@ -12,7 +12,7 @@
     "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
     "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",
     "build": "tsc -p ./tsconfig.json",
-    "start": "npm run build && node ./src-js/app.js"
+    "start": "npm run build && node ./dist/src/index.js"
   },
   "author": "llafuente@noboxout.com",
   "license": "MIT",
@@ -32,6 +32,7 @@
     "mongoosemask": "0.0.6",
     "morgan": "1.9.0",
     "multer": "1.3.0",
+    "swagger-ui-express": "latest",
     "typescript": "2.7.1",
     "xlsx": "0.11.19"
   },

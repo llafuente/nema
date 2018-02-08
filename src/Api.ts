@@ -24,6 +24,10 @@ export class Api {
    * source file filename
    */
   filename: string;
+  /**
+   * Swagger contents atm
+   */
+  originalSource: any;
 
   angularClientModuleName: string;
   angularClientNodeModuleName: string;
@@ -56,6 +60,8 @@ export class Api {
   static parseSwagger(filename: string, swagger: any): Api {
     const api = new Api();
     api.filename = filename;
+    Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
+
     // TODO is generating front ? -> override basePath
     // keep compat with old generator, sry
     if (swagger["x-generator-properties"]) {
@@ -105,6 +111,10 @@ export class Api {
     api.authorURL = swagger.info.contact.url || "";
 
     _.each(swagger.paths, (pathItem, uri) => {
+      if (["/swagger"].indexOf(uri) !== -1) {
+        throw new Error(`forbidden API uri: ${uri}`);
+      }
+
       ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
         const method = pathItem[verb];
 

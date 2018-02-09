@@ -24,7 +24,6 @@ class Express {
         mkdirSafe(path.join(this.dstPath));
         mkdirSafe(path.join(this.dstPath, "src"));
         mkdirSafe(path.join(this.dstPath, "src/models"));
-        mkdirSafe(path.join(this.dstPath, "src/mongoose"));
         mkdirSafe(path.join(this.dstPath, "src/routes"));
         mkdirSafe(path.join(this.dstPath, "test"));
         // generate all models
@@ -60,10 +59,10 @@ class Express {
         CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.index(api));
     }
     routesFile(api, filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.routes(api));
+        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.routes(api, filename));
     }
     routeFile(api, method, filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.route(api, method));
+        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.route(api, method, filename));
     }
     routeTestFile(api, method, filename) {
         if (fs.existsSync(path.join(this.dstPath, filename))) {
@@ -73,7 +72,7 @@ class Express {
             fs.writeFileSync(path.join(this.dstPath, filename), this.routeTest(api, method, filename));
         }
     }
-    routes(api) {
+    routes(api, filename) {
         const imports = [];
         const s = [];
         imports.push(`import * as express from "express";
@@ -105,42 +104,33 @@ export function routes(app: express.Application) {
 `
         };
     }
-    route(api, method) {
+    route(api, method, filename) {
+        const ts = new TypescriptFile_1.TypescriptFile();
         const getParams = ["req", "res", "next"];
         const params = [];
-        let imports = [];
         method.eachParam((p) => {
+            //??p.type.getName()
             params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
-            if (!p.type.isPrimitive()) {
-                imports.push(`import { ${p.type.toBaseType()} } from "../models/${p.type.toBaseType()}";`);
-            }
             switch (p.in) {
                 case Parameter_1.ParameterType.BODY:
-                    getParams.push(p.type.getParser(`req.body`));
+                    getParams.push(p.type.getParser(`req.body`, ts));
                     break;
                 case Parameter_1.ParameterType.COOKIE:
-                    getParams.push(p.type.getParser(`req.cookies.${p.name} || null`));
+                    getParams.push(p.type.getParser(`req.cookies.${p.name} || null`, ts));
                     break;
                 case Parameter_1.ParameterType.HEADER:
-                    getParams.push(p.type.getParser(`req.header(${JSON.stringify(p.name)})`));
+                    getParams.push(p.type.getParser(`req.header(${JSON.stringify(p.name)})`, ts));
                     break;
                 case Parameter_1.ParameterType.PATH:
-                    getParams.push(p.type.getParser(`req.param(${JSON.stringify(p.name)})`));
+                    getParams.push(p.type.getParser(`req.param(${JSON.stringify(p.name)})`, ts));
                     break;
                 case Parameter_1.ParameterType.QUERY:
-                    getParams.push(p.type.getParser(`req.query.${p.name} || null`));
+                    getParams.push(p.type.getParser(`req.query.${p.name} || null`, ts));
                     break;
             }
         });
-        imports = imports.filter((value, index, self) => {
-            return self.indexOf(value) === index;
-        });
-        return {
-            tokens: ["custom-imports", "method-body", "extras"],
-            template: `import * as express from "express";
+        ts.push(`import * as express from "express";
 import { Request, Response } from "../";
-import { Cast } from "../Cast";
-${imports.join("\n")}
 
 // this zones are safe to edit
 //<custom-imports>
@@ -154,17 +144,18 @@ export function ${method.operationId}(req: Request, res: Response, next: express
 }
 //<extras>
 //</extras>
-`
+`);
+        return {
+            tokens: ["custom-imports", "method-body", "extras"],
+            template: ts.toString(filename)
         };
     }
     routeTest(api, method, filename) {
         const ts = new TypescriptFile_1.TypescriptFile();
+        ts.header = `process.env.NODE_ENV = "test";`;
         ts.rawImports =
-            `process.env.NODE_ENV = "test";
-
-import test from "ava";
+            `import test from "ava";
 import { app } from "../src/";
-import { Random } from "../src/Random";
 import * as supertest from "supertest";
 import * as qs from "qs";`;
         const query = [];

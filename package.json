@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "npm run build && ava --verbose ./dist/test/*.js",
-    "coverage": "npm run build && npm ava --verbose ./compiled-js/test/*.js",
+    "clean:test": "rm -rf test/api-test-001 test/angular5client-resolve test/angular5client-parameters test/pet-store-client test/pet-store-server/src",
     "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
     "doc": "typedoc --out ./docs/ ./src/",
     "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",

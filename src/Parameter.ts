@@ -1,4 +1,5 @@
 import { Type } from "./Type";
+import { Api } from "./Api";
 
 export enum ParameterType {
   PATH,
@@ -18,6 +19,8 @@ const SwaggerToParameterType = {
 };
 
 export class Parameter {
+  api: Api = null;
+
   /**
    * variable/real name (no dashes)
    */
@@ -38,8 +41,11 @@ export class Parameter {
   autoInjected: boolean;
   type: Type;
 
-  static parseSwagger(obj: any): Parameter {
+  static parseSwagger(api: Api, obj: any): Parameter {
     const p = new Parameter();
+
+    Object.defineProperty(p, "api", { value: api, writable: true, enumerable: false });
+
     p.name = obj.name;
     p.headerName = obj["x-alias"] || obj["x-nema-header"];
     p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
@@ -52,7 +58,7 @@ export class Parameter {
     if (p.reference) {
       p.type = null;
     } else {
-      p.type = Type.parseSwagger(obj.schema || obj, null, false);
+      p.type = Type.parseSwagger(api, obj.schema || obj, null, false);
     }
 
     return p;

@@ -1,9 +1,12 @@
 import * as _ from "lodash";
 import { TypescriptFile } from "./TypescriptFile";
+import { Api } from "./Api";
 
 export const Models: {[name: string]: Type} = {};
 
 export class Type {
+  api: Api = null;
+
   name: string;
 
   type: string = null;
@@ -25,13 +28,23 @@ export class Type {
    * Reference to another model
    */
   referenceModel?: string = undefined;
+
+  //getName(): string {
+  //  if (this.referenceModel) {
+  //    const t = this.api.getReference(this.referenceModel);
+  //  }
+  //}
   /**
    * Parse type from swagger
    */
-  static parseSwagger(obj, modelName: string, isDefinition: boolean): Type {
+  static parseSwagger(api: Api, obj, modelName: string, isDefinition: boolean): Type {
     const t = new Type();
+
+    Object.defineProperty(t, "api", { value: api, writable: true, enumerable: false });
+
     t.name = modelName;
     t.isDefinition = isDefinition;
+
     obj = obj || { type: "void" };
 
     // sanity checks
@@ -69,16 +82,16 @@ export class Type {
 
     if (t.type == "object") {
       t.properties = _.mapValues(obj.properties, (x) => {
-        return Type.parseSwagger(x, null, false);
+        return Type.parseSwagger(api, x, null, false);
       });
     }
 
     if (t.type == "array") {
-      t.items = Type.parseSwagger(obj.items, null, false);
+      t.items = Type.parseSwagger(api, obj.items, null, false);
     }
 
     if (obj.$ref) {
-      t.referenceModel = obj.$ref.substring("#/definitions/".length);
+      t.referenceModel = obj.$ref;
     }
 
     if (modelName) {
@@ -113,7 +126,7 @@ export class Type {
     }
 
     if (this.referenceModel) {
-      return this.referenceModel;
+      return this.api.getReference(this.referenceModel).name;
     }
     console.log(this);
     throw new Error("???");
@@ -125,8 +138,7 @@ export class Type {
   toTypeScriptType(): string {
     // defer to subschema
     if (this.referenceModel) {
-      return this.referenceModel;
-      //return Models[this.referenceModel].toTypeScriptType();
+      return this.api.getReference(this.referenceModel).name;
     }
 
     switch (this.type) {
@@ -135,10 +147,6 @@ export class Type {
       case "string":
         return "string";
       case "array":
-        if (this.items.referenceModel) {
-          return `${this.items.referenceModel}[]`;
-        }
-
         return `${this.items.toTypeScriptType()}[]`;
       case "number":
       case "integer":
@@ -239,7 +247,7 @@ export class Type {
   /**
    * Get generated code: parse this type given the source variable
    */
-  getRandom(ts?: TypescriptFile) {
+  getRandom(ts: TypescriptFile) {
     // file is really a Blob and don't need to be casted
     if (this.type == "file") {
       return "null";
@@ -248,28 +256,28 @@ export class Type {
     // loop through arrays casting it's values
     if (this.type == "array") {
       if (this.items.isPrimitive()) {
+        ts.addImport("Random", `./src/Random`);
         return `Array(2).map((x) => Random.${this.items.type}(x))`;
-      } else {
-        if (ts !== null) {
-          ts.addImport(this.items.toBaseType(), `./src/models/${this.items.toBaseType()}`);
-        }
-        return `Array(2).map((x) => ${this.items.toTypeScriptType()}.randomInstance())`;
       }
-    } else if (this.isPrimitive()) {
+
+      ts.addImport(this.items.toBaseType(), `./src/models/${this.items.toBaseType()}`);
+      return `Array(2).map((x) => ${this.items.toTypeScriptType()}.randomInstance())`;
+    }
+
+    if (this.isPrimitive()) {
       // primitive simple casting with null
+      ts.addImport("Random", `./src/Random`);
       return `Random.${this.type}()`;
     }
 
     // use model.parse
-    if (ts !== null) {
-      ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
-    }
+    ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
     return `${this.toTypeScriptType()}.randomInstance()`;
   }
   /**
    * Get generated code: parse this type given the source variable
    */
-  getParser(src) {
+  getParser(src, ts: TypescriptFile) {
     // file is really a Blob and don't need to be casted
     if (this.type == "file") {
       return src;
@@ -279,12 +287,17 @@ export class Type {
     // loop through arrays casting it's values
     if (this.type == "array") {
       if (this.items.isPrimitive()) {
+        ts.addImport("Cast", `./src/Cast`);
         return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
-      } else {
-        return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
       }
-    } else if (this.isPrimitive()) {
+
+      ts.addImport(this.items.toTypeScriptType(), `./src/models/${this.items.toTypeScriptType()}`);
+      return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
+    }
+
+    if (this.isPrimitive()) {
       // primitive simple casting with null
+      ts.addImport("Cast", `./src/Cast`);
       return `Cast.${this.type}(${src})`;
     }
 
@@ -293,6 +306,7 @@ export class Type {
     }
 
     // use model.parse
+    ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
     return `${this.toTypeScriptType()}.parse(${src})`;
   }
   /*

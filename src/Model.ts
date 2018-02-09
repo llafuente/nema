@@ -44,23 +44,24 @@ export class Model {
 
   static parseSwagger(api: Api, name: string, obj): Model {
     const m = new Model();
-    m.filename = `/src/models/${m.name}.ts`;
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
 
     if (obj.allOf) {
-       m.extends = obj.allOf[0].$ref.substring("#/definitions/".length);
+       m.extends = obj.allOf[0].$ref;
        obj = obj.allOf[1];
     }
 
     m.name = name;
+    m.filename = `/src/models/${name}.ts`;
+
     // this need review, i'm +1 , but also see unforseen consecuences
     // remove Dto from name
     //if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {
     //  m.name = m.name.substr(0, m.name.length -3);
     //}
 
-    m.type = Type.parseSwagger(obj, obj.schema, true);
+    m.type = Type.parseSwagger(api, obj, obj.schema, true);
     m.description = obj.description;
 
     //m.dtoName = `${name}Dto`;
@@ -84,7 +85,8 @@ export class Model {
   }
 
   eachParentProperty(cb: (t: Type, name: string) => void) {
-    this.api.models[this.extends].eachProperty(cb);
+    const m = this.api.getReference(this.extends) as Model;
+    m.eachProperty(cb);
   }
 
   isEnum(): boolean {

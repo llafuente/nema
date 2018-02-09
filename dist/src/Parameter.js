@@ -19,8 +19,12 @@ const SwaggerToParameterType = {
     "body": ParameterType.BODY,
 };
 class Parameter {
-    static parseSwagger(obj) {
+    constructor() {
+        this.api = null;
+    }
+    static parseSwagger(api, obj) {
         const p = new Parameter();
+        Object.defineProperty(p, "api", { value: api, writable: true, enumerable: false });
         p.name = obj.name;
         p.headerName = obj["x-alias"] || obj["x-nema-header"];
         p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
@@ -33,7 +37,7 @@ class Parameter {
             p.type = null;
         }
         else {
-            p.type = Type_1.Type.parseSwagger(obj.schema || obj, null, false);
+            p.type = Type_1.Type.parseSwagger(api, obj.schema || obj, null, false);
         }
         return p;
     }

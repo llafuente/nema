@@ -6,7 +6,7 @@ const ava_1 = require("ava");
 let swagger;
 ava_1.default.cb.serial("parse swagger", (t) => {
     swagger = Api_1.Api.parseSwaggerFile("./test/api-test-001.yaml");
-    //console.log(JSON.stringify(swagger, null, 2));
+    //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
     t.deepEqual(Object.keys(swagger.methods), [
         'createStrategyRest',
         'initStrategyRest',
@@ -68,7 +68,7 @@ ava_1.default.cb.serial("parse swagger", (t) => {
     t.deepEqual(swagger.models.ParametersDto.type.toTypeScriptType(), "object", "typescript type ok");
     t.deepEqual(swagger.methods.createStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["string", "string"], "typescript type ok");
     t.deepEqual(swagger.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["InitiParametersDto", "string"], "typescript type ok");
-    t.deepEqual(swagger.models.OrderMonitoring.extends, "MonitoringDto", "type extends");
+    t.deepEqual(swagger.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends");
     t.deepEqual(Object.keys(swagger.models.OrderMonitoring.type.properties), ["type", "quantity", "monitoringType"], "type extends parsed ok");
     Angular5Client_1.Angular5Client.generate(swagger, `./test/api-test-001/`, false);
     t.end();

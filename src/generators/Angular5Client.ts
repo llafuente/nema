@@ -7,6 +7,7 @@ import * as _ from "lodash";
 import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
+import { TypescriptFile } from "../TypescriptFile";
 
 function mkdirSafe(folder) {
   try {
@@ -72,7 +73,7 @@ export class Angular5Client {
   }
 
   static apiFile(api: Api, filename: string) {
-    fs.writeFileSync(filename, Angular5Client.api(api));
+    fs.writeFileSync(filename, Angular5Client.api(api, filename));
   }
 
   static packageJSONFile(api: Api, filename: string) {
@@ -189,23 +190,22 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
 
 
   }
-  static api(api: Api): string {
-    const s = [
-    Angular5Client.header(api),
-`import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from "@angular/common/http";
+  static api(api: Api, filename): string {
+    const ts = new TypescriptFile();
+    ts.header = Angular5Client.header(api);
+
+    ts.push(`import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";
-import { CommonException } from "./CommonException";
-import { Cast } from "./Cast";`,
-    ];
+import { CommonException } from "./CommonException";`);
 
     // import all models
     api.eachModel((model, modelName) => {
-      s.push(`import { ${modelName} } from "./models/${modelName}";`);
+      ts.push(`import { ${modelName} } from "./models/${modelName}";`);
     });
 
     // Api class
-    s.push(
+    ts.push(
 `@Injectable()
 export class ${api.apiName} {
   scheme: string = ${JSON.stringify(api.schemes[0])};
@@ -244,9 +244,9 @@ export class ${api.apiName} {
 
     api.eachMethod((method) => {
       // Verb
-      s.push(`// source: ${method.api.filename}`);
-      s.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
-      s.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath || method.api.basePath, method.url))};`);
+      ts.push(`// source: ${method.api.filename}`);
+      ts.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
+      ts.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath || method.api.basePath, method.url))};`);
 
       const pathParams = [];
       const pathParamsNames = [];
@@ -291,7 +291,7 @@ export class ${api.apiName} {
       const responseType = method.getSuccessResponse().type;
       const responseTypeTS = responseType.toTypeScriptType();
 
-      s.push(`
+      ts.push(`
       ${method.operationId}URL(
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
@@ -315,14 +315,14 @@ export class ${api.apiName} {
       const hasHeaders = method.consumes.length || method.countParams(ParameterType.HEADER, true);
 
       if (hasHeaders) {
-        s.push(`let $headers = new HttpHeaders();`);
+        ts.push(`let $headers = new HttpHeaders();`);
         // TODO this need to be reviewed, to choose one, our APIs just have one and this works...
         if (method.consumes.length) {
-          s.push(`$headers = $headers.append("Content-Type", ${JSON.stringify(method.consumes)});`);
+          ts.push(`$headers = $headers.append("Content-Type", ${JSON.stringify(method.consumes)});`);
         }
 
         method.eachHeaderParam((param) => {
-          s.push(`
+          ts.push(`
             if (${param.name} != null) {
               $headers = $headers.append("${param.headerName || param.name}", ${param.name});
             }
@@ -330,7 +330,7 @@ export class ${api.apiName} {
         }, true);
       }
 
-      s.push(`const $url: string = this.${method.operationId}URL(${pathParamsNames.concat(queryParamsNames).join(",")});`);
+      ts.push(`const $url: string = this.${method.operationId}URL(${pathParamsNames.concat(queryParamsNames).join(",")});`);
 
       /*
        * Nasty thing below...
@@ -345,22 +345,22 @@ export class ${api.apiName} {
        * in an ngFor will throw errors
        */
 
-      s.push(`const $options = {`);
+      ts.push(`const $options = {`);
       if (hasHeaders) {
-        s.push(`headers: $headers,`);
+        ts.push(`headers: $headers,`);
       }
       if (method.producesJSON()) {
-        s.push(`responseType: "json" as "json",`);
+        ts.push(`responseType: "json" as "json",`);
       } else if (method.producesText()) {
-        s.push(`responseType: "text" as "text",`);
+        ts.push(`responseType: "text" as "text",`);
       } else if (method.producesBlob()) {
-        s.push(`responseType: "blob" as "blob",`);
+        ts.push(`responseType: "blob" as "blob",`);
       } else if (responseTypeTS != "void") {
         console.log(method, responseTypeTS);
         throw new Error(`invalid produces, only: application/json, text/plain, text/html found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
       }
 
-      s.push(`withCredentials: true // enable CORS
+      ts.push(`withCredentials: true // enable CORS
       }`);
 
       const httpParams = ["$url"];
@@ -378,26 +378,26 @@ export class ${api.apiName} {
       httpParams.push("$options");
 
       if (method.producesJSON()) {
-        s.push(`const observable = this.http.${method.verb}<${responseType.toTypeScriptType()}>(${httpParams.join(",")});`);
+        ts.push(`const observable = this.http.${method.verb}<${responseType.toTypeScriptType()}>(${httpParams.join(",")});`);
       } else {
-        s.push(`const observable = this.http.${method.verb}(${httpParams.join(",")});`);
+        ts.push(`const observable = this.http.${method.verb}(${httpParams.join(",")});`);
       }
 
-      s.push(`
+      ts.push(`
         const ret = new Subject<${responseTypeTS}>();
         observable.subscribe((response: ${responseTypeTS == "void" ? "null" : responseTypeTS}) => {
           console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response);
 
           ret.next(${responseTypeTS == "void" ?
             "null" :
-            responseType.getParser("response")
+            responseType.getParser("response", ts)
           });
           ret.complete();
         }, (response: HttpErrorResponse) => {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);
           const error = CommonException.parse(response.error);
 
-          ret.next(${responseType.getParser(responseType.getEmptyValue())}); // force cast
+          ret.next(${responseType.getParser(responseType.getEmptyValue(), ts)}); // force cast
           ret.complete();
 
           // notify global error handler
@@ -409,8 +409,8 @@ export class ${api.apiName} {
 
     })
 
-    s.push(`}`);
-    return s.join("\n");
+    ts.push(`}`);
+    return ts.toString(filename)
   }
 
   static packageJSON(api: Api) {

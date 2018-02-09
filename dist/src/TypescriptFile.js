@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
 class TypescriptFile {
     constructor() {
+        this.header = "";
         this.rawImports = "";
         this.imports = [];
         this.body = [];
@@ -18,6 +19,9 @@ class TypescriptFile {
     }
     toString(filename) {
         const s = [];
+        if (this.header) {
+            s.push(this.header);
+        }
         if (this.rawImports) {
             s.push(this.rawImports);
         }

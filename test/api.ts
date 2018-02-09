@@ -7,7 +7,7 @@ let swagger: Api;
 test.cb.serial("parse swagger", (t) => {
   swagger = Api.parseSwaggerFile("./test/api-test-001.yaml");
 
-  //console.log(JSON.stringify(swagger, null, 2));
+  //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
 
   t.deepEqual(Object.keys(swagger.methods), [
     'createStrategyRest',
@@ -82,7 +82,7 @@ test.cb.serial("parse swagger", (t) => {
   );
 
   t.deepEqual(
-    swagger.models.OrderMonitoring.extends, "MonitoringDto", "type extends"
+    swagger.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends"
   );
 
   t.deepEqual(

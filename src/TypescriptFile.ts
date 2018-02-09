@@ -6,6 +6,7 @@ export interface TypescriptImport {
 }
 
 export class TypescriptFile {
+  header: string = "";
   rawImports: string = "";
   imports: TypescriptImport[] = [];
 
@@ -25,6 +26,10 @@ export class TypescriptFile {
 
   toString(filename) {
     const s = [];
+    if (this.header) {
+      s.push(this.header);
+    }
+
     if (this.rawImports) {
       s.push(this.rawImports);
     }

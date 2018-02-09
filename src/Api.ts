@@ -144,7 +144,7 @@ export class Api {
     });
 
     _.each(swagger.parameters, (param, paramName) => {
-      api.parameters[paramName] = Parameter.parseSwagger(param);
+      api.parameters[paramName] = Parameter.parseSwagger(api, param);
     });
 
     return api;
@@ -227,6 +227,7 @@ export class Api {
   }
 
   getReference(ref: string): Model|Parameter {
+    //console.log(`getReference(${ref})`);
     ref = ref.substr(2);
     const c = ref.indexOf("/");
     const where = ref.substr(0, c);
@@ -234,11 +235,11 @@ export class Api {
 
     switch(where) {
       case "definitions":
-        if (!this.models[target]) {
+        if (!this.models[target] && !this.enums[target]) {
           throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);
         }
 
-        return this.models[target];
+        return this.models[target] || this.enums[target];
       case "parameters":
         if (!this.parameters[target]) {
           throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);

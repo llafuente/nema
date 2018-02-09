@@ -28,7 +28,6 @@ export class Mongoose {
     mkdirSafe(path.join(dstPath, "src/models")); // raw models
     mkdirSafe(path.join(dstPath, "src/mongoose")); // mongoose schema/model
     mkdirSafe(path.join(dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
-    mkdirSafe(path.join(dstPath, "src/routes"));
 
     // generate all models
     CommonGenerator.models(api, dstPath);

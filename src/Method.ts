@@ -50,7 +50,7 @@ export class Method {
     m.produces = produces;
 
     m.parameters = parameters.map((x) => {
-      return Parameter.parseSwagger(x);
+      return Parameter.parseSwagger(api, x);
     });
 
     // Keep compat with our legacy generator
@@ -66,7 +66,7 @@ export class Method {
     }
 
     _.each(method.responses, (response, responseType) => {
-      m.responses.push(Response.parseSwagger(responseType, response))
+      m.responses.push(Response.parseSwagger(api, responseType, response))
     });
 
     // check no multiple success responses allowed

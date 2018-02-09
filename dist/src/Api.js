@@ -89,7 +89,7 @@ class Api {
             }
         });
         _.each(swagger.parameters, (param, paramName) => {
-            api.parameters[paramName] = Parameter_1.Parameter.parseSwagger(param);
+            api.parameters[paramName] = Parameter_1.Parameter.parseSwagger(api, param);
         });
         return api;
     }
@@ -155,16 +155,17 @@ class Api {
         this.enums = ksort(this.enums);
     }
     getReference(ref) {
+        //console.log(`getReference(${ref})`);
         ref = ref.substr(2);
         const c = ref.indexOf("/");
         const where = ref.substr(0, c);
         const target = ref.substr(c + 1);
         switch (where) {
             case "definitions":
-                if (!this.models[target]) {
+                if (!this.models[target] && !this.enums[target]) {
                     throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);
                 }
-                return this.models[target];
+                return this.models[target] || this.enums[target];
             case "parameters":
                 if (!this.parameters[target]) {
                     throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);

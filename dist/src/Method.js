@@ -33,7 +33,7 @@ class Method {
         m.consumes = consumes;
         m.produces = produces;
         m.parameters = parameters.map((x) => {
-            return Parameter_1.Parameter.parseSwagger(x);
+            return Parameter_1.Parameter.parseSwagger(api, x);
         });
         // Keep compat with our legacy generator
         // this is out of the swagger standard, sry
@@ -47,7 +47,7 @@ class Method {
             method.responses = responses;
         }
         _.each(method.responses, (response, responseType) => {
-            m.responses.push(Response_1.Response.parseSwagger(responseType, response));
+            m.responses.push(Response_1.Response.parseSwagger(api, responseType, response));
         });
         // check no multiple success responses allowed
         let oks = 0;

@@ -30,7 +30,16 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
         'petDto',
         'veterinarianDto',
     ], "all methods added");
+    t.deepEqual(Object.keys(api.enums), [
+        'petType',
+    ], "all methods added");
+    t.end();
+});
+ava_1.default.cb.serial("angular 5 generation", (t) => {
     Angular5Client_1.Angular5Client.generate(api, `./test/pet-store-client/`, false);
+    t.end();
+});
+ava_1.default.cb.serial("express generation", (t) => {
     Mongoose_1.Mongoose.generate(api, `./test/pet-store-server/`, false);
     (new Express_1.Express(`./test/pet-store-server/`)).generate(api, false);
     t.end();

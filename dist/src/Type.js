@@ -16,15 +16,20 @@ class Type {
          */
         this.items = undefined;
         /**
-         * reference to another model
+         * Enum choices
+         */
+        this.choices = undefined;
+        /**
+         * Reference to another model
          */
         this.referenceModel = undefined;
     }
     /**
-     * parse type from swagger
+     * Parse type from swagger
      */
     static parseSwagger(obj, modelName, isDefinition) {
         const t = new Type();
+        t.name = modelName;
         t.isDefinition = isDefinition;
         obj = obj || { type: "void" };
         // sanity checks
@@ -44,10 +49,18 @@ class Type {
             console.log(modelName, obj);
             throw new Error("type has type and reference");
         }
+        if (!isDefinition && obj.enum) {
+            console.log(obj);
+            throw new Error("enum need to be in definitions at first level");
+        }
         if (obj.type) {
             t.type = obj.type.toLocaleLowerCase();
         }
         t.description = obj.description;
+        if (obj.enum) {
+            t.type = "enum";
+            t.choices = obj.enum;
+        }
         if (t.type == "object") {
             t.properties = _.mapValues(obj.properties, (x) => {
                 return Type.parseSwagger(x, null, false);
@@ -81,6 +94,8 @@ class Type {
      */
     toBaseType() {
         switch (this.type) {
+            case "enum":
+                return this.name;
             case "array":
                 return this.items.toBaseType();
         }

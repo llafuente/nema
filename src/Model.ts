@@ -7,6 +7,7 @@ export class Model {
   api: Api = null;
 
   name: string;
+  filename: string;
   description: string;
   type: Type;
   /*
@@ -43,6 +44,7 @@ export class Model {
 
   static parseSwagger(api: Api, name: string, obj): Model {
     const m = new Model();
+    m.filename = `/src/models/${m.name}.ts`;
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
 
@@ -74,6 +76,7 @@ export class Model {
 
   eachProperty(cb: (t: Type, name: string) => void) {
     if (this.type.type !== "object") {
+      console.log(this);
       throw new Error("wtf!?")
     }
 
@@ -82,5 +85,9 @@ export class Model {
 
   eachParentProperty(cb: (t: Type, name: string) => void) {
     this.api.models[this.extends].eachProperty(cb);
+  }
+
+  isEnum(): boolean {
+    return this.type.type == "enum";
   }
 }

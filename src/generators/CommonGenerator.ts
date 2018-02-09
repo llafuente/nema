@@ -74,7 +74,7 @@ export function copyCommonTemplates(dstPath: string) {
 
 export function models(api: Api, dstPath: string) {
   api.eachModel((mdl, modelName) => {
-    fs.writeFileSync(path.join(dstPath, `src/models/${modelName}.ts`), model(api, mdl));
+    fs.writeFileSync(path.join(dstPath, mdl.filename), model(api, mdl));
   });
 }
 

@@ -4,6 +4,8 @@ import { TypescriptFile } from "./TypescriptFile";
 export const Models: {[name: string]: Type} = {};
 
 export class Type {
+  name: string;
+
   type: string = null;
   description: string = undefined;
   isDefinition: boolean = undefined;
@@ -16,14 +18,19 @@ export class Type {
    */
   items?: Type = undefined;
   /**
-   * reference to another model
+   * Enum choices
+   */
+  choices?: string[] = undefined;
+  /**
+   * Reference to another model
    */
   referenceModel?: string = undefined;
   /**
-   * parse type from swagger
+   * Parse type from swagger
    */
   static parseSwagger(obj, modelName: string, isDefinition: boolean): Type {
     const t = new Type();
+    t.name = modelName;
     t.isDefinition = isDefinition;
     obj = obj || { type: "void" };
 
@@ -40,16 +47,25 @@ export class Type {
       console.log(modelName, obj);
       throw new Error("missing type.items");
     }
-
     if (obj.type && obj.$ref) {
       console.log(modelName, obj);
       throw new Error("type has type and reference");
     }
+    if (!isDefinition && obj.enum) {
+      console.log(obj);
+      throw new Error("enum need to be in definitions at first level");
+    }
+
+
     if (obj.type) {
       t.type = obj.type.toLocaleLowerCase();
     }
     t.description = obj.description;
 
+    if (obj.enum) {
+      t.type = "enum";
+      t.choices = obj.enum;
+    }
 
     if (t.type == "object") {
       t.properties = _.mapValues(obj.properties, (x) => {
@@ -90,6 +106,8 @@ export class Type {
    */
   toBaseType(): string {
     switch (this.type) {
+    case "enum":
+      return this.name;
     case "array":
       return this.items.toBaseType();
     }

@@ -57,8 +57,7 @@ definitions:
         type: string
         format: 'date'
       type:
-        type: string
-        enum: [cat, dog, bird]
+        $ref: "#/definitions/petType"
       address:
         $ref: "#/definitions/veterinarianDto"
       vet:
@@ -69,6 +68,10 @@ definitions:
         items:
           type: string
           minLength: 1
+
+  petType:
+    type: string
+    enum: [cat, dog, bird]
 
   veterinarianDto:
     type: object
@@ -127,8 +130,8 @@ paths:
           in: query
           description: Filters pets by type (dog, cat, or bird)
           required: false
-          type: string
-          enum: [cat, dog, bird]
+          schema:
+            $ref: "#/definitions/petType"
         - name: age
           in: query
           description: Filters pets by age

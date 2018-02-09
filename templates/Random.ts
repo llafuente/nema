@@ -6,6 +6,10 @@ export class Random {
     return Random.number();
   }
 
+  static enum(arr: string[]): string {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
   static array(): any[] {
     return [];
   }

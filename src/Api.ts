@@ -51,6 +51,7 @@ export class Api {
 
   methods: { [name: string]: Method} = {};
   models: { [name: string]: Model} = {};
+  enums: { [name: string]: Model} = {};
   parameters: { [name: string]: Parameter} = {};
 
   constructor() {
@@ -134,7 +135,12 @@ export class Api {
     });
 
     _.each(swagger.definitions, (model, name) => {
-      api.addModel(Model.parseSwagger(api, name, model), false);
+      const mdl = Model.parseSwagger(api, name, model);
+      if (mdl.isEnum()) {
+        api.addEnum(mdl, false);
+      } else {
+        api.addModel(mdl, false);
+      }
     });
 
     _.each(swagger.parameters, (param, paramName) => {
@@ -167,6 +173,15 @@ export class Api {
     this.models[model.name] = model;
   }
 
+  addEnum(e: Model, override: boolean) {
+    //console.log(`addModel: ${model.name}`);
+    if (!override && this.enums[e.name] !== undefined) {
+      throw new Error(`try to override an already defined enum: ${e.name} from ${this.models[e.name].api.filename} to ${e.api.filename}`);
+    }
+
+    this.enums[e.name] = e;
+  }
+
   addMethod(method: Method, override: boolean) {
     if (!override && this.methods[method.operationId] !== undefined) {
       throw new Error(`try to override an already defined method: ${method.operationId} from ${this.methods[method.operationId]} to ${method.api.filename}`);
@@ -177,6 +192,10 @@ export class Api {
 
   eachModel(cb: (m: Model, modelName: string) => void) {
     _.each(this.models, cb);
+  }
+
+  eachEnum(cb: (m: Model, modelName: string) => void) {
+    _.each(this.enums, cb);
   }
 
   eachMethod(cb: (m: Method, operationId: string) => void) {
@@ -204,6 +223,7 @@ export class Api {
   sort() {
     this.methods = ksort(this.methods);
     this.models = ksort(this.models);
+    this.enums = ksort(this.enums);
   }
 
   getReference(ref: string): Model|Parameter {

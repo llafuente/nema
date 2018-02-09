@@ -34,8 +34,20 @@ test.cb.serial("parse swagger file", (t) => {
     'veterinarianDto',
   ], "all methods added");
 
-  Angular5Client.generate(api, `./test/pet-store-client/`, false);
-  Mongoose.generate(api, `./test/pet-store-server/`, false);
-  (new Express(`./test/pet-store-server/`)).generate(api, false);
-  t.end()
+  t.deepEqual(Object.keys(api.enums), [
+    'petType',
+  ], "all methods added");
+
+  t.end();
 });
+
+test.cb.serial("angular 5 generation", (t) => {
+  Angular5Client.generate(api, `./test/pet-store-client/`, false);
+  t.end();
+});
+
+test.cb.serial("express generation", (t) => {
+   Mongoose.generate(api, `./test/pet-store-server/`, false);
+   (new Express(`./test/pet-store-server/`)).generate(api, false);
+   t.end();
+ });

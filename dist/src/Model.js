@@ -9,6 +9,7 @@ class Model {
     }
     static parseSwagger(api, name, obj) {
         const m = new Model();
+        m.filename = `/src/models/${m.name}.ts`;
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         if (obj.allOf) {
             m.extends = obj.allOf[0].$ref.substring("#/definitions/".length);
@@ -33,12 +34,16 @@ class Model {
     }
     eachProperty(cb) {
         if (this.type.type !== "object") {
+            console.log(this);
             throw new Error("wtf!?");
         }
         _.each(this.type.properties, cb);
     }
     eachParentProperty(cb) {
         this.api.models[this.extends].eachProperty(cb);
+    }
+    isEnum() {
+        return this.type.type == "enum";
     }
 }
 exports.Model = Model;

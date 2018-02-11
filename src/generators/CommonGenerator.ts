@@ -17,8 +17,10 @@ export function writeModificableTemplate(filename: string, tpl: ModificableTempl
   let template = tpl.template;
   try {
     contents = fs.readFileSync(filename).toString();
-  } catch(e) {
-    console.log(e);
+  } catch(err) {
+    if (err.code != "ENOENT") {
+      console.error(err);
+    }
   }
 
   if (contents) {
@@ -76,6 +78,10 @@ export function copyCommonTemplates(dstPath: string) {
 export function models(api: Api, dstPath: string) {
   api.eachModel((mdl, modelName) => {
     fs.writeFileSync(path.join(dstPath, "." + mdl.filename), model(api, mdl, mdl.filename));
+  });
+
+  api.eachEnum((mdl, modelName) => {
+    fs.writeFileSync(path.join(dstPath, "." + mdl.filename), enumerate(api, mdl));
   });
 }
 
@@ -204,3 +210,12 @@ export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
 
     return s.join("\n");
 }
+
+
+export function enumerate(api: Api, model: Model): string {
+  return `export enum ${model.name} {
+    ${model.type.choices.map((x) => {
+      return `${x.toUpperCase()} = ${JSON.stringify(x)}`;
+    }).join(",\n")}
+  }`;
+ }

@@ -77,7 +77,7 @@ export class Model {
 
   eachProperty(cb: (t: Type, name: string) => void) {
     if (this.type.type !== "object") {
-      console.log(this);
+      console.error(this);
       throw new Error("wtf!?")
     }
 

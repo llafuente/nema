@@ -6,6 +6,7 @@ import * as _ from "lodash";
 
 export class Method {
   api: Api = null;
+  filename: string = null;
   /*
    * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
    */
@@ -41,10 +42,11 @@ export class Method {
     m.verb = verb.toLowerCase();
     m.url = url;
     if (!method.operationId) {
-      console.log(method);
+      console.error(method);
       throw new Error(`operationId is required at ${api.filename}`);
     }
     m.operationId = method.operationId;
+    m.filename = `/src/routes/${method.operationId}.ts`;
     m.description = method.description;
     m.consumes = consumes;
     m.produces = produces;
@@ -77,7 +79,7 @@ export class Method {
       }
     });
     if (oks > 1) {
-      console.log(method);
+      console.error(method);
       throw new Error(`invalid responses, multiple success responses found at ${api.filename}`)
     }
     //end-check
@@ -233,5 +235,19 @@ export class Method {
     }
 
     return null;
+  }
+
+  eachResponse(cb: (response: Response) => void) {
+    _.each(this.responses, (response) => {
+      if (response.reference) {
+        // create a new one, http from here, the rest from the reference
+        const r = new Response();
+        _.assign(r, this.api.getReference(response.reference) as Response);
+        r.httpCode = response.httpCode;
+        cb(r);
+      } else {
+        cb(response);
+      }
+    });
   }
 }

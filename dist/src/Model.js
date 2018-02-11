@@ -34,7 +34,7 @@ class Model {
     }
     eachProperty(cb) {
         if (this.type.type !== "object") {
-            console.log(this);
+            console.error(this);
             throw new Error("wtf!?");
         }
         _.each(this.type.properties, cb);

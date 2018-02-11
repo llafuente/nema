@@ -35,4 +35,4 @@ ava_1.default.cb.serial("parse swagger", (t) => {
     });
     t.end();
 });
-//# sourceMappingURL=no-cycles.js.map
+//# sourceMappingURL=no-cycles.test.js.map

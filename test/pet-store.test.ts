@@ -1,9 +1,12 @@
 import { Api } from "../src/Api";
+import { Model } from "../src/Model";
 import { Angular5Client } from "../src/generators/Angular5Client";
 import { Mongoose } from "../src/generators/Mongoose";
 import { Express } from "../src/generators/Express";
+import { TypescriptFile } from "../src/TypescriptFile";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
+import * as _ from "lodash";
 
 let api: Api;
 test.cb.serial("parse swagger file", (t) => {
@@ -37,6 +40,33 @@ test.cb.serial("parse swagger file", (t) => {
   t.deepEqual(Object.keys(api.enums), [
     'petType',
   ], "all methods added");
+
+  const s = api.methods.deletePetPhoto.getSuccessResponse();
+  console.log(s);
+
+  t.is(s.type.type, "void", "deletePetPhoto response is void");
+  const ts = new TypescriptFile();
+  t.is(s.type.getRandom(ts), "null", "randomize void -> null");
+  t.is(ts.imports.length, 0, "no imports needed for void");
+
+
+  t.is(api.enums.petType.type.type, "enum", "petType is an enum");
+  t.deepEqual(api.enums.petType.type.choices, [ "cat", "dog", "bird"], "petType choices");
+
+  t.is(api.methods.deletePets.parameters.length, 11, "deletePets has 11 parameters");
+  const petTypeParam = _.find(api.methods.deletePets.parameters, {name: "type"})
+  t.not(petTypeParam, null);
+
+  t.is(petTypeParam.type.type, "reference", "petTypeParam.type is a reference");
+  const petType = petTypeParam.type.api.getReference(petTypeParam.type.referenceModel) as Model;
+
+  t.is(petType.name, "petType");
+
+  t.is(petTypeParam.type.getRandom(ts), "petType.CAT");
+  t.is(petType.type.getRandom(ts), "petType.CAT");
+
+  t.is(petTypeParam.type.getParser("xxx", ts), `["cat","dog","bird"].indexOf(xxx) === -1 ? null : xxx`);
+
 
   t.end();
 });

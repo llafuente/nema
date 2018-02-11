@@ -6,6 +6,7 @@ const _ = require("lodash");
 class Method {
     constructor() {
         this.api = null;
+        this.filename = null;
         /*
          * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
          */
@@ -25,10 +26,11 @@ class Method {
         m.verb = verb.toLowerCase();
         m.url = url;
         if (!method.operationId) {
-            console.log(method);
+            console.error(method);
             throw new Error(`operationId is required at ${api.filename}`);
         }
         m.operationId = method.operationId;
+        m.filename = `/src/routes/${method.operationId}.ts`;
         m.description = method.description;
         m.consumes = consumes;
         m.produces = produces;
@@ -57,7 +59,7 @@ class Method {
             }
         });
         if (oks > 1) {
-            console.log(method);
+            console.error(method);
             throw new Error(`invalid responses, multiple success responses found at ${api.filename}`);
         }
         //end-check
@@ -183,6 +185,20 @@ class Method {
             return this.getResponse(0);
         }
         return null;
+    }
+    eachResponse(cb) {
+        _.each(this.responses, (response) => {
+            if (response.reference) {
+                // create a new one, http from here, the rest from the reference
+                const r = new Response_1.Response();
+                _.assign(r, this.api.getReference(response.reference));
+                r.httpCode = response.httpCode;
+                cb(r);
+            }
+            else {
+                cb(response);
+            }
+        });
     }
 }
 exports.Method = Method;

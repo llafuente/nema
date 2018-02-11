@@ -41,27 +41,30 @@ class Type {
         obj = obj || { type: "void" };
         // sanity checks
         if (!modelName && obj.type == "object" && !obj.properties) {
-            console.log(obj);
+            console.error(obj);
             throw new Error("Object need to be in definitions at first level");
         }
         if (obj.type == "object" && !obj.properties) {
-            console.log(modelName, obj);
+            console.error(modelName, obj);
             throw new Error("missing type.properties");
         }
         if (obj.type == "array" && !obj.items) {
-            console.log(modelName, obj);
+            console.error(modelName, obj);
             throw new Error("missing type.items");
         }
         if (obj.type && obj.$ref) {
-            console.log(modelName, obj);
+            console.error(modelName, obj);
             throw new Error("type has type and reference");
         }
         if (!isDefinition && obj.enum) {
-            console.log(obj);
+            console.error(obj);
             throw new Error("enum need to be in definitions at first level");
         }
         if (obj.type) {
             t.type = obj.type.toLocaleLowerCase();
+        }
+        else {
+            t.type = "void";
         }
         t.description = obj.description;
         if (obj.enum) {
@@ -78,6 +81,7 @@ class Type {
         }
         if (obj.$ref) {
             t.referenceModel = obj.$ref;
+            t.type = "reference";
         }
         return t;
     }
@@ -103,7 +107,7 @@ class Type {
         if (this.referenceModel) {
             return this.api.getReference(this.referenceModel).name;
         }
-        console.log(this);
+        console.error(this);
         throw new Error("???");
     }
     /**
@@ -212,23 +216,33 @@ class Type {
      * Get generated code: parse this type given the source variable
      */
     getRandom(ts) {
-        // file is really a Blob and don't need to be casted
-        if (this.type == "file") {
-            return "null";
-        }
-        // loop through arrays casting it's values
-        if (this.type == "array") {
-            if (this.items.isPrimitive()) {
-                ts.addImport("Random", `/src/Random.ts`);
-                return `Array(2).map((x) => Random.${this.items.type}())`;
-            }
-            ts.addImport(this.items.toBaseType(), `/src/models/${this.items.toBaseType()}.ts`);
-            return `Array(2).map((x) => ${this.items.toTypeScriptType()}.randomInstance())`;
+        switch (this.type) {
+            case "reference":
+                return this.api.getReference(this.referenceModel).type.getRandom(ts);
+            case "enum":
+                ts.addImport(this.name, `/src/models/${this.name}.ts`);
+                return `${this.name}.${this.choices[0].toUpperCase()}`;
+            case "void":
+            // file is really a Blob and don't need to be casted
+            case "file":
+                return "null";
+            case "array":
+                // loop through arrays casting it's values
+                if (this.items.isPrimitive()) {
+                    ts.addImport("Random", `/src/Random.ts`);
+                    return `Array(2).map((x) => Random.${this.items.type}())`;
+                }
+                return `Array(2).map((x) => ${this.items.getRandom(ts)})`;
         }
         if (this.isPrimitive()) {
             // primitive simple casting with null
             ts.addImport("Random", `/src/Random.ts`);
             return `Random.${this.type}()`;
+        }
+        if (this.isDefinition) {
+            // use model.parse
+            ts.addImport(this.name, `/src/models/${this.name}.ts`);
+            return `${this.name}.randomInstance()`;
         }
         // use model.parse
         ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
@@ -238,26 +252,34 @@ class Type {
      * Get generated code: parse this type given the source variable
      */
     getParser(src, ts) {
-        // file is really a Blob and don't need to be casted
-        if (this.type == "file") {
-            return src;
-        }
-        // loop through arrays casting it's values
-        if (this.type == "array") {
-            if (this.items.isPrimitive()) {
-                ts.addImport("Cast", `/src/Cast.ts`);
-                return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
-            }
-            ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
-            return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
+        switch (this.type) {
+            case "reference":
+                return this.api.getReference(this.referenceModel).type.getParser(src, ts);
+            case "void":
+                return "void(0)";
+            case "file":
+                // file is really a Blob and don't need to be casted
+                return src;
+            case "enum":
+                ts.addImport(this.name, `/src/models/${this.name}.ts`);
+                return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
+            case "array":
+                if (this.items.isPrimitive()) {
+                    ts.addImport("Cast", `/src/Cast.ts`);
+                    return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
+                }
+                //ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
+                //return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
+                return `(${src} || []).map((x) => ${this.items.getParser("x", ts)})`;
         }
         if (this.isPrimitive()) {
             // primitive simple casting with null
             ts.addImport("Cast", `/src/Cast.ts`);
             return `Cast.${this.type}(${src})`;
         }
-        if (!this.type && !this.referenceModel) {
-            return "void(0)";
+        if (this.isDefinition) {
+            ts.addImport(this.name, `/src/models/${this.name}.ts`);
+            return `${this.name}.parse(${src})`;
         }
         // use model.parse
         ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
@@ -271,15 +293,18 @@ class Type {
             return this.api.getReference(this.referenceModel).type.getEmptyValue();
         }
         if (this.isDefinition) {
-            console.log(this);
+            if (this.type == "enum") {
+                return "null";
+            }
             return `${this.name}.emptyInstance()`;
         }
         if (this.type == "array") {
             return "[]";
         }
-        if (this.isPrimitive() || !this.type) {
+        if (this.isPrimitive() || !this.type || this.type == "file") {
             return "null";
         }
+        // return `${this.toTypeScriptType()}.emptyInstance()`;
         return "{}";
     }
 }

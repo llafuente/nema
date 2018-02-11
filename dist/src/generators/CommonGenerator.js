@@ -12,8 +12,10 @@ function writeModificableTemplate(filename, tpl) {
     try {
         contents = fs.readFileSync(filename).toString();
     }
-    catch (e) {
-        console.log(e);
+    catch (err) {
+        if (err.code != "ENOENT") {
+            console.error(err);
+        }
     }
     if (contents) {
         tpl.tokens.forEach((token) => {
@@ -64,6 +66,9 @@ exports.copyCommonTemplates = copyCommonTemplates;
 function models(api, dstPath) {
     api.eachModel((mdl, modelName) => {
         fs.writeFileSync(path.join(dstPath, "." + mdl.filename), model(api, mdl, mdl.filename));
+    });
+    api.eachEnum((mdl, modelName) => {
+        fs.writeFileSync(path.join(dstPath, "." + mdl.filename), enumerate(api, mdl));
     });
 }
 exports.models = models;
@@ -174,4 +179,12 @@ function modelClass(api, model, ts) {
     return s.join("\n");
 }
 exports.modelClass = modelClass;
+function enumerate(api, model) {
+    return `export enum ${model.name} {
+    ${model.type.choices.map((x) => {
+        return `${x.toUpperCase()} = ${JSON.stringify(x)}`;
+    }).join(",\n")}
+  }`;
+}
+exports.enumerate = enumerate;
 //# sourceMappingURL=CommonGenerator.js.map

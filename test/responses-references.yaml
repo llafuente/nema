@@ -1,0 +1,86 @@
+swagger: '2.0'
+info:
+  title: RestApi
+  description: These APIs allow to handle Algo Framework
+  version: 1.2.0
+  contact:
+    name: XXX
+    email: YYY@ZZZ.com
+    url: https://abc.com
+host: localhost:8080
+x-nema:
+  apiName: RestApi
+  angularClientNodeModuleName: angular5client-parameters-api
+  angularClientModuleName: ParametersApiModule
+  frontBasePath: /angular5client-parameters/api/v1
+schemes:
+ - http
+ - https
+basePath: /api/v1
+consumes:
+  - application/json
+produces:
+  - application/json
+parameters:
+  userId:
+    name: userId
+    in: path
+    description: User identifier
+    type: number
+responses:
+  NotFound:
+    description: The specified resource was not found
+    schema:
+      $ref: "#/definitions/Error"
+  Unauthorized:
+    description: Unauthorized
+    schema:
+      $ref: "#/definitions/Error"
+#############################################################################
+#                                   Paths                                   #
+#############################################################################
+paths:
+  /{userId}:
+    parameters:
+      - $ref: "#/parameters/userId"
+    get:
+      operationId: getUser
+      description: Get user
+
+      responses:
+        200:
+          description: The strategy dto
+          schema:
+            $ref: '#/definitions/UserDto'
+        401:
+          $ref: "#/responses/Unauthorized"
+        404:
+          $ref: "#/responses/NotFound"
+
+################################################################################
+#                                 Definitions                                  #
+################################################################################
+definitions:
+  UserDto:
+    type: object
+    properties:
+      name:
+        type: string
+        description: User name
+      surname:
+        type: string
+        description: User surname
+      createDate:
+        type: string
+        description: Created date
+  # Schema for error response body
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    required:
+      - code
+      - message

@@ -21,11 +21,12 @@
   },
   "files": [
     "./src/nema.ts",
-    "./test/api.ts",
-    "./test/angular5client-resolve.ts",
-    "./test/angular5client-parameters.ts",
-    "./test/pet-store.ts",
-    "./test/no-cycles.ts"
+    "./test/api.test.ts",
+    "./test/angular5client-resolve.test.ts",
+    "./test/angular5client-parameters.test.ts",
+    "./test/pet-store.test.ts",
+    "./test/responses-references.test.ts",
+    "./test/no-cycles.test.ts"
   ],
   "exclude": [
     "node_modules"

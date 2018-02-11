@@ -11,5 +11,7 @@ docs/ # not ready yet
 /test/angular5client-parameters/
 /test/pet-store-client/
 /test/pet-store-server/
+/test/responses-references-client/
+/test/responses-references-server/
 /tmp/
 $Recycle.Bin/

@@ -5,6 +5,7 @@ const _ = require("lodash");
 const Method_1 = require("./Method");
 const Model_1 = require("./Model");
 const Parameter_1 = require("./Parameter");
+const Response_1 = require("./Response");
 function ksort(obj) {
     const ret = {};
     Object.keys(obj).sort().forEach((k) => {
@@ -21,6 +22,7 @@ class Api {
         this.models = {};
         this.enums = {};
         this.parameters = {};
+        this.responses = {};
     }
     static parseSwagger(filename, swagger) {
         const api = new Api();
@@ -90,6 +92,9 @@ class Api {
         });
         _.each(swagger.parameters, (param, paramName) => {
             api.parameters[paramName] = Parameter_1.Parameter.parseSwagger(api, param);
+        });
+        _.each(swagger.responses, (param, paramName) => {
+            api.responses[paramName] = Response_1.Response.parseSwagger(api, null, param);
         });
         return api;
     }
@@ -171,6 +176,11 @@ class Api {
                     throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);
                 }
                 return this.parameters[target];
+            case "responses":
+                if (!this.responses[target]) {
+                    throw new Error(`getReference: can't find responses: ${target} at ${this.filename}`);
+                }
+                return this.responses[target];
             default:
                 throw new Error("getReference: target not handled");
         }

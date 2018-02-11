@@ -24,4 +24,4 @@ ava_1.default.cb.serial("parse global parameters", (t) => {
     (new Angular5Client_1.Angular5Client(`./test/angular5client-parameters/`)).generate(api, false);
     t.end();
 });
-//# sourceMappingURL=angular5client-parameters.js.map
+//# sourceMappingURL=angular5client-parameters.test.js.map

@@ -73,4 +73,4 @@ ava_1.default.cb.serial("parse swagger", (t) => {
     (new Angular5Client_1.Angular5Client(`./test/api-test-001/`)).generate(swagger, false);
     t.end();
 });
-//# sourceMappingURL=api.js.map
+//# sourceMappingURL=api.test.js.map

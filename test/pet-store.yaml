@@ -39,8 +39,8 @@ definitions:
       description:
         type: string
       photo:
-        $ref: "#/definitions/PetPhotoDto"
-        description: Information about the photo (size, file name, etc.)
+        type: file
+        description: File
   petDto:
     type: object
     required:

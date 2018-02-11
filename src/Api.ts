@@ -6,6 +6,7 @@ import { Method } from "./Method";
 import { Type } from "./Type";
 import { Model } from "./Model";
 import { Parameter } from "./Parameter";
+import { Response } from "./Response";
 
 function ksort(obj) {
   const ret = {};
@@ -53,6 +54,7 @@ export class Api {
   models: { [name: string]: Model} = {};
   enums: { [name: string]: Model} = {};
   parameters: { [name: string]: Parameter} = {};
+  responses: { [name: string]: Response} = {};
 
   constructor() {
 
@@ -147,6 +149,10 @@ export class Api {
       api.parameters[paramName] = Parameter.parseSwagger(api, param);
     });
 
+    _.each(swagger.responses, (param, paramName) => {
+      api.responses[paramName] = Response.parseSwagger(api, null, param);
+    });
+
     return api;
   }
 
@@ -226,7 +232,7 @@ export class Api {
     this.enums = ksort(this.enums);
   }
 
-  getReference(ref: string): Model|Parameter {
+  getReference(ref: string): Model|Parameter|Response {
     //console.log(`getReference(${ref})`);
     ref = ref.substr(2);
     const c = ref.indexOf("/");
@@ -246,6 +252,12 @@ export class Api {
         }
 
         return this.parameters[target];
+      case "responses":
+        if (!this.responses[target]) {
+          throw new Error(`getReference: can't find responses: ${target} at ${this.filename}`);
+        }
+
+        return this.responses[target];
       default:
         throw new Error("getReference: target not handled");
     }

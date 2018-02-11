@@ -9,13 +9,19 @@ export class Response {
   httpCode: number;
   description: string;
   type: Type;
+  reference: string;
 
   static parseSwagger(api: Api, httpCode, obj): Response {
     const r = new Response();
 
     r.httpCode = httpCode == "default" ? 0 : parseInt(httpCode, 10);
-    r.description = obj.description;
-    r.type = Type.parseSwagger(api, obj.schema || obj, null, false);
+
+    if (obj.$ref) {
+      r.reference = obj.$ref;
+    } else {
+      r.description = obj.description;
+      r.type = Type.parseSwagger(api, obj.schema || obj, null, false);
+    }
 
     return r;
   }

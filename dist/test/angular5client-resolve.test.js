@@ -23,4 +23,4 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     (new Angular5Client_1.Angular5Client(`./test/angular5client-resolve/`)).generate(api, false);
     t.end();
 });
-//# sourceMappingURL=angular5client-resolve.js.map
+//# sourceMappingURL=angular5client-resolve.test.js.map

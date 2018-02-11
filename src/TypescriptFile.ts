@@ -36,7 +36,17 @@ export class TypescriptFile {
 
     if (this.imports.length) {
       this.imports.map((imp) => {
-        return `import { ${imp.list.join(", ")} } from ${JSON.stringify(path.posix.relative(path.dirname(filename), imp.file))}`;
+        let filepath = path.posix.relative(path.dirname(filename), imp.file);
+        // it's a TS file?, remove extension and add ./
+        if (path.extname(filepath) == ".ts") {
+          if (filepath[0] == ".") {
+            filepath = `${filepath.substr(0, filepath.length - 3)}`;
+          } else {
+            filepath = `./${filepath.substr(0, filepath.length - 3)}`;
+          }
+        }
+
+        return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
       }).filter((value, index, self) => {
         return self.indexOf(value) === index;
       })

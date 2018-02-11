@@ -21,7 +21,7 @@ ava_1.default.cb.serial("parse global parameters", (t) => {
         t.is(param.name, "userId");
         t.is(param.type.toTypeScriptType(), "number");
     });
-    Angular5Client_1.Angular5Client.generate(api, `./test/angular5client-parameters/`, false);
+    (new Angular5Client_1.Angular5Client(`./test/angular5client-parameters/`)).generate(api, false);
     t.end();
 });
 //# sourceMappingURL=angular5client-parameters.js.map

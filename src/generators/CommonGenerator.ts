@@ -89,13 +89,13 @@ export function model(api: Api, model: Model, filename: string): string {
     ts.addImport(ex.name, ex.filename);
   }
 
-  ts.push(modelInterface(api, model))
-  ts.push(modelClass(api, model))
+  ts.push(modelInterface(api, model, ts))
+  ts.push(modelClass(api, model, ts))
 
   return ts.toString(filename);
 }
 
-export function modelInterface(api: Api, model: Model): string {
+export function modelInterface(api: Api, model: Model, ts: TypescriptFile): string {
   // start interface
   const s = [
     `export interface ${model.interfaceName} {`
@@ -109,7 +109,7 @@ export function modelInterface(api: Api, model: Model): string {
   return s.join("\n");
 }
 
-export function modelClass(api: Api, model: Model): string {
+export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
     const s = [];
 
     let ex: Model = null;
@@ -119,7 +119,7 @@ export function modelClass(api: Api, model: Model): string {
 
     // start class
     s.push(`export class ${model.name} ${model.extends ? "extends " + ex.name : ""} implements ${model.interfaceName} {`);
-    _.each(model.type.properties, (t, name) => {
+    model.eachProperty((t, name) => {
       s.push(`${name}: ${t.toTypeScriptType()};`);
     });
 
@@ -154,23 +154,9 @@ export function modelClass(api: Api, model: Model): string {
 
 
     function addParams(t: Type, name: string)  {
-      if (t.type == "array") {
-        if (t.items.isPrimitive()) {
-          parseNewParams.push(`(json.${name} || []).map((x) => Cast.${t.items.type}(x)),`);
-        } else {
-          parseNewParams.push(`(json.${name} || []).map((x) => ${t.items.toTypeScriptType()}.parse(x)),`);
-        }
-        emptyInstanceNewParams.push(`[],`);
-        randomInstanceNewParams.push(`[],`);
-      } else if (t.isPrimitive()) {
-        parseNewParams.push(`Cast.${t.type}(json.${name}),`);
-        emptyInstanceNewParams.push(`null,`);
-        randomInstanceNewParams.push(`Random.${t.type}(),`);
-      } else { // model
-        parseNewParams.push(`${t.toTypeScriptType()}.parse(json.${name}),`);
-        emptyInstanceNewParams.push(`${t.toTypeScriptType()}.emptyInstance(),`);
-        randomInstanceNewParams.push(`${t.toTypeScriptType()}.randomInstance(),`);
-      }
+      parseNewParams.push(t.getParser(`json.${name}`, ts));
+      randomInstanceNewParams.push(t.getRandom(ts));
+      emptyInstanceNewParams.push(t.getEmptyValue());
     }
 
     if (model.extends) {
@@ -185,19 +171,19 @@ export function modelClass(api: Api, model: Model): string {
       }
 
       return new ${model.name}(
-      ${parseNewParams.join("\n")}
+      ${parseNewParams.join(",\n")}
       );
     }
 
     static randomInstance(): ${model.name} {
       return new ${model.name}(
-      ${randomInstanceNewParams.join("\n")}
+      ${randomInstanceNewParams.join(",\n")}
       );
     }
 
     static emptyInstance(): ${model.name} {
       return new ${model.name}(
-      ${emptyInstanceNewParams.join("\n")}
+      ${emptyInstanceNewParams.join(",\n")}
       );
     }`);
 

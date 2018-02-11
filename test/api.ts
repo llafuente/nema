@@ -90,7 +90,7 @@ test.cb.serial("parse swagger", (t) => {
     ["type", "quantity", "monitoringType"], "type extends parsed ok"
   );
 
-  Angular5Client.generate(swagger, `./test/api-test-001/`, false);
+  (new Angular5Client(`./test/api-test-001/`)).generate(swagger, false);
 
   t.end()
 });

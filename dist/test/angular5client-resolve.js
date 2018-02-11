@@ -20,7 +20,7 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.PATH, true), 1);
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.HEADER, false), 1);
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.HEADER, true), 0);
-    Angular5Client_1.Angular5Client.generate(api, `./test/angular5client-resolve/`, false);
+    (new Angular5Client_1.Angular5Client(`./test/angular5client-resolve/`)).generate(api, false);
     t.end();
 });
 //# sourceMappingURL=angular5client-resolve.js.map

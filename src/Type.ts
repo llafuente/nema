@@ -94,14 +94,6 @@ export class Type {
       t.referenceModel = obj.$ref;
     }
 
-    if (modelName) {
-      if (Models[modelName]) {
-        throw new Error("Model redefinition: ${modelName}");
-      }
-
-      Models[modelName] = t;
-    }
-
     return t;
   }
   /**
@@ -256,22 +248,22 @@ export class Type {
     // loop through arrays casting it's values
     if (this.type == "array") {
       if (this.items.isPrimitive()) {
-        ts.addImport("Random", `./src/Random`);
-        return `Array(2).map((x) => Random.${this.items.type}(x))`;
+        ts.addImport("Random", `/src/Random.ts`);
+        return `Array(2).map((x) => Random.${this.items.type}())`;
       }
 
-      ts.addImport(this.items.toBaseType(), `./src/models/${this.items.toBaseType()}`);
+      ts.addImport(this.items.toBaseType(), `/src/models/${this.items.toBaseType()}.ts`);
       return `Array(2).map((x) => ${this.items.toTypeScriptType()}.randomInstance())`;
     }
 
     if (this.isPrimitive()) {
       // primitive simple casting with null
-      ts.addImport("Random", `./src/Random`);
+      ts.addImport("Random", `/src/Random.ts`);
       return `Random.${this.type}()`;
     }
 
     // use model.parse
-    ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
+    ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
     return `${this.toTypeScriptType()}.randomInstance()`;
   }
   /**
@@ -287,17 +279,17 @@ export class Type {
     // loop through arrays casting it's values
     if (this.type == "array") {
       if (this.items.isPrimitive()) {
-        ts.addImport("Cast", `./src/Cast`);
+        ts.addImport("Cast", `/src/Cast.ts`);
         return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
       }
 
-      ts.addImport(this.items.toTypeScriptType(), `./src/models/${this.items.toTypeScriptType()}`);
+      ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
       return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
     }
 
     if (this.isPrimitive()) {
       // primitive simple casting with null
-      ts.addImport("Cast", `./src/Cast`);
+      ts.addImport("Cast", `/src/Cast.ts`);
       return `Cast.${this.type}(${src})`;
     }
 
@@ -306,13 +298,22 @@ export class Type {
     }
 
     // use model.parse
-    ts.addImport(this.toTypeScriptType(), `./src/models/${this.toTypeScriptType()}`);
+    ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
     return `${this.toTypeScriptType()}.parse(${src})`;
   }
   /*
    * Get generated code: empty value
    */
   getEmptyValue(): string {
+    if (this.referenceModel) {
+      return this.api.getReference(this.referenceModel).type.getEmptyValue();
+    }
+
+    if (this.isDefinition) {
+      console.log(this);
+      return `${this.name}.emptyInstance()`;
+    }
+
     if (this.type == "array") {
       return "[]";
     }

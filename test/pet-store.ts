@@ -42,7 +42,7 @@ test.cb.serial("parse swagger file", (t) => {
 });
 
 test.cb.serial("angular 5 generation", (t) => {
-  Angular5Client.generate(api, `./test/pet-store-client/`, false);
+  (new Angular5Client(`./test/pet-store-client/`)).generate(api, false);
   t.end();
 });
 

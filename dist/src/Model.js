@@ -21,7 +21,7 @@ class Model {
         //if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {
         //  m.name = m.name.substr(0, m.name.length -3);
         //}
-        m.type = Type_1.Type.parseSwagger(api, obj, obj.schema, true);
+        m.type = Type_1.Type.parseSwagger(api, obj, name, true);
         m.description = obj.description;
         //m.dtoName = `${name}Dto`;
         m.interfaceName = `I${name}`;

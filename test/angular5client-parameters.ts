@@ -26,6 +26,6 @@ test.cb.serial("parse global parameters", (t) => {
     t.is(param.type.toTypeScriptType(), "number");
   });
 
-  Angular5Client.generate(api, `./test/angular5client-parameters/`, false);
+  (new Angular5Client(`./test/angular5client-parameters/`)).generate(api, false);
   t.end()
 });

@@ -66,6 +66,14 @@ nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
 * `/swagger` path is forbidden it's used by swagger-ui
 * parameters.name is a variable name, use parameter.x-nema-header for real
 header name
+* A sucess Response (2xx) must be defined and only one
+* No recursive types
+
+  Related errors:
+  ```
+  error TS2395: Individual declarations in merged declaration 'XXX' must be all exported or all local.
+  error TS2440: Import declaration conflicts with local declaration of 'XXX'.
+  ```
 
 ### Nema metadata
 

@@ -35,10 +35,10 @@ class Express {
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "package.json"), path.join(this.dstPath, "package.json"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
         fs.writeFileSync(path.join(this.dstPath, "./src/swagger.json.ts"), "export default " + JSON.stringify(api.originalSource, null, 2));
-        this.routesFile(api, "./src/routes.ts");
+        this.routesFile(api, "/src/routes.ts");
         api.eachMethod((method, name) => {
-            this.routeFile(api, method, `./src/routes/${method.operationId}.ts`);
-            this.routeTestFile(api, method, `./test/${method.operationId}.test.ts`);
+            this.routeFile(api, method, `/src/routes/${method.operationId}.ts`);
+            this.routeTestFile(api, method, `/test/${method.operationId}.test.ts`);
         });
         this.indexFile(api, "./src/index.ts");
         CommonGenerator.pretty(this.dstPath);
@@ -59,34 +59,31 @@ class Express {
         CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.index(api));
     }
     routesFile(api, filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.routes(api, filename));
+        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, `.${filename}`), this.routes(api, filename));
     }
     routeFile(api, method, filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.route(api, method, filename));
+        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, `.${filename}`), this.route(api, method, filename));
     }
     routeTestFile(api, method, filename) {
-        if (fs.existsSync(path.join(this.dstPath, filename))) {
+        if (fs.existsSync(path.join(this.dstPath, `.${filename}`))) {
             console.log(`file exist: ${filename}, skip creation`);
         }
         else {
-            fs.writeFileSync(path.join(this.dstPath, filename), this.routeTest(api, method, filename));
+            fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.routeTest(api, method, filename));
         }
     }
     routes(api, filename) {
-        const imports = [];
+        const ts = new TypescriptFile_1.TypescriptFile();
+        ts.header = "// EDIT ONLY BETWEEN SAFE ZONES //<xxx> //</xxx>";
+        ts.rawImports = `import * as express from "express";
+import swaggerDocument from "./swagger.json";
+const swaggerUi = require('swagger-ui-express');`;
         const s = [];
-        imports.push(`import * as express from "express";
-import swaggerDocument from "./swagger.json"; // swagger.json with a export dedault
-const swaggerUi = require('swagger-ui-express');
-`);
         api.eachMethod((method, operationId) => {
-            imports.push(`import { ${method.operationId}Route } from "./routes/${method.operationId}";`);
+            ts.addImport(`${method.operationId}Route`, method.filename);
             s.push(`r.${method.verb.toLowerCase()}(${JSON.stringify(method.url.replace(/{/g, ":").replace(/}/g, ""))}, ${method.operationId}Route);`);
         });
-        return {
-            tokens: ["swagger-ui-options"],
-            template: `${imports.join("\n")}
-
+        ts.body = [`
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
   app.use(${JSON.stringify(api.basePath)}, r);
@@ -101,7 +98,10 @@ export function routes(app: express.Application) {
 
   ${s.join("\n")}
 }
-`
+`];
+        return {
+            tokens: ["swagger-ui-options"],
+            template: ts.toString(filename)
         };
     }
     route(api, method, filename) {
@@ -129,6 +129,14 @@ export function routes(app: express.Application) {
                     break;
             }
         });
+        const responses = [];
+        method.eachResponse((response) => {
+            responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+        res.status(${response.httpCode}).json(result);
+      }`);
+        });
+        const successResponse = method.getSuccessResponse();
+        const defaultMethodBody = `respond${successResponse.httpCode || 200}(res, ${successResponse.type.getRandom(ts)});`;
         ts.push(`import * as express from "express";
 import { Request, Response } from "../";
 
@@ -140,8 +148,10 @@ export function ${method.operationId}Route(req: Request, res: Response, next: ex
 }
 export function ${method.operationId}(req: Request, res: Response, next: express.NextFunction, ${params.join(", ")}) {
 //<method-body>
+${defaultMethodBody}
 //</method-body>
 }
+${responses.join("\n\n")}
 //<extras>
 //</extras>
 `);

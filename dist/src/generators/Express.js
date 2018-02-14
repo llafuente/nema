@@ -184,20 +184,6 @@ test.cb.serial("${method.operationId}", (t) => {
         method.eachBodyParam((p) => {
             ts.push(`.send(${p.type.getRandom(ts)})`);
         });
-        switch (method.verb) {
-            case "get":
-                break;
-            case "post":
-            case "put":
-            case "patch":
-                ts.push(`
-          .send({
-            userlogin: "admin",
-            password: "admin",
-          })
-        `);
-                break;
-        }
         if (method.consumes.length) {
             ts.push(`.set("Content-Type", ${JSON.stringify(method.consumes.join(", "))})`);
         }

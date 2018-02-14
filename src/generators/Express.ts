@@ -19,15 +19,6 @@ function mkdirSafe(folder) {
   }
 }
 
-// override function to handle Blob -> Upload
-function toTypeScriptType(t: Type) {
-  const x = t.toTypeScriptType();
-
-  if (x == "Blob") return "Upload"
-
-  return x;
-}
-
 export class Express {
 
   constructor(
@@ -159,7 +150,7 @@ import { Request, Response, Upload } from "../";
     method.eachParam((p) => {
       //??p.type.getName()
 
-      params.push(`${p.name}: ${toTypeScriptType(p.type)}`);
+      params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
 
       switch(p.in) {
       case ParameterType.BODY:
@@ -179,6 +170,10 @@ import { Request, Response, Upload } from "../";
         break;
       case ParameterType.FORM_DATA_FILE:
         getParams.push(p.type.getParser(`req.files.${p.name} || null`, ts));
+
+        params.pop(); // remove last because it's a Blob, invalid at server
+        params.push(`${p.name}: Upload`);
+
 
         if (firstFile) {
           // upload.any() is the easy way, because it works like body/query
@@ -201,9 +196,16 @@ let upload = multer({
     method.eachResponse((response) => {
       response.type.getRandom(ts);
 
-      responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${toTypeScriptType(response.type)}) {
-        res.status(${response.httpCode || 200}).json(result);
-      }`);
+      // TODO handle file response
+      if (method.producesJSON()) {
+        responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+          res.status(${response.httpCode || 200}).json(result);
+        }`);
+      } else {
+        responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+          res.status(${response.httpCode || 200}).send(result);
+        }`);
+      }
     });
 
     const successResponse = method.getSuccessResponse();

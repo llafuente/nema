@@ -19,7 +19,7 @@ test.cb.serial("parse swagger file", (t) => {
     'getUser',
   ], "all methods added");
   t.deepEqual(Object.keys(api.models), [
-    'Error',
+    'HttpError',
     'UserDto',
   ], "all methods added");
   t.deepEqual(Object.keys(api.responses), [
@@ -27,8 +27,8 @@ test.cb.serial("parse swagger file", (t) => {
     'Unauthorized',
   ], "all methods added");
 
-  t.is(api.responses.NotFound.type.toTypeScriptType(), "Error", "NotFound type is Error");
-  t.is(api.responses.Unauthorized.type.toTypeScriptType(), "Error", "Unauthorized type is Error");
+  t.is(api.responses.NotFound.type.toTypeScriptType(), "HttpError", "NotFound type is HttpError");
+  t.is(api.responses.Unauthorized.type.toTypeScriptType(), "HttpError", "Unauthorized type is HttpError");
   t.deepEqual(api.getReference("#/responses/Unauthorized"), api.responses.Unauthorized, "Unauthorized resolved ok");
 
   t.deepEqual(Object.keys(api.enums), [], "all methods added");

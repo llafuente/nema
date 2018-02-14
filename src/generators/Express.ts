@@ -146,19 +146,19 @@ export function routes(app: express.Application) {
       params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
 
       switch(p.in) {
-        case ParameterType.BODY:
+      case ParameterType.BODY:
         getParams.push(p.type.getParser(`req.body`, ts));
         break;
-        case ParameterType.COOKIE:
+      case ParameterType.COOKIE:
         getParams.push(p.type.getParser(`req.cookies.${p.name} || null`, ts));
         break;
-        case ParameterType.HEADER:
-        getParams.push(p.type.getParser(`req.header(${JSON.stringify(p.name)})`, ts));
+      case ParameterType.HEADER:
+        getParams.push(p.type.getParser(`req.get(${JSON.stringify(p.name)})`, ts));
         break;
-        case ParameterType.PATH:
-        getParams.push(p.type.getParser(`req.param(${JSON.stringify(p.name)})`, ts));
+      case ParameterType.PATH:
+        getParams.push(p.type.getParser(`req.params.${p.name}`, ts));
         break;
-        case ParameterType.QUERY:
+      case ParameterType.QUERY:
         getParams.push(p.type.getParser(`req.query.${p.name} || null`, ts));
         break;
       }
@@ -166,8 +166,10 @@ export function routes(app: express.Application) {
 
     const responses = [];
     method.eachResponse((response) => {
+      response.type.getRandom(ts);
+
       responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
-        res.status(${response.httpCode}).json(result);
+        res.status(${response.httpCode || 200}).json(result);
       }`);
     });
 
@@ -350,12 +352,17 @@ app.use((req: Request, res: express.Response, next: express.NextFunction) => {
 app.use((err: Error, req: Request, res: express.Response, next: express.NextFunction) => {
   console.error("Error handler: ", err);
 
+  if (res.headersSent) {
+    return next(err);
+  }
+
   if (err instanceof NotFound) {
     res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
   }
 
   if (!(err instanceof CommonException)) {
     console.warn("Unhandled error thrown", err);
+    res.status(500).json(new CommonException(500, "internal-error", "Internal server error", null, null, Date.now()));
   }
 
   res.status(404).json(err);

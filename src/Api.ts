@@ -17,6 +17,8 @@ function ksort(obj) {
   return ret;
 }
 
+const blacklist = ["Error", "CommonException", "express", "Request", "Response", "Random", "Cast", "Operators", "Order", "Where", "Page"];
+
 /**
  * Api definicion class
  */
@@ -171,6 +173,10 @@ export class Api {
   }
 
   addModel(model: Model, override: boolean) {
+    if (blacklist.indexOf(model.name) !== -1) {
+      throw new Error(`Invalid model name: ${model.name}, it's blacklisted from ${model.api.filename}`);
+    }
+
     //console.log(`addModel: ${model.name}`);
     if (!override && this.models[model.name] !== undefined) {
       throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
@@ -180,7 +186,10 @@ export class Api {
   }
 
   addEnum(e: Model, override: boolean) {
-    //console.log(`addModel: ${model.name}`);
+    if (blacklist.indexOf(e.name) !== -1) {
+      throw new Error(`Invalid enum name: ${e.name}, it's blacklisted from ${e.api.filename}`);
+    }
+
     if (!override && this.enums[e.name] !== undefined) {
       throw new Error(`try to override an already defined enum: ${e.name} from ${this.models[e.name].api.filename} to ${e.api.filename}`);
     }

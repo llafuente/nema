@@ -93,6 +93,7 @@ class Method {
         this.eachHeaderParam(cb, true);
         this.eachQueryParam(cb);
         this.eachBodyParam(cb);
+        this.eachFileParam(cb);
     }
     eachPathParam(cb) {
         this.parameters.forEach((p) => {
@@ -137,6 +138,13 @@ class Method {
     eachBodyParam(cb) {
         this.parameters.forEach((p) => {
             if (p.in == Parameter_1.ParameterType.BODY) {
+                cb(p);
+            }
+        });
+    }
+    eachFileParam(cb) {
+        this.parameters.forEach((p) => {
+            if (p.in == Parameter_1.ParameterType.FORM_DATA_FILE) {
                 cb(p);
             }
         });

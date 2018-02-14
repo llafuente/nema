@@ -19,6 +19,15 @@ function mkdirSafe(folder) {
   }
 }
 
+// override function to handle Blob -> Upload
+function toTypeScriptType(t: Type) {
+  const x = t.toTypeScriptType();
+
+  if (x == "Blob") return "Upload"
+
+  return x;
+}
+
 export class Express {
 
   constructor(
@@ -137,17 +146,24 @@ export function routes(app: express.Application) {
 
   route(api: Api, method: Method, filename: string): ModificableTemplate {
     const ts = new TypescriptFile();
+    ts.header = `// EDIT ONLY SAFE ZONES`;
+    ts.rawImports = `import * as express from "express";
+import { Request, Response, Upload } from "../";
+//<custom-imports>
+//</custom-imports>`
 
+    let firstFile = true;
     const getParams = ["req", "res", "next"];
     const params = [];
+    const middleware = [];
     method.eachParam((p) => {
       //??p.type.getName()
 
-      params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
+      params.push(`${p.name}: ${toTypeScriptType(p.type)}`);
 
       switch(p.in) {
       case ParameterType.BODY:
-        getParams.push(p.type.getParser(`req.body`, ts));
+        getParams.push(p.type.getParser(`req.body.${p.name}`, ts));
         break;
       case ParameterType.COOKIE:
         getParams.push(p.type.getParser(`req.cookies.${p.name} || null`, ts));
@@ -161,6 +177,23 @@ export function routes(app: express.Application) {
       case ParameterType.QUERY:
         getParams.push(p.type.getParser(`req.query.${p.name} || null`, ts));
         break;
+      case ParameterType.FORM_DATA_FILE:
+        getParams.push(p.type.getParser(`req.files.${p.name} || null`, ts));
+
+        if (firstFile) {
+          // upload.any() is the easy way, because it works like body/query
+          // REVIEW it's the best?!
+          firstFile = false;
+          ts.push(`
+let multer = require("multer");
+let upload = multer({
+  // dest: 'uploads/' }
+  storage: multer.memoryStorage(),
+});
+`);
+          middleware.push(`upload.any()`);
+        }
+        break;
       }
     });
 
@@ -168,7 +201,7 @@ export function routes(app: express.Application) {
     method.eachResponse((response) => {
       response.type.getRandom(ts);
 
-      responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+      responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${toTypeScriptType(response.type)}) {
         res.status(${response.httpCode || 200}).json(result);
       }`);
     });
@@ -176,15 +209,16 @@ export function routes(app: express.Application) {
     const successResponse = method.getSuccessResponse();
     const defaultMethodBody = `respond${successResponse.httpCode || 200}(res, ${successResponse.type.getRandom(ts)});`;
 
-    ts.push(`import * as express from "express";
-import { Request, Response } from "../";
-
-// this zones are safe to edit
-//<custom-imports>
-//</custom-imports>
-export function ${method.operationId}Route(req: Request, res: Response, next: express.NextFunction) {
+    middleware.push(`
+function (req: Request, res: Response, next: express.NextFunction) {
   ${method.operationId}(${getParams.join(", ")});
 }
+`);
+
+    ts.push(`
+export const ${method.operationId}Route = [
+  ${middleware.join(",\n")}
+];
 export function ${method.operationId}(req: Request, res: Response, next: express.NextFunction, ${params.join(", ")}) {
 //<method-body>
 ${defaultMethodBody}

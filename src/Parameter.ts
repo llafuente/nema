@@ -7,6 +7,7 @@ export enum ParameterType {
   HEADER,
   BODY,
   COOKIE,
+  FORM_DATA_FILE,
 };
 
 const SwaggerToParameterType = {
@@ -16,6 +17,7 @@ const SwaggerToParameterType = {
   "cookie": ParameterType.COOKIE,
   // NOTE swagger 3 heavely modified this :S
   "body": ParameterType.BODY,
+  "formData": ParameterType.BODY, // except for files -> FORM_DATA_FILE
 };
 
 export class Parameter {
@@ -50,7 +52,11 @@ export class Parameter {
     p.headerName = obj["x-alias"] || obj["x-nema-header"];
     p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
     p.description = obj.description;
-    p.in = SwaggerToParameterType[obj.in]
+    if (obj.in == "formData" && obj.type == "file") {
+      p.in = ParameterType.FORM_DATA_FILE;
+    } else {
+      p.in = SwaggerToParameterType[obj.in];
+    }
     p.required = !!obj.required;
 
     p.reference = obj.$ref || null;

@@ -230,9 +230,9 @@ class Type {
                 // loop through arrays casting it's values
                 if (this.items.isPrimitive()) {
                     ts.addImport("Random", `/src/Random.ts`);
-                    return `Array(2).map((x) => Random.${this.items.type}())`;
+                    return `[Random.${this.items.type}(), Random.${this.items.type}()]`;
                 }
-                return `Array(2).map((x) => ${this.items.getRandom(ts)})`;
+                return `[${this.items.getRandom(ts)}, ${this.items.getRandom(ts)}]`;
         }
         if (this.isPrimitive()) {
             // primitive simple casting with null

@@ -13,6 +13,7 @@ export class Type {
   type: string = null;
   description: string = undefined;
   isDefinition: boolean = undefined;
+  foreignKey: string = undefined;
   /**
    * Object properties
    */
@@ -98,6 +99,7 @@ export class Type {
     if (obj.$ref) {
       t.referenceModel = obj.$ref;
       t.type = "reference";
+      t.foreignKey = obj["x-nema-fk"] || null;
     }
 
     return t;
@@ -204,6 +206,17 @@ export class Type {
         break;
       case "boolean":
         d.push(`type: Boolean`);
+        break;
+      case "enum":
+        d.push(`type: String, enum: ${JSON.stringify(this.choices)}`);
+        break;
+      case "reference":
+        if (this.foreignKey) {
+          d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKey)}`);
+        } else {
+          const m = this.api.getReference(this.referenceModel);
+          return m.type.toMongooseType();
+        }
         break;
       default:
         d.push(`type: ${this.type}`);

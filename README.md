@@ -157,6 +157,23 @@ paths:
           type: string
 ```
 
+#### type: x-nema-fk
+
+Tell nema your type is a foreignKey (ref in mongoose nomenclature)
+
+```
+definitions:
+  Test:
+    type: object
+    properties:
+      subscribers_user_ids:
+        type: array
+        description: Usuarios inscritos
+        items:
+          type: string
+          x-nema-fk: User
+```
+
 ### Angular 5 Api client
 
 <a name="angular5-resolve"></a>

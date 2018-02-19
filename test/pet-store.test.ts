@@ -3,6 +3,7 @@ import { Model } from "../src/Model";
 import { Angular5Client } from "../src/generators/Angular5Client";
 import { Mongoose } from "../src/generators/Mongoose";
 import { Express } from "../src/generators/Express";
+import { CSV } from "../src/generators/CSV";
 import { TypescriptFile } from "../src/TypescriptFile";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
@@ -72,12 +73,13 @@ test.cb.serial("parse swagger file", (t) => {
 });
 
 test.cb.serial("angular 5 generation", (t) => {
-  (new Angular5Client(`./test/pet-store-client/`)).generate(api, false);
+  (new Angular5Client(`./test/pet-store-client/`)).generate(api, true, false);
   t.end();
 });
 
 test.cb.serial("express generation", (t) => {
-   Mongoose.generate(api, `./test/pet-store-server/`, false);
-   (new Express(`./test/pet-store-server/`)).generate(api, false);
+   Mongoose.generate(api, `./test/pet-store-server/`, false, false);
+   (new Express(`./test/pet-store-server/`)).generate(api, false, false);
+   (new CSV(`./test/pet-store-server/`)).generate(api, true, false);
    t.end();
- });
+});

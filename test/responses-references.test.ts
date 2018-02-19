@@ -37,12 +37,12 @@ test.cb.serial("parse swagger file", (t) => {
 });
 
 test.cb.serial("angular 5 generation", (t) => {
-  (new Angular5Client(`./test/responses-references-client/`)).generate(api, false);
+  (new Angular5Client(`./test/responses-references-client/`)).generate(api, true, false);
   t.end();
 });
 
 test.cb.serial("express generation", (t) => {
-   Mongoose.generate(api, `./test/responses-references-server/`, false);
-   (new Express(`./test/responses-references-server/`)).generate(api, false);
+   Mongoose.generate(api, `./test/responses-references-server/`, false, false);
+   (new Express(`./test/responses-references-server/`)).generate(api, true, false);
    t.end();
  });

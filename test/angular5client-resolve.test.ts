@@ -25,6 +25,6 @@ test.cb.serial("parse swagger file", (t) => {
   t.is(api.methods.getStrategies.countParams(ParameterType.HEADER, false), 1);
   t.is(api.methods.getStrategies.countParams(ParameterType.HEADER, true), 0);
 
-  (new Angular5Client(`./test/angular5client-resolve/`)).generate(api, false);
+  (new Angular5Client(`./test/angular5client-resolve/`)).generate(api, true, false);
   t.end()
 });

@@ -12,6 +12,13 @@ export interface ModificableTemplate {
   template: string;
 };
 
+export function copyModificableTemplate(srcFile: string, dstFile, tokens: string[]) {
+  writeModificableTemplate(dstFile, {
+    tokens: tokens,
+    template: fs.readFileSync(srcFile).toString()
+  });
+}
+
 export function writeModificableTemplate(filename: string, tpl: ModificableTemplate) {
   let contents: string = null;
   let template = tpl.template;

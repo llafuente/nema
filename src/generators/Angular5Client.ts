@@ -24,7 +24,7 @@ export class Angular5Client {
 
   }
 
-  generate(api: Api, lint: boolean) {
+  generate(api: Api, pretty: boolean, lint: boolean) {
     api.sort();
 
     // create generation paths
@@ -54,7 +54,9 @@ export class Angular5Client {
 
     this.packageJSONFile(api, `/package.json`);
 
-    CommonGenerator.pretty(this.dstPath);
+    if (pretty) {
+      CommonGenerator.pretty(this.dstPath);
+    }
     // this may take a long time...
     if (lint) {
       CommonGenerator.lint(this.dstPath);

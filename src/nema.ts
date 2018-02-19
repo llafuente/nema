@@ -77,15 +77,24 @@ program.swagger.forEach((swagger) => {
 //console.log(api);
 //process.exit(0);
 
+const generators = [];
+
+// create all generators
+// some generator may modify api metadata
 if (program.angular5Api) {
   green("Generating: Angular5");
-  (new Angular5Client(dstPath, api)).generate(true, !!program.lint);
+  generators.push(new Angular5Client(dstPath, api));
 }
 if (program.mongoose) {
   green("Generating: Mongoose");
-  (new Mongoose(dstPath, api)).generate(true, !!program.lint);
+  generators.push(new Mongoose(dstPath, api));
 }
 if (program.express) {
   green("Generating: Express");
-  (new Express(dstPath, api)).generate(true, !!program.lint);
+  generators.push(new Express(dstPath, api));
 }
+
+// then generate all with a common api source
+generators.forEach((g) => {
+  g.generate(true, !!program.lint);
+});

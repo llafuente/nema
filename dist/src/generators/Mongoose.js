@@ -1,5 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const assert = require("assert");
+const Api_1 = require("../Api");
+const Type_1 = require("../Type");
 const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
@@ -12,10 +15,30 @@ function mkdirSafe(folder) {
             throw e;
     }
 }
+const mongooseSwagger = Api_1.parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
 class Mongoose {
     constructor(dstPath, api) {
         this.dstPath = dstPath;
         this.api = api;
+        this.api.parseSwaggerDefinitions(mongooseSwagger, true);
+        this.addDataToModel();
+    }
+    addDataToModel() {
+        this.api.eachModel((model, modelName) => {
+            if (model.isDb) {
+                assert(model.type.type == "object");
+                // declare _id as  any
+                const _id = new Type_1.Type();
+                _id.type = "object";
+                const p = model.type.properties;
+                model.type.properties = {
+                    _id
+                };
+                for (let i in p) {
+                    model.type.properties[i] = p[i];
+                }
+            }
+        });
     }
     generate(pretty, lint) {
         this.api.sort();
@@ -28,8 +51,10 @@ class Mongoose {
         // generate all models
         CommonGenerator.models(this.api, this.dstPath);
         this.api.eachModel((model, modelName) => {
-            this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
-            this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+            if (model.isDb) {
+                this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
+                this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+            }
         });
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);

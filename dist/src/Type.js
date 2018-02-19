@@ -150,6 +150,10 @@ class Type {
             //  d.push(`type: mongoose.Schema.Types.ObjectId`);
             //  break;
             case "object":
+                // type:any
+                if (!this.properties) {
+                    return `{ type: mongoose.Schema.Types.Mixed }`;
+                }
                 d.push(`type: Object`);
                 const t = [];
                 for (const i in this.properties) {
@@ -272,7 +276,8 @@ class Type {
             case "object":
                 return "{}"; // equal to any
         }
-        throw "Not handled";
+        console.error(this);
+        throw new Error("Not handled");
     }
     /**
      * Get generated code: parse this type given the source variable
@@ -312,7 +317,8 @@ class Type {
             case "object":
                 return src; // equal to any
         }
-        throw "Not handled";
+        console.error(this);
+        throw new Error("Not handled");
     }
     /*
      * Get generated code: empty value

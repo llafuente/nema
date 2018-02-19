@@ -19,7 +19,7 @@ function ksort(obj) {
 
 const blacklist = ["Error", "CommonException", "express", "Request", "Response", "Random", "Cast", "Operators", "Order", "Where", "Page"];
 
-function parseYML(filename) {
+export function parseYML(filename) {
   const contents = fs.readFileSync(filename);
 
   try {
@@ -73,8 +73,7 @@ export class Api {
   }
 
   importGlobals() {
-    const globals = parseYML(path.join(__dirname, "..", "..", "globals.yml"));
-    this.parseSwaggerDefinitions(globals, true);
+
   }
 
   static parseSwagger(filename: string, swagger: any, importGlobals: boolean): Api {

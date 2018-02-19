@@ -7,6 +7,7 @@ export class Model {
   api: Api = null;
 
   internal: boolean = false;
+  isDb: boolean = false;
 
   name: string;
   filename: string;
@@ -44,7 +45,7 @@ export class Model {
    */
   mongooseCollection: string;
 
-  static parseSwagger(api: Api, name: string, obj): Model {
+  static parseSwagger(api: Api, name: string, obj: any): Model {
     const m = new Model();
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
@@ -56,6 +57,8 @@ export class Model {
 
     m.name = name;
     m.filename = `/src/models/${name}.ts`;
+
+    m.isDb = !!obj["x-nema-db"];
 
     // this need review, i'm +1 , but also see unforseen consecuences
     // remove Dto from name

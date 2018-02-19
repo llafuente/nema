@@ -1,4 +1,5 @@
-import { Api } from "../Api";
+import * as assert from "assert";
+import { Api, parseYML } from "../Api";
 import { Model } from "../Model";
 import { Method } from "../Method";
 import { Type } from "../Type";
@@ -17,11 +18,36 @@ function mkdirSafe(folder) {
   }
 }
 
+const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
+
 export class Mongoose {
   constructor(
     public dstPath: string,
     public api: Api,
   ) {
+    this.api.parseSwaggerDefinitions(mongooseSwagger, true);
+
+    this.addIdToModel();
+  }
+
+  addIdToModel() {
+    this.api.eachModel((model, modelName) => {
+      if (model.isDb) {
+        assert(model.type.type == "object");
+
+        // declare _id as  any
+        const _id = new Type();
+        _id.type = "object";
+        const p = model.type.properties;
+        model.type.properties = {
+          _id
+        };
+
+        for (let i in p) {
+          model.type.properties[i] = p[i];
+        }
+      }
+    });
   }
 
   generate(pretty: boolean, lint: boolean) {
@@ -38,8 +64,10 @@ export class Mongoose {
     CommonGenerator.models(this.api, this.dstPath);
 
     this.api.eachModel((model, modelName) => {
-      this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
-      this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+      if (model.isDb) {
+        this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
+        this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+      }
     });
 
     // copy raw files (those that don't need to be generated)

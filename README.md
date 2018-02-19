@@ -157,9 +157,44 @@ paths:
           type: string
 ```
 
+#### definitions.model: x-nema-db
+
+Mark model as a db entity (mongoose treat it as a collection)
+
+```
+definitions:
+  User:
+    x-nema-db: true
+    type: object
+    required:
+      - userlogin
+      - password
+    properties:
+      userlogin:
+        type: string
+        description: Userlogin
+        maxLength: 64
+        x-nema-lowercase: true
+        x-nema-unique: true
+      password:
+        type: string
+        description: Userlogin
+        maxLength: 64
+        x-nema-lowercase: true
+        x-nema-unique: true
+```
+
+#### type: x-nema-lowercase
+
+Force lowercase
+
+#### type: x-nema-unique
+
+Mark the property as unique.
+
 #### type: x-nema-fk
 
-Tell nema your type is a foreignKey (ref in mongoose nomenclature)
+Tell nema your type is a foreignKey (mongoose treat it as a ref)
 
 ```
 definitions:

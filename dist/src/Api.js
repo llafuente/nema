@@ -25,6 +25,7 @@ function parseYML(filename) {
         throw e;
     }
 }
+exports.parseYML = parseYML;
 /**
  * Api definicion class
  */
@@ -37,8 +38,6 @@ class Api {
         this.responses = {};
     }
     importGlobals() {
-        const globals = parseYML(path.join(__dirname, "..", "..", "globals.yml"));
-        this.parseSwaggerDefinitions(globals, true);
     }
     static parseSwagger(filename, swagger, importGlobals) {
         const api = new Api();

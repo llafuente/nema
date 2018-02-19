@@ -7,6 +7,7 @@ class Model {
     constructor() {
         this.api = null;
         this.internal = false;
+        this.isDb = false;
     }
     static parseSwagger(api, name, obj) {
         const m = new Model();
@@ -17,6 +18,7 @@ class Model {
         }
         m.name = name;
         m.filename = `/src/models/${name}.ts`;
+        m.isDb = !!obj["x-nema-db"];
         // this need review, i'm +1 , but also see unforseen consecuences
         // remove Dto from name
         //if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {

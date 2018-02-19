@@ -43,6 +43,6 @@ test.cb.serial("angular 5 generation", (t) => {
 
 test.cb.serial("express generation", (t) => {
    Mongoose.generate(api, `./test/responses-references-server/`, false, false);
-   (new Express(`./test/responses-references-server/`)).generate(api, true, false);
+   (new Express(`./test/responses-references-server/`, api)).generate(true, false);
    t.end();
  });

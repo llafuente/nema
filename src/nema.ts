@@ -63,7 +63,7 @@ if (!program.angular5Api && !program.mongoose && !program.express) {
 }
 
 
-let api;
+let api: Api;
 let dstPath;
 program.swagger.forEach((swagger) => {
   if (api) {
@@ -79,7 +79,7 @@ program.swagger.forEach((swagger) => {
 
 if (program.angular5Api) {
   green("Generating: Angular5");
-  (new Angular5Client(dstPath)).generate(api, true, !!program.lint);
+  (new Angular5Client(dstPath, api)).generate(true, !!program.lint);
 }
 if (program.mongoose) {
   green("Generating: Mongoose");

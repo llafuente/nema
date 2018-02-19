@@ -70,7 +70,7 @@ ava_1.default.cb.serial("parse swagger", (t) => {
     t.deepEqual(swagger.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["InitiParametersDto", "string"], "typescript type ok");
     t.deepEqual(swagger.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends");
     t.deepEqual(Object.keys(swagger.models.OrderMonitoring.type.properties), ["type", "quantity", "monitoringType"], "type extends parsed ok");
-    (new Angular5Client_1.Angular5Client(`./test/api-test-001/`)).generate(swagger, true, false);
+    (new Angular5Client_1.Angular5Client(`./test/api-test-001/`, swagger)).generate(true, false);
     t.end();
 });
 //# sourceMappingURL=api.test.js.map

@@ -37,7 +37,7 @@ test.cb.serial("parse swagger file", (t) => {
 });
 
 test.cb.serial("angular 5 generation", (t) => {
-  (new Angular5Client(`./test/responses-references-client/`)).generate(api, true, false);
+  (new Angular5Client(`./test/responses-references-client/`, api)).generate(true, false);
   t.end();
 });
 

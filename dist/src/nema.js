@@ -71,7 +71,7 @@ if (program.angular5Api) {
 }
 if (program.mongoose) {
     green("Generating: Mongoose");
-    Mongoose_1.Mongoose.generate(api, dstPath, true, !!program.lint);
+    (new Mongoose_1.Mongoose(dstPath, api)).generate(true, !!program.lint);
 }
 if (program.express) {
     green("Generating: Express");

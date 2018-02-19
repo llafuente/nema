@@ -78,7 +78,7 @@ test.cb.serial("angular 5 generation", (t) => {
 });
 
 test.cb.serial("express generation", (t) => {
-   Mongoose.generate(api, `./test/pet-store-server/`, false, false);
+   (new Mongoose(`./test/pet-store-server/`, api)).generate(false, false);
    (new Express(`./test/pet-store-server/`, api)).generate(false, false);
    (new CSV(`./test/pet-store-server/`)).generate(api, true, false);
    t.end();

@@ -34,7 +34,7 @@ ava_1.default.cb.serial("angular 5 generation", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    Mongoose_1.Mongoose.generate(api, `./test/responses-references-server/`, false, false);
+    (new Mongoose_1.Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
     (new Express_1.Express(`./test/responses-references-server/`, api)).generate(true, false);
     t.end();
 });

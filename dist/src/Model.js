@@ -6,6 +6,7 @@ const pluralize = require("pluralize");
 class Model {
     constructor() {
         this.api = null;
+        this.internal = false;
     }
     static parseSwagger(api, name, obj) {
         const m = new Model();

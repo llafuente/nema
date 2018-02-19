@@ -18,7 +18,7 @@ class Angular5Client {
     constructor(dstPath) {
         this.dstPath = dstPath;
     }
-    generate(api, lint) {
+    generate(api, pretty, lint) {
         api.sort();
         // create generation paths
         mkdirSafe(path.join(this.dstPath));
@@ -39,7 +39,9 @@ class Angular5Client {
         this.apiFile(api, `/src/${api.apiName}.ts`);
         this.moduleFile(api, `/index.ts`);
         this.packageJSONFile(api, `/package.json`);
-        CommonGenerator.pretty(this.dstPath);
+        if (pretty) {
+            CommonGenerator.pretty(this.dstPath);
+        }
         // this may take a long time...
         if (lint) {
             CommonGenerator.lint(this.dstPath);

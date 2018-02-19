@@ -11,7 +11,7 @@ import * as _ from "lodash";
 
 let api: Api;
 test.cb.serial("parse swagger file", (t) => {
-  api = Api.parseSwaggerFile("./test/pet-store.yaml");
+  api = Api.parseSwaggerFile("./test/pet-store.yaml", false);
 
   //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
 
@@ -66,7 +66,7 @@ test.cb.serial("parse swagger file", (t) => {
   t.is(petTypeParam.type.getRandom(ts), "petType.CAT");
   t.is(petType.type.getRandom(ts), "petType.CAT");
 
-  t.is(petTypeParam.type.getParser("xxx", ts), `["cat","dog","bird"].indexOf(xxx) === -1 ? null : xxx`);
+  t.is(petTypeParam.type.getParser("xxx", ts), `[petType.CAT,petType.DOG,petType.BIRD].indexOf(xxx) === -1 ? null : xxx`);
 
 
   t.end();

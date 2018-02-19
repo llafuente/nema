@@ -6,7 +6,7 @@ const Parameter_1 = require("../src/Parameter");
 const ava_1 = require("ava");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/angular5client-resolve.yaml");
+    api = Api_1.Api.parseSwaggerFile("./test/angular5client-resolve.yaml", false);
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
@@ -20,7 +20,7 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.PATH, true), 1);
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.HEADER, false), 1);
     t.is(api.methods.getStrategies.countParams(Parameter_1.ParameterType.HEADER, true), 0);
-    (new Angular5Client_1.Angular5Client(`./test/angular5client-resolve/`)).generate(api, false);
+    (new Angular5Client_1.Angular5Client(`./test/angular5client-resolve/`)).generate(api, true, false);
     t.end();
 });
 //# sourceMappingURL=angular5client-resolve.test.js.map

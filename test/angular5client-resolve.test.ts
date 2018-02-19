@@ -5,7 +5,7 @@ import test from "ava";
 
 let api: Api;
 test.cb.serial("parse swagger file", (t) => {
-  api = Api.parseSwaggerFile("./test/angular5client-resolve.yaml");
+  api = Api.parseSwaggerFile("./test/angular5client-resolve.yaml", false);
 
   //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
 

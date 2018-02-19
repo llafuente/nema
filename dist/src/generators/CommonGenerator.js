@@ -6,6 +6,13 @@ const path = require("path");
 const child_process_1 = require("child_process");
 const TypescriptFile_1 = require("../TypescriptFile");
 ;
+function copyModificableTemplate(srcFile, dstFile, tokens) {
+    writeModificableTemplate(dstFile, {
+        tokens: tokens,
+        template: fs.readFileSync(srcFile).toString()
+    });
+}
+exports.copyModificableTemplate = copyModificableTemplate;
 function writeModificableTemplate(filename, tpl) {
     let contents = null;
     let template = tpl.template;

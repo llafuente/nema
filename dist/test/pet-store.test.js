@@ -4,12 +4,13 @@ const Api_1 = require("../src/Api");
 const Angular5Client_1 = require("../src/generators/Angular5Client");
 const Mongoose_1 = require("../src/generators/Mongoose");
 const Express_1 = require("../src/generators/Express");
+const CSV_1 = require("../src/generators/CSV");
 const TypescriptFile_1 = require("../src/TypescriptFile");
 const ava_1 = require("ava");
 const _ = require("lodash");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/pet-store.yaml");
+    api = Api_1.Api.parseSwaggerFile("./test/pet-store.yaml", false);
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
@@ -51,16 +52,17 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     t.is(petType.name, "petType");
     t.is(petTypeParam.type.getRandom(ts), "petType.CAT");
     t.is(petType.type.getRandom(ts), "petType.CAT");
-    t.is(petTypeParam.type.getParser("xxx", ts), `["cat","dog","bird"].indexOf(xxx) === -1 ? null : xxx`);
+    t.is(petTypeParam.type.getParser("xxx", ts), `[petType.CAT,petType.DOG,petType.BIRD].indexOf(xxx) === -1 ? null : xxx`);
     t.end();
 });
 ava_1.default.cb.serial("angular 5 generation", (t) => {
-    (new Angular5Client_1.Angular5Client(`./test/pet-store-client/`)).generate(api, false);
+    (new Angular5Client_1.Angular5Client(`./test/pet-store-client/`)).generate(api, true, false);
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    Mongoose_1.Mongoose.generate(api, `./test/pet-store-server/`, false);
-    (new Express_1.Express(`./test/pet-store-server/`)).generate(api, false);
+    Mongoose_1.Mongoose.generate(api, `./test/pet-store-server/`, false, false);
+    (new Express_1.Express(`./test/pet-store-server/`)).generate(api, false, false);
+    (new CSV_1.CSV(`./test/pet-store-server/`)).generate(api, true, false);
     t.end();
 });
 //# sourceMappingURL=pet-store.test.js.map

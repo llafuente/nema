@@ -8,7 +8,7 @@ const ava_1 = require("ava");
 const common_1 = require("./common");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/responses-references.yaml");
+    api = Api_1.Api.parseSwaggerFile("./test/responses-references.yaml", false);
     common_1.validateTypes(api, t);
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();
@@ -30,12 +30,12 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("angular 5 generation", (t) => {
-    (new Angular5Client_1.Angular5Client(`./test/responses-references-client/`)).generate(api, false);
+    (new Angular5Client_1.Angular5Client(`./test/responses-references-client/`)).generate(api, true, false);
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    Mongoose_1.Mongoose.generate(api, `./test/responses-references-server/`, false);
-    (new Express_1.Express(`./test/responses-references-server/`)).generate(api, false);
+    Mongoose_1.Mongoose.generate(api, `./test/responses-references-server/`, false, false);
+    (new Express_1.Express(`./test/responses-references-server/`)).generate(api, true, false);
     t.end();
 });
 //# sourceMappingURL=responses-references.test.js.map

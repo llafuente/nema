@@ -5,7 +5,7 @@ import test from "ava";
 
 let swagger: Api;
 test.cb.serial("parse swagger", (t) => {
-  swagger = Api.parseSwaggerFile("./test/api-test-001.yaml");
+  swagger = Api.parseSwaggerFile("./test/api-test-001.yaml", false);
 
   //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
 
@@ -69,7 +69,7 @@ test.cb.serial("parse swagger", (t) => {
     'ParameterChangedMessage',
   ], "all models added");
 
-  t.deepEqual(swagger.models.ParametersDto.type.toTypeScriptType(), "object", "typescript type ok");
+  t.deepEqual(swagger.models.ParametersDto.type.toTypeScriptType(), "ParametersDto", "typescript type ok");
   t.deepEqual(
     swagger.methods.createStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
     ["string", "string"],

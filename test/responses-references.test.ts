@@ -8,7 +8,7 @@ import { validateTypes } from "./common";
 
 let api: Api;
 test.cb.serial("parse swagger file", (t) => {
-  api = Api.parseSwaggerFile("./test/responses-references.yaml");
+  api = Api.parseSwaggerFile("./test/responses-references.yaml", false);
   validateTypes(api, t);
 
   //console.log(JSON.stringify(api.methods.getStrategies, null, 2));

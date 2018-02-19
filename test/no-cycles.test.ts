@@ -36,7 +36,7 @@ test.cb.serial("parse swagger", (t) => {
     "./test/api-test-001.yaml",
     "./test/angular5client-resolve.yaml",
   ].forEach((filename) => {
-    let api = Api.parseSwaggerFile(filename);
+    let api = Api.parseSwaggerFile(filename, false);
     isCyclic (filename, t, api);
   });
 

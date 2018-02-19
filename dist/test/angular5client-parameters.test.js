@@ -6,7 +6,7 @@ const Parameter_1 = require("../src/Parameter");
 const ava_1 = require("ava");
 let api;
 ava_1.default.cb.serial("parse global parameters", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/angular5client-parameters.yaml");
+    api = Api_1.Api.parseSwaggerFile("./test/angular5client-parameters.yaml", false);
     //console.log(JSON.stringify(api.methods, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
@@ -21,7 +21,7 @@ ava_1.default.cb.serial("parse global parameters", (t) => {
         t.is(param.name, "userId");
         t.is(param.type.toTypeScriptType(), "number");
     });
-    (new Angular5Client_1.Angular5Client(`./test/angular5client-parameters/`)).generate(api, false);
+    (new Angular5Client_1.Angular5Client(`./test/angular5client-parameters/`)).generate(api, true, false);
     t.end();
 });
 //# sourceMappingURL=angular5client-parameters.test.js.map

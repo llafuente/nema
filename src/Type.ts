@@ -139,6 +139,10 @@ export class Type {
       return (this.api.getReference(this.referenceModel) as Model).name;
     }
 
+    if (this.isDefinition) {
+      return this.name;
+    }
+
     switch (this.type) {
       case "file":
         return "Blob";
@@ -284,9 +288,13 @@ export class Type {
       return `${this.name}.randomInstance()`;
     }
 
-    // use model.parse
-    ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
-    return `${this.toTypeScriptType()}.randomInstance()`;
+    switch(this.type) {
+    case "object":
+      return "{}"; // equal to any
+    }
+
+
+    throw "Not handled";
   }
   /**
    * Get generated code: parse this type given the source variable

@@ -18,7 +18,7 @@ class Express {
     constructor(dstPath) {
         this.dstPath = dstPath;
     }
-    generate(api, lint) {
+    generate(api, pretty, lint) {
         api.sort();
         // create generation paths
         mkdirSafe(path.join(this.dstPath));
@@ -41,7 +41,9 @@ class Express {
             this.routeTestFile(api, method, `/test/${method.operationId}.test.ts`);
         });
         this.indexFile(api, "./src/index.ts");
-        CommonGenerator.pretty(this.dstPath);
+        if (pretty) {
+            CommonGenerator.pretty(this.dstPath);
+        }
         // this may take a long time...
         if (lint) {
             CommonGenerator.lint(this.dstPath);
@@ -135,7 +137,11 @@ import { Request, Response, Upload } from "../";
                     getParams.push(p.type.getParser(`req.query.${p.name} || null`, ts));
                     break;
                 case Parameter_1.ParameterType.FORM_DATA_FILE:
-                    getParams.push(p.type.getParser(`req.files.${p.name} || null`, ts));
+                    getParams.push(`req.files.${p.name} || null`);
+                    // if required
+                    //  if (!req.file) {
+                    //    return next(new HttpError(422, "Excepted an attachment"));
+                    //  }
                     params.pop(); // remove last because it's a Blob, invalid at server
                     params.push(`${p.name}: Upload`);
                     if (firstFile) {
@@ -289,23 +295,11 @@ export interface Response extends express.Response {
   //</response>
 }
 
-const mongoose = require("mongoose");
-mongoose.Promise = require("bluebird");
-mongoose.set("debug", true);
+try {
+  require("./mongoose.js")(app);
+} catch(e) {
 
-mongoose.connect(
-  app.get("mongodb"),
-  {
-    promiseLibrary: require("bluebird"),
-  },
-  function(err) {
-    if (err) {
-      throw err;
-    }
-
-    console.log("connected to mongodb:", app.get("mongodb"));
-  },
-);
+}
 
 app.use(morgan("tiny"));
 if (app.get("cors")) {

@@ -57,7 +57,7 @@ if (!program.swagger) {
 }
 
 // TODO add more targets!!
-if (!program.angular5Api && !program.Mongoose) {
+if (!program.angular5Api && !program.mongoose && !program.express) {
   red("no target to generate");
   process.exit(1);
 }
@@ -67,9 +67,9 @@ let api;
 let dstPath;
 program.swagger.forEach((swagger) => {
   if (api) {
-    api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
+    api.aggregate(Api.parseSwaggerFile(swagger, !!program.mongoose), !!program.overrideMethods, !!program.overrideModels);
   } else {
-    api = Api.parseSwaggerFile(swagger);
+    api = Api.parseSwaggerFile(swagger, !!program.mongoose);
     dstPath = path.dirname(swagger);
   }
 });
@@ -79,14 +79,14 @@ program.swagger.forEach((swagger) => {
 
 if (program.angular5Api) {
   green("Generating: Angular5");
-  (new Angular5Client(dstPath)).generate(api, !!program.lint);
+  (new Angular5Client(dstPath)).generate(api, true, !!program.lint);
 }
 if (program.mongoose) {
   green("Generating: Mongoose");
-  Mongoose.generate(api, dstPath, !!program.lint);
+  Mongoose.generate(api, dstPath, true, !!program.lint);
 }
 if (program.express) {
   green("Generating: Express");
   const e = new Express(dstPath)
-  e.generate(api, !!program.lint);
+  e.generate(api, true, !!program.lint);
 }

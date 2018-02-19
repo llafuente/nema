@@ -6,6 +6,8 @@ import * as pluralize from "pluralize";
 export class Model {
   api: Api = null;
 
+  internal: boolean = false;
+
   name: string;
   filename: string;
   description: string;

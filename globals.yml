@@ -1,0 +1,42 @@
+definitions:
+  Operators:
+    type: string
+    enum:
+      - LIKE
+      - EQUALS
+      - IN
+
+  Where:
+    type: object
+    properties:
+      value:
+        type: object # means any
+      operator:
+        $ref: "#/definitions/Operators"
+
+#  Order:
+#    type: number
+#    x-nema-labels:
+#      - ASC
+#      - DESC
+#    enum: [1, -1]
+
+  Query:
+    type: object
+    properties:
+      limit:
+        type: number
+      offset:
+        type: number
+      sort:
+        type: object # any
+      where:
+        type: object # any
+      populate:
+        type: array
+        items:
+          type: string
+      fields:
+        type: array
+        items:
+          type: string

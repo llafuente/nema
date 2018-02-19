@@ -19,6 +19,17 @@ function ksort(obj) {
 
 const blacklist = ["Error", "CommonException", "express", "Request", "Response", "Random", "Cast", "Operators", "Order", "Where", "Page"];
 
+function parseYML(filename) {
+  const contents = fs.readFileSync(filename);
+
+  try {
+    return require("yamljs").parse(contents.toString());
+  } catch(e) {
+    console.error(e);
+    throw e;
+  }
+}
+
 /**
  * Api definicion class
  */
@@ -59,11 +70,20 @@ export class Api {
   responses: { [name: string]: Response} = {};
 
   constructor() {
-
   }
 
-  static parseSwagger(filename: string, swagger: any): Api {
+  importGlobals() {
+    const globals = parseYML(path.join(__dirname, "..", "..", "globals.yml"));
+    this.parseSwaggerDefinitions(globals, true);
+  }
+
+  static parseSwagger(filename: string, swagger: any, importGlobals: boolean): Api {
     const api = new Api();
+
+    if (importGlobals) {
+      api.importGlobals();
+    }
+
     api.filename = filename;
     Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
 
@@ -138,14 +158,7 @@ export class Api {
       })
     });
 
-    _.each(swagger.definitions, (model, name) => {
-      const mdl = Model.parseSwagger(api, name, model);
-      if (mdl.isEnum()) {
-        api.addEnum(mdl, false);
-      } else {
-        api.addModel(mdl, false);
-      }
-    });
+    api.parseSwaggerDefinitions(swagger, false);
 
     _.each(swagger.parameters, (param, paramName) => {
       api.parameters[paramName] = Parameter.parseSwagger(api, param);
@@ -158,43 +171,67 @@ export class Api {
     return api;
   }
 
-  static parseSwaggerFile(filename): Api {
-    const contents = fs.readFileSync(filename);
+  /**
+   * @internal used to declare blacklisted models
+   */
+  parseSwaggerDefinitions(swagger: any, internal: boolean) {
+    _.each(swagger.definitions, (model, name) => {
+      const mdl = Model.parseSwagger(this, name, model);
+      mdl.internal = internal;
 
-    let swaggerJSON;
-    try {
-      swaggerJSON = require("yamljs").parse(contents.toString());
-    } catch(e) {
-      console.error(e);
-      throw e;
-    }
-
-    return Api.parseSwagger(filename, swaggerJSON);
+      if (mdl.isEnum()) {
+        this.addEnum(mdl, false);
+      } else {
+        this.addModel(mdl, false);
+      }
+    });
   }
 
-  addModel(model: Model, override: boolean) {
-    if (blacklist.indexOf(model.name) !== -1) {
-      throw new Error(`Invalid model name: ${model.name}, it's blacklisted from ${model.api.filename}`);
+  static parseSwaggerFile(filename: string, importGlobals: boolean): Api {
+    let swaggerJSON;
+
+    switch(path.extname(filename)) {
+    case ".json":
+      swaggerJSON = require(filename);
+      break;
+    case ".yml":
+    case ".yaml":
+      swaggerJSON = parseYML(filename);
+      break;
     }
 
-    //console.log(`addModel: ${model.name}`);
-    if (!override && this.models[model.name] !== undefined) {
-      throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
+    return Api.parseSwagger(filename, swaggerJSON, importGlobals);
+  }
+  /**
+   * @internal used to declare blacklisted models
+   */
+  addModel(model: Model, override: boolean) {
+    if (!model.internal) {
+      if (blacklist.indexOf(model.name) !== -1) {
+        throw new Error(`Invalid model name: ${model.name}, it's blacklisted from ${model.api.filename}`);
+      }
+
+      //console.log(`addModel: ${model.name}`);
+      if (!override && this.models[model.name] !== undefined) {
+        throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
+      }
     }
 
     this.models[model.name] = model;
   }
 
-  addEnum(e: Model, override: boolean) {
-    if (blacklist.indexOf(e.name) !== -1) {
-      throw new Error(`Invalid enum name: ${e.name}, it's blacklisted from ${e.api.filename}`);
+  addEnum(enumModel: Model, override: boolean) {
+    if (!enumModel.internal) {
+      if (blacklist.indexOf(enumModel.name) !== -1) {
+        throw new Error(`Invalid enum name: ${enumModel.name}, it's blacklisted from ${enumModel.api.filename}`);
+      }
+
+      if (!override && this.enums[enumModel.name] !== undefined) {
+        throw new Error(`try to override an already defined enum: ${enumModel.name} from ${this.models[enumModel.name].api.filename} to ${enumModel.api.filename}`);
+      }
     }
 
-    if (!override && this.enums[e.name] !== undefined) {
-      throw new Error(`try to override an already defined enum: ${e.name} from ${this.models[e.name].api.filename} to ${e.api.filename}`);
-    }
-
-    this.enums[e.name] = e;
+    this.enums[enumModel.name] = enumModel;
   }
 
   addMethod(method: Method, override: boolean) {

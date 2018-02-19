@@ -59,21 +59,39 @@ nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
 
 ### Limitations / chages
 
-* Every `type` with `type:object` must be declared in definitions at first level.
+* Every `type` with `type:object` must be declared at definitions (first level).
 * `operationId` is required
 * `schemes` is required
-* do not support `$ref` to external sources
+* do not support `$ref` to external source files
 * `/swagger` path is forbidden it's used by swagger-ui
-* parameters.name is a variable name, use parameter.x-nema-header for real
-header name
 * A sucess Response (2xx) must be defined and only one
 * No recursive types
 
-  Related errors:
+  It will give you compile errors on generated code:
   ```
   error TS2395: Individual declarations in merged declaration 'XXX' must be all exported or all local.
   error TS2440: Import declaration conflicts with local declaration of 'XXX'.
   ```
+
+Things that may change in the future:
+
+* `parameters.name` is a variable name, use `parameter.x-nema-header` for real
+header name
+
+### Caveats
+
+#### Type: any
+
+If you dont add properties to and object type, will be any in TypeScript.
+
+```
+definitions:
+  object_with_any:
+    type: object
+    properties:
+      this_is_any:
+        type: object
+```
 
 ### Nema metadata
 
@@ -181,4 +199,16 @@ paths:
         parameters: # map route.snapshot.params with the method parameter name
           strategyId: strategyId
 
+```
+
+
+## Develop notes
+
+Notes to develop. Not meant to anybody of you :)
+
+
+```
+# Install mongodb
+# run server
+"C:\Program Files\MongoDB\Server\3.6\bin\mongod.exe" --dbpath C:\data\db
 ```

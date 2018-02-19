@@ -49,11 +49,13 @@ export class Type {
     obj = obj || { type: "void" };
 
     // sanity checks
-    if (!modelName && obj.type == "object" && !obj.properties) {
+    if (!modelName && obj.type == "object" && obj.properties) {
       console.error(obj);
       throw new Error("Object need to be in definitions at first level");
     }
-    if (obj.type == "object" && !obj.properties) {
+    // allow type:any inside objects
+    // dont allow empty object types
+    if (modelName && obj.type == "object" && !obj.properties) {
       console.error(modelName, obj);
       throw new Error("missing type.properties");
     }
@@ -147,6 +149,8 @@ export class Type {
       case "number":
       case "integer":
         return "number";
+      case "object":
+        return "any";
     }
 
     if (!this.type) {
@@ -193,6 +197,9 @@ export class Type {
       case "integer":
       case "number":
         d.push(`type: Number`);
+        break;
+      case "boolean":
+        d.push(`type: Boolean`);
         break;
       default:
         d.push(`type: ${this.type}`);
@@ -295,7 +302,8 @@ export class Type {
       return src;
     case "enum":
       ts.addImport(this.name, `/src/models/${this.name}.ts`);
-      return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
+      //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
+      return `[${this.choices.map((x) => this.name + "." + x.toUpperCase() ).join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
     case "array":
       if (this.items.isPrimitive()) {
         ts.addImport("Cast", `/src/Cast.ts`);
@@ -318,9 +326,13 @@ export class Type {
       return `${this.name}.parse(${src})`;
     }
 
-    // use model.parse
-    ts.addImport(this.toTypeScriptType(), `/src/models/${this.toTypeScriptType()}.ts`);
-    return `${this.toTypeScriptType()}.parse(${src})`;
+    switch(this.type) {
+    case "object":
+      return src; // equal to any
+    }
+
+
+    throw "Not handled";
   }
   /*
    * Get generated code: empty value

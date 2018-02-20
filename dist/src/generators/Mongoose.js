@@ -60,6 +60,7 @@ class Mongoose {
 import initMongoose from "./mongoose";
 initMongoose(app);
       `);
+        // TODO do it!
         CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose-error-handling", `
 // ????
       `);
@@ -129,8 +130,8 @@ export function insert(
   return ${model.mongooseModel}.create(user);
 }
 
-export function readById(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
-  return ${model.mongooseModel}.findById(_id)
+export function readById(_id: mongoose.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
+  return ${model.mongooseModel}.findById(new mongoose.Types.ObjectId(_id.toString()))
   .then((entity) => {
     if (!entity) {
       throw new NotFound();
@@ -140,18 +141,18 @@ export function readById(_id: mongoose.Schema.Types.ObjectId | string): Promise<
   });
 }
 
-export function readByIdNullable(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
-  return ${model.mongooseModel}.findById(_id)
+export function readByIdNullable(_id: mongoose.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
+  return ${model.mongooseModel}.findById(new mongoose.Types.ObjectId(_id.toString()))
   .then((entity) => {
     return entity || null;
   });
 }
 
-export function deleteById(_id: mongoose.Schema.Types.ObjectId | string) {
-  return ${model.mongooseModel}.findByIdAndRemove(_id);
+export function deleteById(_id: mongoose.Types.ObjectId | string) {
+  return ${model.mongooseModel}.findByIdAndRemove(new mongoose.Types.ObjectId(_id.toString()));
 }
 
-export function clone(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
+export function clone(_id: mongoose.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
   return this.read(_id)
   .then((entity) => {
     const c = entity.toJSON();
@@ -173,7 +174,7 @@ export function updateById(entity: ${model.name}): Promise<${model.mongooseInter
 
 export function query(
   q: Query
-): Promise<{result: ${model.name}[], total: number}> {
+): Promise<{result: ${model.mongooseInterface}[], total: number}> {
   let query = ${model.mongooseModel}.find({});
   let qCount = ${model.mongooseModel}.find({}).count();
 
@@ -245,10 +246,10 @@ export function query(
 
   return new Promise((resolve, reject) => {
     Promise.join(query, qCount, (result, total) => {
-      return {
+      resolve({
         result,
         total
-      };
+      });
     })
     .catch(reject);
   })

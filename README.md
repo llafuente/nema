@@ -29,9 +29,13 @@ It generates from Swagger 2.0 YAMLS
 
     -V, --version       output the version number
     --angular5-api      TARGET: Generate an Angular 5 Module Api client
+    --mongoose          TARGET: Generate Mongoose Schema, Models & Repositories
+    --express           TARGET: Generate Express app/routes
     --override-models   Override all models while agreggating
     --override-methods  Override all methods while agreggating
+    --lint              Lint output (tslint), this may take a while
     --swagger [path]    Path to swagger yml, repeat to aggregate (default: )
+    --dst [path]        Destination path, default: same as the first swagger
     -h, --help          output usage information
 ```
 
@@ -79,6 +83,21 @@ Things that may change in the future:
 header name
 
 ### Caveats
+
+#### Zoned templates
+
+Zoned templates are generated files that are safe to edit by end-user.
+Zones are delimited like HTML. for example:
+
+```html
+export const app = express();
+//<express-configuration>
+app.set("mongodb", process.env.MONGO_URI || "mongodb://127.0.0.1:27017/test");
+
+// false to disable
+app.set("cors", false);
+//</express-configuration>
+```
 
 #### Type: any
 

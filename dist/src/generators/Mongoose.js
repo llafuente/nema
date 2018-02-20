@@ -21,9 +21,9 @@ class Mongoose {
         this.dstPath = dstPath;
         this.api = api;
         this.api.parseSwaggerDefinitions(mongooseSwagger, true);
-        this.addDataToModel();
+        this.addIdToModel();
     }
-    addDataToModel() {
+    addIdToModel() {
         this.api.eachModel((model, modelName) => {
             if (model.isDb) {
                 assert(model.type.type == "object");
@@ -56,11 +56,15 @@ class Mongoose {
                 this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
             }
         });
+        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose", `
+import initMongoose from "./mongoose";
+initMongoose(app);
+      `);
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "Errors.ts"), path.join(this.dstPath, "src", "Errors.ts"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
-        CommonGenerator.copyModificableTemplate(path.join(process.cwd(), "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"]);
+        CommonGenerator.copyZonedTemplate(path.join(process.cwd(), "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"]);
         if (pretty) {
             CommonGenerator.pretty(this.dstPath);
         }

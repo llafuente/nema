@@ -5,15 +5,33 @@ const fs = require("fs");
 const path = require("path");
 const child_process_1 = require("child_process");
 const TypescriptFile_1 = require("../TypescriptFile");
+function getTokenRE(token) {
+    const startToken = `//<${token}>`;
+    const endToken = `//</${token}>`;
+    const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+    return re;
+}
 ;
-function copyModificableTemplate(srcFile, dstFile, tokens) {
-    writeModificableTemplate(dstFile, {
+function copyZonedTemplate(srcFile, dstFile, tokens) {
+    writeZonedTemplate(dstFile, {
         tokens: tokens,
         template: fs.readFileSync(srcFile).toString()
     });
 }
-exports.copyModificableTemplate = copyModificableTemplate;
-function writeModificableTemplate(filename, tpl) {
+exports.copyZonedTemplate = copyZonedTemplate;
+function setZonedTemplate(srcFile, token, text) {
+    const template = fs.readFileSync(srcFile).toString();
+    const re = getTokenRE(token);
+    const m = template.match(re);
+    if (m !== null) {
+        const finalTemplate = template.replace(m[0], `//<${token}>\n${text}\n//</${token}>`);
+        console.log(finalTemplate);
+        console.log(srcFile);
+        fs.writeFileSync(srcFile, finalTemplate);
+    }
+}
+exports.setZonedTemplate = setZonedTemplate;
+function writeZonedTemplate(filename, tpl) {
     let contents = null;
     let template = tpl.template;
     try {
@@ -26,9 +44,7 @@ function writeModificableTemplate(filename, tpl) {
     }
     if (contents) {
         tpl.tokens.forEach((token) => {
-            const startToken = `//<${token}>`;
-            const endToken = `//</${token}>`;
-            const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+            const re = getTokenRE(token);
             const m = contents.match(re);
             // console.log(startToken, endToken);
             // console.log(re);
@@ -44,7 +60,7 @@ function writeModificableTemplate(filename, tpl) {
     }
     fs.writeFileSync(filename, template);
 }
-exports.writeModificableTemplate = writeModificableTemplate;
+exports.writeZonedTemplate = writeZonedTemplate;
 function pretty(dstPath) {
     child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), ["--write", "--parser", "typescript", path.join(dstPath, "**/*.ts"), "--ignore-path", path.join(dstPath, "node_modules/*")], {
         cwd: process.cwd(),

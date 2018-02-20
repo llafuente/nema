@@ -56,13 +56,13 @@ class Express {
         });
     }
     indexFile(filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, filename), this.index());
+        CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.index());
     }
     routesFile(filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, `.${filename}`), this.routes(filename));
+        CommonGenerator.writeZonedTemplate(path.join(this.dstPath, `.${filename}`), this.routes(filename));
     }
     routeFile(method, filename) {
-        CommonGenerator.writeModificableTemplate(path.join(this.dstPath, `.${filename}`), this.route(method, filename));
+        CommonGenerator.writeZonedTemplate(path.join(this.dstPath, `.${filename}`), this.route(method, filename));
     }
     routeTestFile(method, filename) {
         if (fs.existsSync(path.join(this.dstPath, `.${filename}`))) {
@@ -268,6 +268,10 @@ app.set("cors", {
 })
 //</express-configuration>
 
+// this is for mongoose generator usage, do not modify
+//<mongoose>
+//</mongoose>
+
 // declare our own interface for request to save our variables
 export class Upload {
   fieldname: string;
@@ -291,12 +295,6 @@ export interface Request extends express.Request {
 export interface Response extends express.Response {
   //<response>
   //</response>
-}
-
-try {
-  require("./mongoose.js")(app);
-} catch(e) {
-
 }
 
 app.use(morgan("tiny"));

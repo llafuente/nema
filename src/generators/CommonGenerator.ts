@@ -7,19 +7,41 @@ import * as path from "path";
 import { spawnSync } from "child_process";
 import { TypescriptFile } from "../TypescriptFile";
 
+function getTokenRE(token: string) {
+  const startToken = `//<${token}>`;
+  const endToken = `//</${token}>`;
+
+  const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+  return re;
+}
+
 export interface ModificableTemplate {
   tokens: string[];
   template: string;
 };
 
-export function copyModificableTemplate(srcFile: string, dstFile, tokens: string[]) {
-  writeModificableTemplate(dstFile, {
+export function copyZonedTemplate(srcFile: string, dstFile, tokens: string[]) {
+  writeZonedTemplate(dstFile, {
     tokens: tokens,
     template: fs.readFileSync(srcFile).toString()
   });
 }
 
-export function writeModificableTemplate(filename: string, tpl: ModificableTemplate) {
+export function setZonedTemplate(srcFile: string, token: string, text: string) {
+  const template = fs.readFileSync(srcFile).toString();
+  const re = getTokenRE(token)
+  const m = template.match(re);
+
+  if (m !== null) {
+    const finalTemplate = template.replace(m[0], `//<${token}>\n${text}\n//</${token}>`);
+    console.log(finalTemplate);
+    console.log(srcFile);
+
+    fs.writeFileSync(srcFile, finalTemplate);
+  }
+}
+
+export function writeZonedTemplate(filename: string, tpl: ModificableTemplate) {
   let contents: string = null;
   let template = tpl.template;
   try {
@@ -32,10 +54,7 @@ export function writeModificableTemplate(filename: string, tpl: ModificableTempl
 
   if (contents) {
     tpl.tokens.forEach((token) => {
-      const startToken = `//<${token}>`;
-      const endToken = `//</${token}>`;
-
-      const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}`, "m");
+      const re = getTokenRE(token)
 
       const m = contents.match(re);
 

@@ -12,30 +12,19 @@ export class Type {
 
   type: string = null;
   description: string = undefined;
+  /** is type defined at definitions?  */
   isDefinition: boolean = undefined;
+  /** is a foreign key?  */
   foreignKey: string = undefined;
-  /**
-   * Object properties
-   */
+  /** Object properties */
   properties?: {[name: string]: Type} = undefined;
-  /**
-   * Array sub type
-   */
+  /** Array sub type */
   items?: Type = undefined;
-  /**
-   * Enum choices
-   */
+  /** Enum choices */
   choices?: string[] = undefined;
-  /**
-   * Reference to another model
-   */
+  /** Reference to another model */
   referenceModel?: string = undefined;
 
-  //getName(): string {
-  //  if (this.referenceModel) {
-  //    const t = this.api.getReference(this.referenceModel);
-  //  }
-  //}
   /**
    * Parse type from swagger
    */

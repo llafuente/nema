@@ -34,24 +34,25 @@ export function parseYML(filename) {
  * Api definicion class
  */
 export class Api {
-  /**
-   * source file filename
-   */
+  /** source file filename */
   filename: string;
-  /**
-   * Swagger contents atm
-   */
+  /** Swagger contents atm */
   originalSource: any;
-
+  /** Angular ngModule name */
   angularClientModuleName: string;
+  /** Angular node module name */
   angularClientNodeModuleName: string;
+  /** Angular class name */
   apiName: string;
-
+  /** Api version */
   version: string;
+  /** Api description */
   description: string;
-
+  /** Scheme list */
   schemes: string[];
+  /** Application base path */
   basePath: string;
+  /** Host */
   host: string;
   /**
    * Path for front applications, may not be the same because reverse-proxies could be
@@ -63,25 +64,33 @@ export class Api {
   authorEmail: string;
   authorURL: string;
 
+
   methods: { [name: string]: Method} = {};
+  /**
+   * references: #/definitions/XXXX
+   */
   models: { [name: string]: Model} = {};
+  /**
+   * This is just a special place for enums, to keep it separate from
+   * other models because has no "class.parse"
+   *
+   * references: #/definitions/XXXX
+   */
   enums: { [name: string]: Model} = {};
+  /**
+   * references: #/parameters/XXXX
+   */
   parameters: { [name: string]: Parameter} = {};
+  /**
+   * references: #/responses/XXXX
+   */
   responses: { [name: string]: Response} = {};
 
   constructor() {
   }
 
-  importGlobals() {
-
-  }
-
-  static parseSwagger(filename: string, swagger: any, importGlobals: boolean): Api {
+  static parseSwagger(filename: string, swagger: any): Api {
     const api = new Api();
-
-    if (importGlobals) {
-      api.importGlobals();
-    }
 
     api.filename = filename;
     Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
@@ -186,7 +195,7 @@ export class Api {
     });
   }
 
-  static parseSwaggerFile(filename: string, importGlobals: boolean): Api {
+  static parseSwaggerFile(filename: string): Api {
     let swaggerJSON;
 
     switch(path.extname(filename)) {
@@ -199,7 +208,7 @@ export class Api {
       break;
     }
 
-    return Api.parseSwagger(filename, swaggerJSON, importGlobals);
+    return Api.parseSwagger(filename, swaggerJSON);
   }
   /**
    * @internal used to declare blacklisted models

@@ -23,23 +23,18 @@ const SwaggerToParameterType = {
 export class Parameter {
   api: Api = null;
 
-  /**
-   * variable/real name (no dashes)
-   */
+  /** variable/real name (no dashes) */
   name: string;
-  /**
-   * real header name (may contain dashes)
-   */
+  /** real header name (may contain dashes) */
   headerName: string;
   description: string;
+  /** parameter location */
   in: ParameterType;
   required: boolean;
 
   reference: string;
 
-  /*
-   * Is parameter injected by a proxy
-   */
+  /** Is parameter injected by a reverse proxy? do not use as parameter in front */
   autoInjected: boolean;
   type: Type;
 
@@ -52,11 +47,13 @@ export class Parameter {
     p.headerName = obj["x-alias"] || obj["x-nema-header"];
     p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
     p.description = obj.description;
+
     if (obj.in == "formData" && obj.type == "file") {
       p.in = ParameterType.FORM_DATA_FILE;
     } else {
       p.in = SwaggerToParameterType[obj.in];
     }
+
     p.required = !!obj.required;
 
     p.reference = obj.$ref || null;

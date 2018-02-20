@@ -7,14 +7,22 @@ import * as _ from "lodash";
 export class Method {
   api: Api = null;
   filename: string = null;
-  /*
-   * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
+  /**
+   * Method relative URL, in the final generation we will append
+   * api.frontBasePath or api.basePath
    */
   url: string = null;
+  /**
+   * Unique name for this method. Will be used as method/function name
+   * in the generators
+   */
   operationId: string = null;
+  /** http verb: get, post... */
   verb: string = null;
   description: string = null;
+  /** List of parameters */
   parameters: Parameter[] = [];
+  /** List of responses */
   responses: Response[] = [];
 
   consumes: string[] = [];
@@ -117,7 +125,10 @@ export class Method {
 
     return count;
   }
-
+  /**
+   * Loop each parameter in "arguments order" resolving any references
+   * order: path, header, query, body, file
+   */
   eachParam(cb: (p:Parameter) => void) {
     this.eachPathParam(cb);
     this.eachHeaderParam(cb, true);
@@ -125,7 +136,7 @@ export class Method {
     this.eachBodyParam(cb);
     this.eachFileParam(cb);
   }
-
+  /** Loop each parameter of query path resolving any references */
   eachPathParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
@@ -137,7 +148,7 @@ export class Method {
       }
     })
   }
-
+  /** Loop each parameter of query header resolving any references */
   eachQueryParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
@@ -149,7 +160,7 @@ export class Method {
       }
     })
   }
-
+  /** Loop each parameter of type header resolving any references */
   eachHeaderParam(cb: (p:Parameter) => void, skipAutoInjected) {
     this.parameters.forEach((p) => {
       if (p.reference) {
@@ -161,7 +172,7 @@ export class Method {
       }
     })
   }
-
+  /** Loop each parameter of type cookie resolving any references */
   eachCookieParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
@@ -173,23 +184,32 @@ export class Method {
       }
     })
   }
-
+  /** Loop each parameter of type body resolving any references */
   eachBodyParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.BODY) {
         cb(p);
       }
     })
   }
-
+  /** Loop each parameter of type file resolving any references */
   eachFileParam(cb: (p:Parameter) => void) {
     this.parameters.forEach((p) => {
+      if (p.reference) {
+        p = this.api.getReference(p.reference) as Parameter;
+      }
+
       if (p.in == ParameterType.FORM_DATA_FILE) {
         cb(p);
       }
     })
   }
 
+  /** Get accept header contents */
   getAccept() {
     if (this.producesJSON()) {
       return "application/json";
@@ -217,11 +237,17 @@ export class Method {
       return produce.indexOf("image/") == 0
     });
   }
-
-  requireBody() {
+  /**
+   * The method require body?
+   */
+  requireBody(): boolean {
     return ["post", "patch", "put"].indexOf(this.verb) !== -1;
   }
 
+  /**
+   * returns a response between [200, 300)
+   * or returns the default response
+   */
   getSuccessResponse(): Response {
     for (let response of this.responses) {
       if (response.httpCode >= 200 && response.httpCode < 300) {
@@ -231,7 +257,10 @@ export class Method {
 
     return this.getResponse(0);
   }
-
+  /**
+   * returns a the response for given httpCode if found,
+   * default response if not.
+   */
   getResponse(httpCode: number): Response {
     for (let response of this.responses) {
       if (response.httpCode == httpCode) {
@@ -245,7 +274,9 @@ export class Method {
 
     return null;
   }
-
+  /**
+   * Loop each response resolving any reference
+   */
   eachResponse(cb: (response: Response) => void) {
     _.each(this.responses, (response) => {
       if (response.reference) {

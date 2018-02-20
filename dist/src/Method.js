@@ -7,14 +7,22 @@ class Method {
     constructor() {
         this.api = null;
         this.filename = null;
-        /*
-         * Method relative URL, in the final generation we will append api.frontBasePath or api.basePath
+        /**
+         * Method relative URL, in the final generation we will append
+         * api.frontBasePath or api.basePath
          */
         this.url = null;
+        /**
+         * Unique name for this method. Will be used as method/function name
+         * in the generators
+         */
         this.operationId = null;
+        /** http verb: get, post... */
         this.verb = null;
         this.description = null;
+        /** List of parameters */
         this.parameters = [];
+        /** List of responses */
         this.responses = [];
         this.consumes = [];
         this.produces = [];
@@ -88,6 +96,10 @@ class Method {
         }
         return count;
     }
+    /**
+     * Loop each parameter in "arguments order" resolving any references
+     * order: path, header, query, body, file
+     */
     eachParam(cb) {
         this.eachPathParam(cb);
         this.eachHeaderParam(cb, true);
@@ -95,6 +107,7 @@ class Method {
         this.eachBodyParam(cb);
         this.eachFileParam(cb);
     }
+    /** Loop each parameter of query path resolving any references */
     eachPathParam(cb) {
         this.parameters.forEach((p) => {
             if (p.reference) {
@@ -105,6 +118,7 @@ class Method {
             }
         });
     }
+    /** Loop each parameter of query header resolving any references */
     eachQueryParam(cb) {
         this.parameters.forEach((p) => {
             if (p.reference) {
@@ -115,6 +129,7 @@ class Method {
             }
         });
     }
+    /** Loop each parameter of type header resolving any references */
     eachHeaderParam(cb, skipAutoInjected) {
         this.parameters.forEach((p) => {
             if (p.reference) {
@@ -125,6 +140,7 @@ class Method {
             }
         });
     }
+    /** Loop each parameter of type cookie resolving any references */
     eachCookieParam(cb) {
         this.parameters.forEach((p) => {
             if (p.reference) {
@@ -135,20 +151,29 @@ class Method {
             }
         });
     }
+    /** Loop each parameter of type body resolving any references */
     eachBodyParam(cb) {
         this.parameters.forEach((p) => {
+            if (p.reference) {
+                p = this.api.getReference(p.reference);
+            }
             if (p.in == Parameter_1.ParameterType.BODY) {
                 cb(p);
             }
         });
     }
+    /** Loop each parameter of type file resolving any references */
     eachFileParam(cb) {
         this.parameters.forEach((p) => {
+            if (p.reference) {
+                p = this.api.getReference(p.reference);
+            }
             if (p.in == Parameter_1.ParameterType.FORM_DATA_FILE) {
                 cb(p);
             }
         });
     }
+    /** Get accept header contents */
     getAccept() {
         if (this.producesJSON()) {
             return "application/json";
@@ -172,9 +197,16 @@ class Method {
             return produce.indexOf("image/") == 0;
         });
     }
+    /**
+     * The method require body?
+     */
     requireBody() {
         return ["post", "patch", "put"].indexOf(this.verb) !== -1;
     }
+    /**
+     * returns a response between [200, 300)
+     * or returns the default response
+     */
     getSuccessResponse() {
         for (let response of this.responses) {
             if (response.httpCode >= 200 && response.httpCode < 300) {
@@ -183,6 +215,10 @@ class Method {
         }
         return this.getResponse(0);
     }
+    /**
+     * returns a the response for given httpCode if found,
+     * default response if not.
+     */
     getResponse(httpCode) {
         for (let response of this.responses) {
             if (response.httpCode == httpCode) {
@@ -194,6 +230,9 @@ class Method {
         }
         return null;
     }
+    /**
+     * Loop each response resolving any reference
+     */
     eachResponse(cb) {
         _.each(this.responses, (response) => {
             if (response.reference) {

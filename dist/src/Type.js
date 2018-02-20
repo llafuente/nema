@@ -7,30 +7,19 @@ class Type {
         this.api = null;
         this.type = null;
         this.description = undefined;
+        /** is type defined at definitions?  */
         this.isDefinition = undefined;
+        /** is a foreign key?  */
         this.foreignKey = undefined;
-        /**
-         * Object properties
-         */
+        /** Object properties */
         this.properties = undefined;
-        /**
-         * Array sub type
-         */
+        /** Array sub type */
         this.items = undefined;
-        /**
-         * Enum choices
-         */
+        /** Enum choices */
         this.choices = undefined;
-        /**
-         * Reference to another model
-         */
+        /** Reference to another model */
         this.referenceModel = undefined;
     }
-    //getName(): string {
-    //  if (this.referenceModel) {
-    //    const t = this.api.getReference(this.referenceModel);
-    //  }
-    //}
     /**
      * Parse type from swagger
      */

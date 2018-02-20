@@ -32,18 +32,28 @@ exports.parseYML = parseYML;
 class Api {
     constructor() {
         this.methods = {};
+        /**
+         * references: #/definitions/XXXX
+         */
         this.models = {};
+        /**
+         * This is just a special place for enums, to keep it separate from
+         * other models because has no "class.parse"
+         *
+         * references: #/definitions/XXXX
+         */
         this.enums = {};
+        /**
+         * references: #/parameters/XXXX
+         */
         this.parameters = {};
+        /**
+         * references: #/responses/XXXX
+         */
         this.responses = {};
     }
-    importGlobals() {
-    }
-    static parseSwagger(filename, swagger, importGlobals) {
+    static parseSwagger(filename, swagger) {
         const api = new Api();
-        if (importGlobals) {
-            api.importGlobals();
-        }
         api.filename = filename;
         Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
         // TODO is generating front ? -> override basePath
@@ -123,7 +133,7 @@ class Api {
             }
         });
     }
-    static parseSwaggerFile(filename, importGlobals) {
+    static parseSwaggerFile(filename) {
         let swaggerJSON;
         switch (path.extname(filename)) {
             case ".json":
@@ -134,7 +144,7 @@ class Api {
                 swaggerJSON = parseYML(filename);
                 break;
         }
-        return Api.parseSwagger(filename, swaggerJSON, importGlobals);
+        return Api.parseSwagger(filename, swaggerJSON);
     }
     /**
      * @internal used to declare blacklisted models

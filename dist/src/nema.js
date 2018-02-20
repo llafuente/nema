@@ -66,10 +66,10 @@ let api;
 let dstPath = program.dst;
 program.swagger.forEach((swagger) => {
     if (api) {
-        api.aggregate(Api_1.Api.parseSwaggerFile(swagger, !!program.mongoose), !!program.overrideMethods, !!program.overrideModels);
+        api.aggregate(Api_1.Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
     }
     else {
-        api = Api_1.Api.parseSwaggerFile(swagger, !!program.mongoose);
+        api = Api_1.Api.parseSwaggerFile(swagger);
         if (!dstPath) {
             dstPath = path.dirname(swagger);
         }

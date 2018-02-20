@@ -6,7 +6,9 @@ const pluralize = require("pluralize");
 class Model {
     constructor() {
         this.api = null;
+        /** type is internal, not really defined by user but used by it */
         this.internal = false;
+        /** Mark model to be exported as database/collection */
         this.isDb = false;
     }
     static parseSwagger(api, name, obj) {
@@ -19,11 +21,12 @@ class Model {
         m.name = name;
         m.filename = `/src/models/${name}.ts`;
         m.isDb = !!obj["x-nema-db"];
+        // force: naming convention
         // this need review, i'm +1 , but also see unforseen consecuences
         // remove Dto from name
-        //if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {
-        //  m.name = m.name.substr(0, m.name.length -3);
-        //}
+        // if (m.name.substr(m.name.length -3).toLowerCase() == "dto") {
+        //   m.name = m.name.substr(0, m.name.length -3);
+        // }
         m.type = Type_1.Type.parseSwagger(api, obj, name, true);
         m.description = obj.description;
         //m.dtoName = `${name}Dto`;
@@ -43,6 +46,10 @@ class Model {
         _.each(this.type.properties, cb);
     }
     eachParentProperty(cb) {
+        if (!this.extends) {
+            console.error(this);
+            throw new Error("This model has no parent model");
+        }
         const m = this.api.getReference(this.extends);
         m.eachProperty(cb);
     }

@@ -159,7 +159,7 @@ export function readById(_id: mongoose.Schema.Types.ObjectId | string): Promise<
   });
 }
 
-export function readByIdNullable(_id: mongoose.Schema.Types.ObjectId | string) {
+export function readByIdNullable(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
   return ${model.mongooseModel}.findById(_id)
   .then((entity) => {
     return entity || null;
@@ -170,8 +170,8 @@ export function deleteById(_id: mongoose.Schema.Types.ObjectId | string) {
   return ${model.mongooseModel}.findByIdAndRemove(_id);
 }
 
-export function clone(_id: mongoose.Schema.Types.ObjectId | string) {
-  this.read(_id)
+export function clone(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
+  return this.read(_id)
   .then((entity) => {
     const c = entity.toJSON();
     c._id = undefined;
@@ -181,8 +181,8 @@ export function clone(_id: mongoose.Schema.Types.ObjectId | string) {
   });
 }
 
-export function updateById(entity: ${model.name}) {
-  this.read(entity._id)
+export function updateById(entity: ${model.name}): Promise<${model.mongooseInterface}> {
+  return this.read(entity._id)
   .then((dbEntity) => {
     dbEntity.set(entity);
 
@@ -192,7 +192,7 @@ export function updateById(entity: ${model.name}) {
 
 export function query(
   q: Query
-): Promise<{query: ${model.name}[], count: number}> {
+): Promise<{result: ${model.name}[], total: number}> {
   let query = ${model.mongooseModel}.find({});
   let qCount = ${model.mongooseModel}.find({}).count();
 
@@ -262,13 +262,17 @@ export function query(
   }));
 
 
-  return Promise.join(query, qCount, (result, total) => {
-    return {
-      result,
-      total
-    };
-  });
+  return new Promise((resolve, reject) => {
+    Promise.join(query, qCount, (result, total) => {
+      return {
+        result,
+        total
+      };
+    })
+    .catch(reject);
+  })
 }
+
 
   `);
 

@@ -119,7 +119,7 @@ export class ${this.api.angularClientModuleName} {}
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
-import { Observable } from "rxjs/Rx";
+import { Observable, Subject } from "rxjs/Rx";
 import { ${this.api.apiName} } from "../${this.api.apiName}";
 import { ${responseType.type.toTypeScriptType()} } from "../models/${responseType.type.toTypeScriptType()}";
 

@@ -148,6 +148,12 @@ import { NotFound } from "../Errors";
 import { Query, Operators, Order, Page, Where } from "../Query";
 import { Promise } from "bluebird";
 
+export function insert(
+  user: ${model.name}
+): Promise<${model.mongooseInterface}> {
+  return ${model.mongooseModel}.create(user);
+}
+
 export function readById(_id: mongoose.Schema.Types.ObjectId | string): Promise<${model.mongooseInterface}> {
   return ${model.mongooseModel}.findById(_id)
   .then((entity) => {

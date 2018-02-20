@@ -8,7 +8,7 @@ const ava_1 = require("ava");
 const common_1 = require("./common");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/responses-references.yaml", false);
+    api = Api_1.Api.parseSwaggerFile("./test/responses-references.yaml");
     common_1.validateTypes(api, t);
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();

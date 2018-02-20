@@ -30,7 +30,7 @@ ava_1.default.cb.serial("parse swagger", (t) => {
         "./test/api-test-001.yaml",
         "./test/angular5client-resolve.yaml",
     ].forEach((filename) => {
-        let api = Api_1.Api.parseSwaggerFile(filename, false);
+        let api = Api_1.Api.parseSwaggerFile(filename);
         isCyclic(filename, t, api);
     });
     t.end();

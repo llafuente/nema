@@ -11,7 +11,7 @@ import * as _ from "lodash";
 
 let api: Api;
 test.cb.serial("parse swagger file", (t) => {
-  api = Api.parseSwaggerFile("./test/pet-store.yaml", false);
+  api = Api.parseSwaggerFile("./test/pet-store.yaml");
 
   //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
 

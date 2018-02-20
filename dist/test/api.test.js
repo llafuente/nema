@@ -5,7 +5,7 @@ const Angular5Client_1 = require("../src/generators/Angular5Client");
 const ava_1 = require("ava");
 let swagger;
 ava_1.default.cb.serial("parse swagger", (t) => {
-    swagger = Api_1.Api.parseSwaggerFile("./test/api-test-001.yaml", false);
+    swagger = Api_1.Api.parseSwaggerFile("./test/api-test-001.yaml");
     //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
     t.deepEqual(Object.keys(swagger.methods), [
         'createStrategyRest',

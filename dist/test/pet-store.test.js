@@ -10,7 +10,7 @@ const ava_1 = require("ava");
 const _ = require("lodash");
 let api;
 ava_1.default.cb.serial("parse swagger file", (t) => {
-    api = Api_1.Api.parseSwaggerFile("./test/pet-store.yaml", false);
+    api = Api_1.Api.parseSwaggerFile("./test/pet-store.yaml");
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [

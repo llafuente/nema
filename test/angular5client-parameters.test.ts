@@ -5,7 +5,7 @@ import test from "ava";
 
 let api: Api;
 test.cb.serial("parse global parameters", (t) => {
-  api = Api.parseSwaggerFile("./test/angular5client-parameters.yaml", false);
+  api = Api.parseSwaggerFile("./test/angular5client-parameters.yaml");
 
   //console.log(JSON.stringify(api.methods, null, 2));
 

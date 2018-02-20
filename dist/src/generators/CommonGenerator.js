@@ -25,8 +25,6 @@ function setZonedTemplate(srcFile, token, text) {
     const m = template.match(re);
     if (m !== null) {
         const finalTemplate = template.replace(m[0], `//<${token}>\n${text}\n//</${token}>`);
-        console.log(finalTemplate);
-        console.log(srcFile);
         fs.writeFileSync(srcFile, finalTemplate);
     }
 }

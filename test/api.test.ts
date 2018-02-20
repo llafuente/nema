@@ -5,7 +5,7 @@ import test from "ava";
 
 let swagger: Api;
 test.cb.serial("parse swagger", (t) => {
-  swagger = Api.parseSwaggerFile("./test/api-test-001.yaml", false);
+  swagger = Api.parseSwaggerFile("./test/api-test-001.yaml");
 
   //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
 

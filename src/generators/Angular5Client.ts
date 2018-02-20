@@ -150,7 +150,7 @@ return `${header}
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
-import { Observable } from "rxjs/Rx";
+import { Observable, Subject } from "rxjs/Rx";
 import { ${this.api.apiName} } from "../${this.api.apiName}";
 import { ${responseType.type.toTypeScriptType()} } from "../models/${responseType.type.toTypeScriptType()}";
 
@@ -215,7 +215,6 @@ import { Subject, Observable } from "rxjs";`);
 export class ${this.api.apiName} {
   scheme: string = ${JSON.stringify(this.api.schemes[0])};
   debug: boolean = false;
-  basePath: string = ${JSON.stringify(this.api.basePath)};
   host: string = ${JSON.stringify(this.api.host)};
   onError: Subject<CommonException> = new Subject<CommonException>();
 
@@ -242,7 +241,7 @@ export class ${this.api.apiName} {
   }
 
   getFullURL(uri: string) : string {
-    return \`\${this.scheme}://\` + \`\${this.host}/\${this.basePath}\${uri}\`.replace(${"/\\/\\//g"}, "/");
+    return \`\${this.scheme}://\` + \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
   }
 
 `);

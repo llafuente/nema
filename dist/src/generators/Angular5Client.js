@@ -178,7 +178,6 @@ import { Subject, Observable } from "rxjs";`);
 export class ${this.api.apiName} {
   scheme: string = ${JSON.stringify(this.api.schemes[0])};
   debug: boolean = false;
-  basePath: string = ${JSON.stringify(this.api.basePath)};
   host: string = ${JSON.stringify(this.api.host)};
   onError: Subject<CommonException> = new Subject<CommonException>();
 
@@ -205,7 +204,7 @@ export class ${this.api.apiName} {
   }
 
   getFullURL(uri: string) : string {
-    return \`\${this.scheme}://\` + \`\${this.host}/\${this.basePath}\${uri}\`.replace(${"/\\/\\//g"}, "/");
+    return \`\${this.scheme}://\` + \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
   }
 
 `);

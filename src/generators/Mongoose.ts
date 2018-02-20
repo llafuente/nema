@@ -72,10 +72,19 @@ export class Mongoose {
 
     CommonGenerator.setZonedTemplate(
       path.join(this.dstPath, "./src/index.ts"),
-      "mongoose",
+      "mongoose-initialization",
       `
 import initMongoose from "./mongoose";
 initMongoose(app);
+      `
+    );
+
+    // TODO do it!
+    CommonGenerator.setZonedTemplate(
+      path.join(this.dstPath, "./src/index.ts"),
+      "mongoose-error-handling",
+      `
+// ????
       `
     );
 

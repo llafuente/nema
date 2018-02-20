@@ -323,8 +323,8 @@ app.set("cors", {
 //</express-configuration>
 
 // this is for mongoose generator usage, do not modify
-//<mongoose>
-//</mongoose>
+//<mongoose-initialization>
+//</mongoose-initialization>
 
 // declare our own interface for request to save our variables
 export class Upload {
@@ -381,15 +381,18 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
   }
 
   if (err instanceof NotFound) {
-    res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
+    return res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
   }
 
   if (!(err instanceof CommonException)) {
     console.warn("Unhandled error thrown", err);
-    res.status(500).json(new CommonException(500, "internal-error", "Internal server error", null, null, Date.now()));
+    return res.status(500).json(new CommonException(500, "internal-error", "Internal server error", null, null, Date.now()));
   }
 
-  res.status(404).json(err);
+//<mongoose-error-handling>
+//</mongoose-error-handling>
+
+  return res.status(404).json(err);
 });
 
 if (process.env.NODE_ENV !== "test") {

@@ -56,9 +56,12 @@ class Mongoose {
                 this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
             }
         });
-        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose", `
+        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose-initialization", `
 import initMongoose from "./mongoose";
 initMongoose(app);
+      `);
+        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose-error-handling", `
+// ????
       `);
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);

@@ -1,17 +1,17 @@
 export class Cast {
   static number(num): number {
-    if (num === null) return null;
+    if (num === null || num === undefined) return null;
 
     return parseFloat(num);
   }
   static integer(num): number {
-    if (num === null) return null;
+    if (num === null || num === undefined) return null;
 
     return parseInt(num, 10);
   }
 
   static array(arr): any[] {
-    if (arr === null) return null;
+    if (arr === null || arr === undefined) return null;
 
     if (Array.isArray(arr)) {
       return arr;
@@ -22,13 +22,13 @@ export class Cast {
   }
 
   static boolean(b): boolean {
-    if (b === null) return null;
+    if (b === null || b === undefined) return null;
 
     return b === true;
   }
 
   static string(str): string {
-    if (str === null) return null;
+    if (str === null || str === undefined) return null;
 
     return "" + str;
   }

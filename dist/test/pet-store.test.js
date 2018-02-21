@@ -60,8 +60,8 @@ ava_1.default.cb.serial("angular 5 generation", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    (new Mongoose_1.Mongoose(`./test/pet-store-server/`, api)).generate(false, false);
     (new Express_1.Express(`./test/pet-store-server/`, api)).generate(false, false);
+    (new Mongoose_1.Mongoose(`./test/pet-store-server/`, api)).generate(false, false);
     (new CSV_1.CSV(`./test/pet-store-server/`)).generate(api, true, false);
     t.end();
 });

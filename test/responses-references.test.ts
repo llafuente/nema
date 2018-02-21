@@ -42,7 +42,7 @@ test.cb.serial("angular 5 generation", (t) => {
 });
 
 test.cb.serial("express generation", (t) => {
-   (new Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
    (new Express(`./test/responses-references-server/`, api)).generate(true, false);
+   (new Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
    t.end();
  });

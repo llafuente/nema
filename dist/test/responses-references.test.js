@@ -34,8 +34,8 @@ ava_1.default.cb.serial("angular 5 generation", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    (new Mongoose_1.Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
     (new Express_1.Express(`./test/responses-references-server/`, api)).generate(true, false);
+    (new Mongoose_1.Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
     t.end();
 });
 //# sourceMappingURL=responses-references.test.js.map

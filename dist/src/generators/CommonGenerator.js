@@ -63,9 +63,9 @@ function pretty(dstPath) {
         "--write",
         "--parser",
         "typescript",
-        path.join(dstPath, "**/*.ts"),
+        JSON.stringify(path.join(dstPath, "**/*.ts")),
         "--ignore-path",
-        path.join(dstPath, "node_modules/*"),
+        JSON.stringify(path.join(dstPath, "node_modules/*")),
     ], {
         cwd: process.cwd(),
         env: process.env,
@@ -75,7 +75,7 @@ function pretty(dstPath) {
 }
 exports.pretty = pretty;
 function lint(dstPath) {
-    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/tslint.cmd"), ["-c", "./tslint.json", "--project", path.join(dstPath + "/tsconfig.json"), "--fix"], {
+    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/tslint.cmd"), ["-c", "./tslint.json", "--project", JSON.stringify(path.join(dstPath + "/tsconfig.json")), "--fix"], {
         cwd: process.cwd(),
         env: process.env,
         shell: true,

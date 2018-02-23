@@ -211,7 +211,7 @@ export class ${this.api.apiName} {
 `);
         this.api.eachMethod((method) => {
             // Verb
-            ts.push(`// source: ${method.api.filename}`);
+            ts.push(`// source: ${path.basename(method.api.filename)}`);
             ts.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
             ts.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath || method.api.basePath, method.url))};`);
             const pathParams = [];

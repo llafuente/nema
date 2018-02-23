@@ -247,8 +247,8 @@ export class ${this.api.apiName} {
     );
 
     this.api.eachMethod((method) => {
-      // Verb
-      ts.push(`// source: ${method.api.filename}`);
+      // CONSTANTS
+      ts.push(`// source: ${path.basename(method.api.filename)}`);
       ts.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
       ts.push(
         `${method.operationId}URI: string  = ${JSON.stringify(

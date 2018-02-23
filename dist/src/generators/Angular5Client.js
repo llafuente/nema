@@ -312,7 +312,7 @@ export class ${this.api.apiName} {
                 ts.push(`responseType: "blob" as "blob",`);
             }
             else if (responseTypeTS != "void") {
-                console.log(method, responseTypeTS);
+                console.error(method, responseTypeTS);
                 throw new Error(`invalid produces, only: application/json, text/plain, text/html found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
             }
             ts.push(`withCredentials: true // enable CORS

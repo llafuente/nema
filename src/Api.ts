@@ -3,28 +3,41 @@ import * as _ from "lodash";
 import * as path from "path";
 
 import { Method } from "./Method";
-import { Type } from "./Type";
 import { Model } from "./Model";
 import { Parameter } from "./Parameter";
 import { Response } from "./Response";
 
 function ksort(obj) {
   const ret = {};
-  Object.keys(obj).sort().forEach((k) => {
-    ret[k] = obj[k];
-  });
+  Object.keys(obj)
+    .sort()
+    .forEach((k) => {
+      ret[k] = obj[k];
+    });
 
   return ret;
 }
 
-const blacklist = ["Error", "CommonException", "express", "Request", "Response", "Random", "Cast", "Operators", "Order", "Where", "Page"];
+const blacklist = [
+  "Error",
+  "CommonException",
+  "express",
+  "Request",
+  "Response",
+  "Random",
+  "Cast",
+  "Operators",
+  "Order",
+  "Where",
+  "Page",
+];
 
 export function parseYML(filename) {
   const contents = fs.readFileSync(filename);
 
   try {
     return require("yamljs").parse(contents.toString());
-  } catch(e) {
+  } catch (e) {
     console.error(e);
     throw e;
   }
@@ -64,30 +77,28 @@ export class Api {
   authorEmail: string;
   authorURL: string;
 
-
-  methods: { [name: string]: Method} = {};
+  methods: { [name: string]: Method } = {};
   /**
    * references: #/definitions/XXXX
    */
-  models: { [name: string]: Model} = {};
+  models: { [name: string]: Model } = {};
   /**
    * This is just a special place for enums, to keep it separate from
    * other models because has no "class.parse"
    *
    * references: #/definitions/XXXX
    */
-  enums: { [name: string]: Model} = {};
+  enums: { [name: string]: Model } = {};
   /**
    * references: #/parameters/XXXX
    */
-  parameters: { [name: string]: Parameter} = {};
+  parameters: { [name: string]: Parameter } = {};
   /**
    * references: #/responses/XXXX
    */
-  responses: { [name: string]: Response} = {};
+  responses: { [name: string]: Response } = {};
 
-  constructor() {
-  }
+  constructor() {}
 
   static parseSwagger(filename: string, swagger: any): Api {
     const api = new Api();
@@ -106,10 +117,10 @@ export class Api {
     }
 
     if (swagger["x-nema"]) {
-      api.apiName =  swagger["x-nema"]["apiName"];
-      api.angularClientNodeModuleName = swagger["x-nema"]["angularClientNodeModuleName"];
-      api.angularClientModuleName = swagger["x-nema"]["angularClientModuleName"];
-      api.frontBasePath = swagger["x-nema"]["frontBasePath"];
+      api.apiName = swagger["x-nema"].apiName;
+      api.angularClientNodeModuleName = swagger["x-nema"].angularClientNodeModuleName;
+      api.angularClientModuleName = swagger["x-nema"].angularClientModuleName;
+      api.frontBasePath = swagger["x-nema"].frontBasePath;
     }
 
     if (!api.apiName) {
@@ -117,22 +128,26 @@ export class Api {
       api.apiName = "Api";
     }
     if (!api.angularClientNodeModuleName) {
-      console.warn(`angularClientNodeModuleName not defined, using api-module: x-nema.angularClientNodeModuleName at ${filename}`);
+      console.warn(
+        `angularClientNodeModuleName not defined, using api-module: x-nema.angularClientNodeModuleName at ${filename}`,
+      );
       api.angularClientNodeModuleName = "api-module";
     }
     if (!api.angularClientModuleName) {
-      console.warn(`angularClientModuleName not defined, using ApiModule: x-nema.angularClientModuleName at ${filename}`);
+      console.warn(
+        `angularClientModuleName not defined, using ApiModule: x-nema.angularClientModuleName at ${filename}`,
+      );
       api.angularClientModuleName = "ApiModule";
     }
     // frontBasePath is optional
 
     swagger["x-nema"] = swagger["x-nema"] || {};
-    swagger["info"] = swagger["info"] || {};
-    swagger["info"]["contact"] = swagger["info"]["contact"] || {};
+    swagger.info = swagger.info || {};
+    swagger.info.contact = swagger.info.contact || {};
 
-    api.host = swagger["host"];
+    api.host = swagger.host;
     api.basePath = swagger.basePath || "/";
-    api.schemes = swagger["schemes"];
+    api.schemes = swagger.schemes;
     if (!api.schemes) {
       throw new Error(`schemes is required at ${filename}`);
     }
@@ -152,18 +167,20 @@ export class Api {
         const method = pathItem[verb];
 
         if (method) {
-          api.addMethod(Method.parseSwagger(
-            api,
-            verb,
-            uri,
-            (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null),
-            method.consumes || swagger.consumes || [],
-            method.produces || swagger.produces || [],
-            method
-          ), false);
-
+          api.addMethod(
+            Method.parseSwagger(
+              api,
+              verb,
+              uri,
+              (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null),
+              method.consumes || swagger.consumes || [],
+              method.produces || swagger.produces || [],
+              method,
+            ),
+            false,
+          );
         }
-      })
+      });
     });
 
     api.parseSwaggerDefinitions(swagger, false);
@@ -198,14 +215,14 @@ export class Api {
   static parseSwaggerFile(filename: string): Api {
     let swaggerJSON;
 
-    switch(path.extname(filename)) {
-    case ".json":
-      swaggerJSON = require(filename);
-      break;
-    case ".yml":
-    case ".yaml":
-      swaggerJSON = parseYML(filename);
-      break;
+    switch (path.extname(filename)) {
+      case ".json":
+        swaggerJSON = require(filename);
+        break;
+      case ".yml":
+      case ".yaml":
+        swaggerJSON = parseYML(filename);
+        break;
     }
 
     return Api.parseSwagger(filename, swaggerJSON);
@@ -221,7 +238,11 @@ export class Api {
 
       //console.log(`addModel: ${model.name}`);
       if (!override && this.models[model.name] !== undefined) {
-        throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
+        throw new Error(
+          `try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${
+            model.api.filename
+          }`,
+        );
       }
     }
 
@@ -235,7 +256,11 @@ export class Api {
       }
 
       if (!override && this.enums[enumModel.name] !== undefined) {
-        throw new Error(`try to override an already defined enum: ${enumModel.name} from ${this.models[enumModel.name].api.filename} to ${enumModel.api.filename}`);
+        throw new Error(
+          `try to override an already defined enum: ${enumModel.name} from ${
+            this.models[enumModel.name].api.filename
+          } to ${enumModel.api.filename}`,
+        );
       }
     }
 
@@ -244,7 +269,11 @@ export class Api {
 
   addMethod(method: Method, override: boolean) {
     if (!override && this.methods[method.operationId] !== undefined) {
-      throw new Error(`try to override an already defined method: ${method.operationId} from ${this.methods[method.operationId]} to ${method.api.filename}`);
+      throw new Error(
+        `try to override an already defined method: ${method.operationId} from ${this.methods[method.operationId]} to ${
+          method.api.filename
+        }`,
+      );
     }
 
     this.methods[method.operationId] = method;
@@ -286,14 +315,14 @@ export class Api {
     this.enums = ksort(this.enums);
   }
 
-  getReference(ref: string): Model|Parameter|Response {
+  getReference(ref: string): Model | Parameter | Response {
     //console.log(`getReference(${ref})`);
     ref = ref.substr(2);
     const c = ref.indexOf("/");
     const where = ref.substr(0, c);
     const target = ref.substr(c + 1);
 
-    switch(where) {
+    switch (where) {
       case "definitions":
         if (!this.models[target] && !this.enums[target]) {
           throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);

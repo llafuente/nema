@@ -1,8 +1,8 @@
 import * as path from "path";
 
 export interface TypescriptImport {
-  list: string[],
-  file: string
+  list: string[];
+  file: string;
 }
 
 export class TypescriptFile {
@@ -12,7 +12,6 @@ export class TypescriptFile {
 
   body: string[] = [];
 
-
   push(s: string) {
     this.body.push(s);
   }
@@ -20,7 +19,7 @@ export class TypescriptFile {
   addImport(toImport: string, fromFile: string) {
     this.imports.push({
       list: [toImport],
-      file: fromFile
+      file: fromFile,
     });
   }
 
@@ -35,24 +34,26 @@ export class TypescriptFile {
     }
 
     if (this.imports.length) {
-      this.imports.map((imp) => {
-        let filepath = path.posix.relative(path.dirname(filename), imp.file);
-        // it's a TS file?, remove extension and add ./
-        if (path.extname(filepath) == ".ts") {
-          if (filepath[0] == ".") {
-            filepath = `${filepath.substr(0, filepath.length - 3)}`;
-          } else {
-            filepath = `./${filepath.substr(0, filepath.length - 3)}`;
+      this.imports
+        .map((imp) => {
+          let filepath = path.posix.relative(path.dirname(filename), imp.file);
+          // it's a TS file?, remove extension and add ./
+          if (path.extname(filepath) == ".ts") {
+            if (filepath[0] == ".") {
+              filepath = `${filepath.substr(0, filepath.length - 3)}`;
+            } else {
+              filepath = `./${filepath.substr(0, filepath.length - 3)}`;
+            }
           }
-        }
 
-        return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
-      }).filter((value, index, self) => {
-        return self.indexOf(value) === index;
-      })
-      .forEach((i) => {
-        s.push(i);
-      })
+          return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
+        })
+        .filter((value, index, self) => {
+          return self.indexOf(value) === index;
+        })
+        .forEach((i) => {
+          s.push(i);
+        });
     }
 
     if (this.body.length) {
@@ -62,9 +63,5 @@ export class TypescriptFile {
     }
 
     return s.join("\n");
-
   }
 }
-
-
-

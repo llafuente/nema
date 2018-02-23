@@ -1,5 +1,4 @@
 import { Api } from "./Api";
-import { Type } from "./Type";
 import { Parameter, ParameterType } from "./Parameter";
 import { Response } from "./Response";
 import * as _ from "lodash";
@@ -29,20 +28,20 @@ export class Method {
   produces: string[] = [];
 
   resolve: {
-    name: string,
-    parameters: {[name: string]: string},
-    errorURL: {[name: string]: string},
+    name: string;
+    parameters: { [name: string]: string };
+    errorURL: { [name: string]: string };
   } = null;
 
   static parseSwagger(
     api: Api,
     verb: string,
-    url:string,
+    url: string,
     parameters: any[],
     consumes: string[],
     produces: string[],
-    method: any
-  ): Method{
+    method: any,
+  ): Method {
     const m = new Method();
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
@@ -76,7 +75,7 @@ export class Method {
     }
 
     _.each(method.responses, (response, responseType) => {
-      m.responses.push(Response.parseSwagger(api, responseType, response))
+      m.responses.push(Response.parseSwagger(api, responseType, response));
     });
 
     // check no multiple success responses allowed
@@ -88,10 +87,9 @@ export class Method {
     });
     if (oks > 1) {
       console.error(method);
-      throw new Error(`invalid responses, multiple success responses found at ${api.filename}`)
+      throw new Error(`invalid responses, multiple success responses found at ${api.filename}`);
     }
     //end-check
-
 
     // TODO check format!
     if (method["x-front-resolve"]) {
@@ -129,7 +127,7 @@ export class Method {
    * Loop each parameter in "arguments order" resolving any references
    * order: path, header, query, body, file
    */
-  eachParam(cb: (p:Parameter) => void) {
+  eachParam(cb: (p: Parameter) => void) {
     this.eachPathParam(cb);
     this.eachHeaderParam(cb, true);
     this.eachQueryParam(cb);
@@ -137,7 +135,7 @@ export class Method {
     this.eachFileParam(cb);
   }
   /** Loop each parameter of query path resolving any references */
-  eachPathParam(cb: (p:Parameter) => void) {
+  eachPathParam(cb: (p: Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -146,10 +144,10 @@ export class Method {
       if (p.in == ParameterType.PATH) {
         cb(p);
       }
-    })
+    });
   }
   /** Loop each parameter of query header resolving any references */
-  eachQueryParam(cb: (p:Parameter) => void) {
+  eachQueryParam(cb: (p: Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -158,10 +156,10 @@ export class Method {
       if (p.in == ParameterType.QUERY) {
         cb(p);
       }
-    })
+    });
   }
   /** Loop each parameter of type header resolving any references */
-  eachHeaderParam(cb: (p:Parameter) => void, skipAutoInjected) {
+  eachHeaderParam(cb: (p: Parameter) => void, skipAutoInjected) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -170,10 +168,10 @@ export class Method {
       if (p.in == ParameterType.HEADER && (!skipAutoInjected || (skipAutoInjected && !p.autoInjected))) {
         cb(p);
       }
-    })
+    });
   }
   /** Loop each parameter of type cookie resolving any references */
-  eachCookieParam(cb: (p:Parameter) => void) {
+  eachCookieParam(cb: (p: Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -182,10 +180,10 @@ export class Method {
       if (p.in == ParameterType.COOKIE) {
         cb(p);
       }
-    })
+    });
   }
   /** Loop each parameter of type body resolving any references */
-  eachBodyParam(cb: (p:Parameter) => void) {
+  eachBodyParam(cb: (p: Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -194,10 +192,10 @@ export class Method {
       if (p.in == ParameterType.BODY) {
         cb(p);
       }
-    })
+    });
   }
   /** Loop each parameter of type file resolving any references */
-  eachFileParam(cb: (p:Parameter) => void) {
+  eachFileParam(cb: (p: Parameter) => void) {
     this.parameters.forEach((p) => {
       if (p.reference) {
         p = this.api.getReference(p.reference) as Parameter;
@@ -206,7 +204,7 @@ export class Method {
       if (p.in == ParameterType.FORM_DATA_FILE) {
         cb(p);
       }
-    })
+    });
   }
 
   /** Get accept header contents */
@@ -234,7 +232,7 @@ export class Method {
 
   producesBlob(): boolean {
     return this.produces.some((produce) => {
-      return produce.indexOf("image/") == 0
+      return produce.indexOf("image/") == 0;
     });
   }
   /**
@@ -249,7 +247,7 @@ export class Method {
    * or returns the default response
    */
   getSuccessResponse(): Response {
-    for (let response of this.responses) {
+    for (const response of this.responses) {
       if (response.httpCode >= 200 && response.httpCode < 300) {
         return response;
       }
@@ -262,7 +260,7 @@ export class Method {
    * default response if not.
    */
   getResponse(httpCode: number): Response {
-    for (let response of this.responses) {
+    for (const response of this.responses) {
       if (response.httpCode == httpCode) {
         return response;
       }

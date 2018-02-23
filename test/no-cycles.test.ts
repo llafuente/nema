@@ -4,20 +4,19 @@
 */
 
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
 import test from "ava";
 
-function isCyclic (filename, t, obj) {
-  var seenObjects = [];
+function isCyclic(filename, t, obj2) {
+  const seenObjects = [];
 
-  function detect (obj) {
-    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+  function detect(obj) {
+    if (obj && typeof obj === "object" && !Array.isArray(obj)) {
       if (seenObjects.indexOf(obj) !== -1) {
         return true;
       }
 
       seenObjects.push(obj);
-      for (var key in obj) {
+      for (const key in obj) {
         if (obj.hasOwnProperty(key) && detect(obj[key])) {
           t.fail(`cycle at ${key} parsing file ${filename}`);
           return true;
@@ -27,7 +26,7 @@ function isCyclic (filename, t, obj) {
     return false;
   }
 
-  return detect(obj);
+  return detect(obj2);
 }
 
 
@@ -36,7 +35,7 @@ test.cb.serial("parse swagger", (t) => {
     "./test/api-test-001.yaml",
     "./test/angular5client-resolve.yaml",
   ].forEach((filename) => {
-    let api = Api.parseSwaggerFile(filename);
+    const api = Api.parseSwaggerFile(filename);
     isCyclic (filename, t, api);
   });
 

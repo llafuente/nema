@@ -12,7 +12,7 @@ test.cb.serial("parse swagger file", (t) => {
   api.sort();
 
   t.deepEqual(Object.keys(api.methods), [
-    'getStrategies',
+    "getStrategies",
   ], "all methods added");
   t.deepEqual(Object.keys(api.models), [
     "StrategyDto",
@@ -26,5 +26,5 @@ test.cb.serial("parse swagger file", (t) => {
   t.is(api.methods.getStrategies.countParams(ParameterType.HEADER, true), 0);
 
   (new Angular5Client(`./test/angular5client-resolve/`, api)).generate(true, false);
-  t.end()
+  t.end();
 });

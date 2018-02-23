@@ -2,7 +2,6 @@ import { Api } from "../src/Api";
 import { Angular5Client } from "../src/generators/Angular5Client";
 import { Mongoose } from "../src/generators/Mongoose";
 import { Express } from "../src/generators/Express";
-import { ParameterType } from "../src/Parameter";
 import test from "ava";
 import { validateTypes } from "./common";
 
@@ -16,15 +15,15 @@ test.cb.serial("parse swagger file", (t) => {
   api.sort();
 
   t.deepEqual(Object.keys(api.methods), [
-    'getUser',
+    "getUser",
   ], "all methods added");
   t.deepEqual(Object.keys(api.models), [
-    'HttpError',
-    'UserDto',
+    "HttpError",
+    "UserDto",
   ], "all methods added");
   t.deepEqual(Object.keys(api.responses), [
-    'NotFound',
-    'Unauthorized',
+    "NotFound",
+    "Unauthorized",
   ], "all methods added");
 
   t.is(api.responses.NotFound.type.toTypeScriptType(), "HttpError", "NotFound type is HttpError");

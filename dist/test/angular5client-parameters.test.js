@@ -10,7 +10,7 @@ ava_1.default.cb.serial("parse global parameters", (t) => {
     //console.log(JSON.stringify(api.methods, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
-        'getUser',
+        "getUser",
     ], "all methods added");
     t.deepEqual(Object.keys(api.models), [
         "UserDto",

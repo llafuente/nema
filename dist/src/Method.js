@@ -208,7 +208,7 @@ class Method {
      * or returns the default response
      */
     getSuccessResponse() {
-        for (let response of this.responses) {
+        for (const response of this.responses) {
             if (response.httpCode >= 200 && response.httpCode < 300) {
                 return response;
             }
@@ -220,7 +220,7 @@ class Method {
      * default response if not.
      */
     getResponse(httpCode) {
-        for (let response of this.responses) {
+        for (const response of this.responses) {
             if (response.httpCode == httpCode) {
                 return response;
             }

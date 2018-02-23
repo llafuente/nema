@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
-exports.Models = {};
 class Type {
     constructor() {
         this.api = null;
@@ -283,7 +282,9 @@ class Type {
             case "enum":
                 ts.addImport(this.name, `/src/models/${this.name}.ts`);
                 //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
-                return `[${this.choices.map((x) => this.name + "." + x.toUpperCase()).join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
+                return `[${this.choices
+                    .map((x) => this.name + "." + x.toUpperCase())
+                    .join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
             case "array":
                 if (this.items.isPrimitive()) {
                     ts.addImport("Cast", `/src/Cast.ts`);

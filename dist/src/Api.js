@@ -9,12 +9,26 @@ const Parameter_1 = require("./Parameter");
 const Response_1 = require("./Response");
 function ksort(obj) {
     const ret = {};
-    Object.keys(obj).sort().forEach((k) => {
+    Object.keys(obj)
+        .sort()
+        .forEach((k) => {
         ret[k] = obj[k];
     });
     return ret;
 }
-const blacklist = ["Error", "CommonException", "express", "Request", "Response", "Random", "Cast", "Operators", "Order", "Where", "Page"];
+const blacklist = [
+    "Error",
+    "CommonException",
+    "express",
+    "Request",
+    "Response",
+    "Random",
+    "Cast",
+    "Operators",
+    "Order",
+    "Where",
+    "Page",
+];
 function parseYML(filename) {
     const contents = fs.readFileSync(filename);
     try {
@@ -66,10 +80,10 @@ class Api {
             api.frontBasePath = swagger["x-generator-properties"]["front-basePath"];
         }
         if (swagger["x-nema"]) {
-            api.apiName = swagger["x-nema"]["apiName"];
-            api.angularClientNodeModuleName = swagger["x-nema"]["angularClientNodeModuleName"];
-            api.angularClientModuleName = swagger["x-nema"]["angularClientModuleName"];
-            api.frontBasePath = swagger["x-nema"]["frontBasePath"];
+            api.apiName = swagger["x-nema"].apiName;
+            api.angularClientNodeModuleName = swagger["x-nema"].angularClientNodeModuleName;
+            api.angularClientModuleName = swagger["x-nema"].angularClientModuleName;
+            api.frontBasePath = swagger["x-nema"].frontBasePath;
         }
         if (!api.apiName) {
             console.warn(`apiName not defined, using Api: x-nema.apiName at ${filename}`);
@@ -85,11 +99,11 @@ class Api {
         }
         // frontBasePath is optional
         swagger["x-nema"] = swagger["x-nema"] || {};
-        swagger["info"] = swagger["info"] || {};
-        swagger["info"]["contact"] = swagger["info"]["contact"] || {};
-        api.host = swagger["host"];
+        swagger.info = swagger.info || {};
+        swagger.info.contact = swagger.info.contact || {};
+        api.host = swagger.host;
         api.basePath = swagger.basePath || "/";
-        api.schemes = swagger["schemes"];
+        api.schemes = swagger.schemes;
         if (!api.schemes) {
             throw new Error(`schemes is required at ${filename}`);
         }

@@ -10,8 +10,9 @@ function mkdirSafe(folder) {
         fs.mkdirSync(folder);
     }
     catch (e) {
-        if (e.code != "EEXIST")
+        if (e.code != "EEXIST") {
             throw e;
+        }
     }
 }
 class Express {
@@ -83,7 +84,8 @@ const swaggerUi = require('swagger-ui-express');`;
             ts.addImport(`${method.operationId}Route`, method.filename);
             s.push(`r.${method.verb.toLowerCase()}(${JSON.stringify(method.url.replace(/{/g, ":").replace(/}/g, ""))}, ${method.operationId}Route);`);
         });
-        ts.body = [`
+        ts.body = [
+            `
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
   app.use(${JSON.stringify(this.api.basePath)}, r);
@@ -98,10 +100,11 @@ export function routes(app: express.Application) {
 
   ${s.join("\n")}
 }
-`];
+`,
+        ];
         return {
             tokens: ["swagger-ui-options"],
-            template: ts.toString(filename)
+            template: ts.toString(filename),
         };
     }
     route(method, filename) {
@@ -163,12 +166,14 @@ let upload = multer({
             response.type.getRandom(ts);
             // TODO handle file response
             if (method.producesJSON()) {
-                responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+                responses.push(`function respond${response.httpCode ||
+                    200}(res: Response, result: ${response.type.toTypeScriptType()}) {
           res.status(${response.httpCode || 200}).json(result);
         }`);
             }
             else {
-                responses.push(`function respond${response.httpCode || 200}(res: Response, result: ${response.type.toTypeScriptType()}) {
+                responses.push(`function respond${response.httpCode ||
+                    200}(res: Response, result: ${response.type.toTypeScriptType()}) {
           res.status(${response.httpCode || 200}).send(result);
         }`);
             }
@@ -195,14 +200,13 @@ ${responses.join("\n\n")}
 `);
         return {
             tokens: ["custom-imports", "method-body", "extras"],
-            template: ts.toString(filename)
+            template: ts.toString(filename),
         };
     }
     routeTest(method, filename) {
         const ts = new TypescriptFile_1.TypescriptFile();
         ts.header = `process.env.NODE_ENV = "test";`;
-        ts.rawImports =
-            `import test from "ava";
+        ts.rawImports = `import test from "ava";
 import { app } from "../src/";
 import * as supertest from "supertest";
 import * as qs from "qs";`;
@@ -346,7 +350,7 @@ if (process.env.NODE_ENV !== "test") {
   console.log("listening at: 0.0.0.0:" + port);
   app.listen(port, "0.0.0.0");
 }
-`
+`,
         };
     }
 }

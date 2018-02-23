@@ -12,7 +12,7 @@
     "clean:test": "rm -rf test/api-test-001 test/angular5client-resolve test/angular5client-parameters test/pet-store-client test/pet-store-server/src test/pet-store-server/test test/responses-references-client test/responses-references-server/src test/responses-references-server/test",
     "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
     "doc": "typedoc --out ./docs/ ./src/",
-    "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",
+    "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --project ./tsconfig.json",
     "build": "tsc -p ./tsconfig.json"
   },
   "author": "Luis Lafuente Morales",

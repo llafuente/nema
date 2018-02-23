@@ -5,7 +5,6 @@ import { Mongoose } from "../src/generators/Mongoose";
 import { Express } from "../src/generators/Express";
 import { CSV } from "../src/generators/CSV";
 import { TypescriptFile } from "../src/TypescriptFile";
-import { ParameterType } from "../src/Parameter";
 import test from "ava";
 import * as _ from "lodash";
 
@@ -18,28 +17,28 @@ test.cb.serial("parse swagger file", (t) => {
   api.sort();
 
   t.deepEqual(Object.keys(api.methods), [
-    'addPet',
-    'addPetPhoto',
-    'deletePet',
-    'deletePetPhoto',
-    'deletePets',
-    'findPetByName',
-    'findPets',
-    'getIndex',
-    'getPetPhoto',
-    'getPetPhotos',
-    'updatePetByName',
+    "addPet",
+    "addPetPhoto",
+    "deletePet",
+    "deletePetPhoto",
+    "deletePets",
+    "findPetByName",
+    "findPets",
+    "getIndex",
+    "getPetPhoto",
+    "getPetPhotos",
+    "updatePetByName",
   ], "all methods added");
   t.deepEqual(Object.keys(api.models), [
-    'PetPhotoDto',
-    'PetPhotosDto',
-    'addressDto',
-    'petDto',
-    'veterinarianDto',
+    "PetPhotoDto",
+    "PetPhotosDto",
+    "addressDto",
+    "petDto",
+    "veterinarianDto",
   ], "all methods added");
 
   t.deepEqual(Object.keys(api.enums), [
-    'petType',
+    "petType",
   ], "all methods added");
 
   const s = api.methods.deletePetPhoto.getSuccessResponse();
@@ -55,7 +54,7 @@ test.cb.serial("parse swagger file", (t) => {
   t.deepEqual(api.enums.petType.type.choices, [ "cat", "dog", "bird"], "petType choices");
 
   t.is(api.methods.deletePets.parameters.length, 11, "deletePets has 11 parameters");
-  const petTypeParam = _.find(api.methods.deletePets.parameters, {name: "type"})
+  const petTypeParam = _.find(api.methods.deletePets.parameters, {name: "type"});
   t.not(petTypeParam, null);
 
   t.is(petTypeParam.type.type, "reference", "petTypeParam.type is a reference");

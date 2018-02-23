@@ -14,7 +14,7 @@ class TypescriptFile {
     addImport(toImport, fromFile) {
         this.imports.push({
             list: [toImport],
-            file: fromFile
+            file: fromFile,
         });
     }
     toString(filename) {
@@ -26,7 +26,8 @@ class TypescriptFile {
             s.push(this.rawImports);
         }
         if (this.imports.length) {
-            this.imports.map((imp) => {
+            this.imports
+                .map((imp) => {
                 let filepath = path.posix.relative(path.dirname(filename), imp.file);
                 // it's a TS file?, remove extension and add ./
                 if (path.extname(filepath) == ".ts") {
@@ -38,7 +39,8 @@ class TypescriptFile {
                     }
                 }
                 return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
-            }).filter((value, index, self) => {
+            })
+                .filter((value, index, self) => {
                 return self.indexOf(value) === index;
             })
                 .forEach((i) => {

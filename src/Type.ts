@@ -3,8 +3,6 @@ import { TypescriptFile } from "./TypescriptFile";
 import { Api } from "./Api";
 import { Model } from "./Model";
 
-export const Models: {[name: string]: Type} = {};
-
 export class Type {
   api: Api = null;
 
@@ -17,7 +15,7 @@ export class Type {
   /** is a foreign key?  */
   foreignKey: string = undefined;
   /** Object properties */
-  properties?: {[name: string]: Type} = undefined;
+  properties?: { [name: string]: Type } = undefined;
   /** Array sub type */
   items?: Type = undefined;
   /** Enum choices */
@@ -61,7 +59,6 @@ export class Type {
       console.error(obj);
       throw new Error("enum need to be in definitions at first level");
     }
-
 
     if (obj.type) {
       t.type = obj.type.toLocaleLowerCase();
@@ -108,10 +105,10 @@ export class Type {
    */
   toBaseType(): string {
     switch (this.type) {
-    case "enum":
-      return this.name;
-    case "array":
-      return this.items.toBaseType();
+      case "enum":
+        return this.name;
+      case "array":
+        return this.items.toBaseType();
     }
 
     if (this.referenceModel) {
@@ -262,25 +259,24 @@ export class Type {
    * Get generated code: parse this type given the source variable
    */
   getRandom(ts: TypescriptFile) {
-
     switch (this.type) {
-    case "reference":
-      return this.api.getReference(this.referenceModel).type.getRandom(ts);
-    case "enum":
-      ts.addImport(this.name, `/src/models/${this.name}.ts`);
-      return `${this.name}.${this.choices[0].toUpperCase()}`;
-    case "void":
-    // file is really a Blob and don't need to be casted
-    case "file":
-      return "null";
-    case "array":
-      // loop through arrays casting it's values
-      if (this.items.isPrimitive()) {
-        ts.addImport("Random", `/src/Random.ts`);
-        return `[Random.${this.items.type}(), Random.${this.items.type}()]`;
-      }
+      case "reference":
+        return this.api.getReference(this.referenceModel).type.getRandom(ts);
+      case "enum":
+        ts.addImport(this.name, `/src/models/${this.name}.ts`);
+        return `${this.name}.${this.choices[0].toUpperCase()}`;
+      case "void":
+      // file is really a Blob and don't need to be casted
+      case "file":
+        return "null";
+      case "array":
+        // loop through arrays casting it's values
+        if (this.items.isPrimitive()) {
+          ts.addImport("Random", `/src/Random.ts`);
+          return `[Random.${this.items.type}(), Random.${this.items.type}()]`;
+        }
 
-      return `[${this.items.getRandom(ts)}, ${this.items.getRandom(ts)}]`;
+        return `[${this.items.getRandom(ts)}, ${this.items.getRandom(ts)}]`;
     }
 
     if (this.isPrimitive()) {
@@ -295,9 +291,9 @@ export class Type {
       return `${this.name}.randomInstance()`;
     }
 
-    switch(this.type) {
-    case "object":
-      return "{}"; // equal to any
+    switch (this.type) {
+      case "object":
+        return "{}"; // equal to any
     }
 
     console.error(this);
@@ -307,27 +303,29 @@ export class Type {
    * Get generated code: parse this type given the source variable
    */
   getParser(src, ts: TypescriptFile) {
-    switch(this.type) {
-    case "reference":
-      return this.api.getReference(this.referenceModel).type.getParser(src, ts);
-    case "void":
-      return "void(0)";
-    case "file":
-      // file is really a Blob and don't need to be casted
-      return src;
-    case "enum":
-      ts.addImport(this.name, `/src/models/${this.name}.ts`);
-      //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
-      return `[${this.choices.map((x) => this.name + "." + x.toUpperCase() ).join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
-    case "array":
-      if (this.items.isPrimitive()) {
-        ts.addImport("Cast", `/src/Cast.ts`);
-        return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
-      }
+    switch (this.type) {
+      case "reference":
+        return this.api.getReference(this.referenceModel).type.getParser(src, ts);
+      case "void":
+        return "void(0)";
+      case "file":
+        // file is really a Blob and don't need to be casted
+        return src;
+      case "enum":
+        ts.addImport(this.name, `/src/models/${this.name}.ts`);
+        //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
+        return `[${this.choices
+          .map((x) => this.name + "." + x.toUpperCase())
+          .join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
+      case "array":
+        if (this.items.isPrimitive()) {
+          ts.addImport("Cast", `/src/Cast.ts`);
+          return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
+        }
 
-      //ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
-      //return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
-      return `(${src} || []).map((x) => ${this.items.getParser("x", ts)})`;
+        //ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
+        //return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
+        return `(${src} || []).map((x) => ${this.items.getParser("x", ts)})`;
     }
 
     if (this.isPrimitive()) {
@@ -341,9 +339,9 @@ export class Type {
       return `${this.name}.parse(${src})`;
     }
 
-    switch(this.type) {
-    case "object":
-      return src; // equal to any
+    switch (this.type) {
+      case "object":
+        return src; // equal to any
     }
 
     console.error(this);

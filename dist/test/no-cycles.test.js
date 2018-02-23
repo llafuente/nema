@@ -6,15 +6,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../src/Api");
 const ava_1 = require("ava");
-function isCyclic(filename, t, obj) {
-    var seenObjects = [];
+function isCyclic(filename, t, obj2) {
+    const seenObjects = [];
     function detect(obj) {
-        if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+        if (obj && typeof obj === "object" && !Array.isArray(obj)) {
             if (seenObjects.indexOf(obj) !== -1) {
                 return true;
             }
             seenObjects.push(obj);
-            for (var key in obj) {
+            for (const key in obj) {
                 if (obj.hasOwnProperty(key) && detect(obj[key])) {
                     t.fail(`cycle at ${key} parsing file ${filename}`);
                     return true;
@@ -23,14 +23,14 @@ function isCyclic(filename, t, obj) {
         }
         return false;
     }
-    return detect(obj);
+    return detect(obj2);
 }
 ava_1.default.cb.serial("parse swagger", (t) => {
     [
         "./test/api-test-001.yaml",
         "./test/angular5client-resolve.yaml",
     ].forEach((filename) => {
-        let api = Api_1.Api.parseSwaggerFile(filename);
+        const api = Api_1.Api.parseSwaggerFile(filename);
         isCyclic(filename, t, api);
     });
     t.end();

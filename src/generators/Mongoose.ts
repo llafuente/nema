@@ -1,30 +1,25 @@
 import * as assert from "assert";
 import { Api, parseYML } from "../Api";
 import { Model } from "../Model";
-import { Method } from "../Method";
 import { Type } from "../Type";
-import { Parameter, ParameterType } from "../Parameter";
-import * as _ from "lodash";
 import * as fs from "fs";
 import * as path from "path";
-import { Angular5Client } from "./Angular5Client";
 import * as CommonGenerator from "./CommonGenerator";
 
 function mkdirSafe(folder) {
   try {
     fs.mkdirSync(folder);
   } catch (e) {
-    if (e.code != "EEXIST") throw e;
+    if (e.code != "EEXIST") {
+      throw e;
+    }
   }
 }
 
 const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
 
 export class Mongoose {
-  constructor(
-    public dstPath: string,
-    public api: Api,
-  ) {
+  constructor(public dstPath: string, public api: Api) {
     this.api.parseSwaggerDefinitions(mongooseSwagger, true);
 
     this.addIdToModel();
@@ -40,10 +35,10 @@ export class Mongoose {
         _id.type = "object";
         const p = model.type.properties;
         model.type.properties = {
-          _id
+          _id,
         };
 
-        for (let i in p) {
+        for (const i in p) {
           model.type.properties[i] = p[i];
         }
       }
@@ -76,7 +71,7 @@ export class Mongoose {
       `
 import initMongoose from "./mongoose";
 initMongoose(app);
-      `
+      `,
     );
 
     // TODO do it!
@@ -85,15 +80,25 @@ initMongoose(app);
       "mongoose-error-handling",
       `
 // ????
-      `
+      `,
     );
 
     // copy raw files (those that don't need to be generated)
     CommonGenerator.copyCommonTemplates(this.dstPath);
-    fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "Errors.ts"), path.join(this.dstPath, "src", "Errors.ts"));
-    fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
+    fs.copyFileSync(
+      path.join(process.cwd(), "templates", "mongoose", "Errors.ts"),
+      path.join(this.dstPath, "src", "Errors.ts"),
+    );
+    fs.copyFileSync(
+      path.join(process.cwd(), "templates", "mongoose", "Query.ts"),
+      path.join(this.dstPath, "src", "Query.ts"),
+    );
 
-    CommonGenerator.copyZonedTemplate(path.join(process.cwd(), "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"])
+    CommonGenerator.copyZonedTemplate(
+      path.join(process.cwd(), "templates", "mongoose", "mongoose.ts"),
+      path.join(this.dstPath, "src", "mongoose.ts"),
+      ["import-models"],
+    );
 
     if (pretty) {
       CommonGenerator.pretty(this.dstPath);
@@ -135,7 +140,7 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
       s.push(`${name}: ${t.toMongooseType()},`);
     });
 
-  s.push(`
+    s.push(`
   },
   {
     collection: ${JSON.stringify(model.mongooseCollection)},
@@ -291,26 +296,28 @@ export function query(
 
   `);
 
-
     return s.join("\n");
   }
 
   packageJSON() {
-    return JSON.stringify({
-      "name": this.api.angularClientNodeModuleName,
-      "version": this.api.version,
-      "description": this.api.description,
-      "author": {
-        "name": this.api.authorName,
-        "email": this.api.authorEmail,
-        "url": this.api.authorURL,
+    return JSON.stringify(
+      {
+        name: this.api.angularClientNodeModuleName,
+        version: this.api.version,
+        description: this.api.description,
+        author: {
+          name: this.api.authorName,
+          email: this.api.authorEmail,
+          url: this.api.authorURL,
+        },
+        peerDependencies: {
+          "@angular/core": ">=5.2.0",
+          typescript: "*",
+        },
+        main: "./index.ts",
       },
-      "peerDependencies": {
-        "@angular/core": ">=5.2.0",
-        "typescript": "*"
-      },
-      "main": "./index.ts"
-    }, null, 2)
-
+      null,
+      2,
+    );
   }
 }

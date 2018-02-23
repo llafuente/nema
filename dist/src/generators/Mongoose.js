@@ -11,8 +11,9 @@ function mkdirSafe(folder) {
         fs.mkdirSync(folder);
     }
     catch (e) {
-        if (e.code != "EEXIST")
+        if (e.code != "EEXIST") {
             throw e;
+        }
     }
 }
 const mongooseSwagger = Api_1.parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
@@ -32,9 +33,9 @@ class Mongoose {
                 _id.type = "object";
                 const p = model.type.properties;
                 model.type.properties = {
-                    _id
+                    _id,
                 };
-                for (let i in p) {
+                for (const i in p) {
                     model.type.properties[i] = p[i];
                 }
             }
@@ -261,19 +262,19 @@ export function query(
     }
     packageJSON() {
         return JSON.stringify({
-            "name": this.api.angularClientNodeModuleName,
-            "version": this.api.version,
-            "description": this.api.description,
-            "author": {
-                "name": this.api.authorName,
-                "email": this.api.authorEmail,
-                "url": this.api.authorURL,
+            name: this.api.angularClientNodeModuleName,
+            version: this.api.version,
+            description: this.api.description,
+            author: {
+                name: this.api.authorName,
+                email: this.api.authorEmail,
+                url: this.api.authorURL,
             },
-            "peerDependencies": {
+            peerDependencies: {
                 "@angular/core": ">=5.2.0",
-                "typescript": "*"
+                typescript: "*",
             },
-            "main": "./index.ts"
+            main: "./index.ts",
         }, null, 2);
     }
 }

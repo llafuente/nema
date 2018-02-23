@@ -1,31 +1,22 @@
 import { Api } from "../Api";
 import { Model } from "../Model";
-import { Method } from "../Method";
-import { Type } from "../Type";
-import { Parameter, ParameterType } from "../Parameter";
-import * as _ from "lodash";
 import * as fs from "fs";
 import * as path from "path";
-import { Angular5Client } from "./Angular5Client";
 import * as CommonGenerator from "./CommonGenerator";
-import { ModificableTemplate } from "./CommonGenerator";
 import { TypescriptFile } from "../TypescriptFile";
 
 function mkdirSafe(folder) {
   try {
     fs.mkdirSync(folder);
   } catch (e) {
-    if (e.code != "EEXIST") throw e;
+    if (e.code != "EEXIST") {
+      throw e;
+    }
   }
 }
 
 export class CSV {
-
-  constructor(
-    public dstPath: string
-  ) {
-
-  }
+  constructor(public dstPath: string) {}
 
   generate(api: Api, pretty: boolean, lint: boolean) {
     api.sort();
@@ -56,12 +47,11 @@ export class CSV {
     const ts = new TypescriptFile();
     ts.addImport("CommonException", "/src/CommonException");
 
-ts.rawImports = `const parse = require("csv-parse/lib/sync");
+    ts.rawImports = `const parse = require("csv-parse/lib/sync");
 const XLSX = require("xlsx");
 const async = require("async");`;
 
-
-ts.push(`
+    ts.push(`
 export function fromExcelXML(xml: Buffer) {
   let workbook = XLSX.read(xml, { type: "buffer" });
 
@@ -101,6 +91,4 @@ export function toCSV(${model.name}[]): string {
 
     return ts.toString(filename);
   }
-
-
 }

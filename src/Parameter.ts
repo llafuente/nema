@@ -8,16 +8,16 @@ export enum ParameterType {
   BODY,
   COOKIE,
   FORM_DATA_FILE,
-};
+}
 
-const SwaggerToParameterType = {
-  "path": ParameterType.PATH,
-  "query": ParameterType.QUERY,
-  "header": ParameterType.HEADER,
-  "cookie": ParameterType.COOKIE,
+const swaggerToParameterType = {
+  path: ParameterType.PATH,
+  query: ParameterType.QUERY,
+  header: ParameterType.HEADER,
+  cookie: ParameterType.COOKIE,
   // NOTE swagger 3 heavely modified this :S
-  "body": ParameterType.BODY,
-  "formData": ParameterType.BODY, // except for files -> FORM_DATA_FILE
+  body: ParameterType.BODY,
+  formData: ParameterType.BODY, // except for files -> FORM_DATA_FILE
 };
 
 export class Parameter {
@@ -51,7 +51,7 @@ export class Parameter {
     if (obj.in == "formData" && obj.type == "file") {
       p.in = ParameterType.FORM_DATA_FILE;
     } else {
-      p.in = SwaggerToParameterType[obj.in];
+      p.in = swaggerToParameterType[obj.in];
     }
 
     p.required = !!obj.required;

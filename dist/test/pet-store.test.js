@@ -14,27 +14,27 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     //console.log(JSON.stringify(api.methods.getStrategies, null, 2));
     api.sort();
     t.deepEqual(Object.keys(api.methods), [
-        'addPet',
-        'addPetPhoto',
-        'deletePet',
-        'deletePetPhoto',
-        'deletePets',
-        'findPetByName',
-        'findPets',
-        'getIndex',
-        'getPetPhoto',
-        'getPetPhotos',
-        'updatePetByName',
+        "addPet",
+        "addPetPhoto",
+        "deletePet",
+        "deletePetPhoto",
+        "deletePets",
+        "findPetByName",
+        "findPets",
+        "getIndex",
+        "getPetPhoto",
+        "getPetPhotos",
+        "updatePetByName",
     ], "all methods added");
     t.deepEqual(Object.keys(api.models), [
-        'PetPhotoDto',
-        'PetPhotosDto',
-        'addressDto',
-        'petDto',
-        'veterinarianDto',
+        "PetPhotoDto",
+        "PetPhotosDto",
+        "addressDto",
+        "petDto",
+        "veterinarianDto",
     ], "all methods added");
     t.deepEqual(Object.keys(api.enums), [
-        'petType',
+        "petType",
     ], "all methods added");
     const s = api.methods.deletePetPhoto.getSuccessResponse();
     console.log(s);

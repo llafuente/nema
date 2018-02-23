@@ -6,31 +6,30 @@ import { Mongoose } from "./generators/Mongoose";
 import { Express } from "./generators/Express";
 import * as path from "path";
 import * as program from "commander";
+import * as chalk from "chalk";
 
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
-const chalk = require("chalk");
 
 console.log(`
  _  _  _ _  _
 | |(/_| | |(_|${packageJSON.version}
 `);
 
-function green(text) {
+export function green(text) {
   console.log(chalk.green.bold(text));
 }
 
-function red(text) {
+export function red(text) {
   console.log(chalk.red.bold(text));
 }
 
-function blue(text) {
+export function blue(text) {
   console.log(chalk.cyanBright(text));
 }
 
-function yellow(text) {
+export function yellow(text) {
   console.log(chalk.yellowBright(text));
 }
-
 
 program
   .version(packageJSON.version)
@@ -41,26 +40,29 @@ program
   .option("--override-models", "Override all models while agreggating")
   .option("--override-methods", "Override all methods while agreggating")
   .option("--lint", "Lint output (tslint), this may take a while")
-  .option("--swagger <path>", "Path to swagger yml, repeat to aggregate", function (val, memo) {
-    memo.push(val);
-    return memo;
-  }, [])
+  .option(
+    "--swagger <path>",
+    "Path to swagger yml, repeat to aggregate",
+    function(val, memo) {
+      memo.push(val);
+      return memo;
+    },
+    [],
+  )
   .option("--dst <path>", "Destination path, default: same as the first swagger")
   .parse(process.argv);
 
-
-program.on('--help', function(){
-  console.log('');
-  console.log('  At least one swagger file is required');
-  console.log('  At least one TARGET is required');
-  console.log('');
-  console.log('  Examples:');
-  console.log('');
-  console.log('    nema --swagger=swagger-file.yml --mongoose --express --dst server/');
-  console.log('    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/');
-  console.log('');
+program.on("--help", function() {
+  console.log("");
+  console.log("  At least one swagger file is required");
+  console.log("  At least one TARGET is required");
+  console.log("");
+  console.log("  Examples:");
+  console.log("");
+  console.log("    nema --swagger=swagger-file.yml --mongoose --express --dst server/");
+  console.log("    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/");
+  console.log("");
 });
-
 
 if (!program.swagger) {
   red("--swagger <path> is required");
@@ -73,7 +75,6 @@ if (!program.angular5Api && !program.mongoose && !program.express) {
   program.help();
   process.exit(1);
 }
-
 
 // parse and aggregate definitions files
 

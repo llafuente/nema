@@ -36,8 +36,8 @@ export class Model {
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
 
     if (obj.allOf) {
-       m.extends = obj.allOf[0].$ref;
-       obj = obj.allOf[1];
+      m.extends = obj.allOf[0].$ref;
+      obj = obj.allOf[1];
     }
 
     m.name = name;
@@ -69,7 +69,7 @@ export class Model {
   eachProperty(cb: (t: Type, name: string) => void) {
     if (this.type.type !== "object") {
       console.error(this);
-      throw new Error("wtf!?")
+      throw new Error("wtf!?");
     }
 
     _.each(this.type.properties, cb);

@@ -12,7 +12,7 @@ test.cb.serial("parse global parameters", (t) => {
   api.sort();
 
   t.deepEqual(Object.keys(api.methods), [
-    'getUser',
+    "getUser",
   ], "all methods added");
 
   t.deepEqual(Object.keys(api.models), [
@@ -27,5 +27,5 @@ test.cb.serial("parse global parameters", (t) => {
   });
 
   (new Angular5Client(`./test/angular5client-parameters/`, api)).generate(true, false);
-  t.end()
+  t.end();
 });

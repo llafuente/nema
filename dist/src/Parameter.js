@@ -10,15 +10,14 @@ var ParameterType;
     ParameterType[ParameterType["COOKIE"] = 4] = "COOKIE";
     ParameterType[ParameterType["FORM_DATA_FILE"] = 5] = "FORM_DATA_FILE";
 })(ParameterType = exports.ParameterType || (exports.ParameterType = {}));
-;
-const SwaggerToParameterType = {
-    "path": ParameterType.PATH,
-    "query": ParameterType.QUERY,
-    "header": ParameterType.HEADER,
-    "cookie": ParameterType.COOKIE,
+const swaggerToParameterType = {
+    path: ParameterType.PATH,
+    query: ParameterType.QUERY,
+    header: ParameterType.HEADER,
+    cookie: ParameterType.COOKIE,
     // NOTE swagger 3 heavely modified this :S
-    "body": ParameterType.BODY,
-    "formData": ParameterType.BODY,
+    body: ParameterType.BODY,
+    formData: ParameterType.BODY,
 };
 class Parameter {
     constructor() {
@@ -35,7 +34,7 @@ class Parameter {
             p.in = ParameterType.FORM_DATA_FILE;
         }
         else {
-            p.in = SwaggerToParameterType[obj.in];
+            p.in = swaggerToParameterType[obj.in];
         }
         p.required = !!obj.required;
         p.reference = obj.$ref || null;

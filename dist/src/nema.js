@@ -7,8 +7,8 @@ const Mongoose_1 = require("./generators/Mongoose");
 const Express_1 = require("./generators/Express");
 const path = require("path");
 const program = require("commander");
-const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
 const chalk = require("chalk");
+const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
 console.log(`
  _  _  _ _  _
 | |(/_| | |(_|${packageJSON.version}
@@ -16,15 +16,19 @@ console.log(`
 function green(text) {
     console.log(chalk.green.bold(text));
 }
+exports.green = green;
 function red(text) {
     console.log(chalk.red.bold(text));
 }
+exports.red = red;
 function blue(text) {
     console.log(chalk.cyanBright(text));
 }
+exports.blue = blue;
 function yellow(text) {
     console.log(chalk.yellowBright(text));
 }
+exports.yellow = yellow;
 program
     .version(packageJSON.version)
     .description("Code generation from swagger")
@@ -40,16 +44,16 @@ program
 }, [])
     .option("--dst <path>", "Destination path, default: same as the first swagger")
     .parse(process.argv);
-program.on('--help', function () {
-    console.log('');
-    console.log('  At least one swagger file is required');
-    console.log('  At least one TARGET is required');
-    console.log('');
-    console.log('  Examples:');
-    console.log('');
-    console.log('    nema --swagger=swagger-file.yml --mongoose --express --dst server/');
-    console.log('    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/');
-    console.log('');
+program.on("--help", function () {
+    console.log("");
+    console.log("  At least one swagger file is required");
+    console.log("  At least one TARGET is required");
+    console.log("");
+    console.log("  Examples:");
+    console.log("");
+    console.log("    nema --swagger=swagger-file.yml --mongoose --express --dst server/");
+    console.log("    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/");
+    console.log("");
 });
 if (!program.swagger) {
     red("--swagger <path> is required");

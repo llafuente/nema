@@ -34,6 +34,8 @@ class Angular5Client {
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsError.pipe.ts"), path.join(this.dstPath, "src", "IsError.pipe.ts"));
+        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsSuccess.pipe.ts"), path.join(this.dstPath, "src", "IsSuccess.pipe.ts"));
+        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsLoading.pipe.ts"), path.join(this.dstPath, "src", "IsLoading.pipe.ts"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "RequestOptions.ts"), path.join(this.dstPath, "src", "RequestOptions.ts"));
         // generate all resolves
         this.api.eachResolve((method, modelName) => {
@@ -69,6 +71,8 @@ class Angular5Client {
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";
 export { CommonException } from "./src/CommonException";
 import { IsErrorPipe } from "./src/IsError.pipe";
+import { IsSuccessPipe } from "./src/IsSuccess.pipe";
+import { IsLoadingPipe } from "./src/IsLoading.pipe";
 import { ${this.api.apiName} } from "./src/${this.api.apiName}";
 export { ${this.api.apiName} } from "./src/${this.api.apiName}";
 `,
@@ -89,12 +93,16 @@ export { ${this.api.apiName} } from "./src/${this.api.apiName}";
   ],
   declarations: [
     IsErrorPipe,
+    IsSuccessPipe,
+    IsLoadingPipe,
   ],
   providers: [
     ${this.api.apiName}, ${resolves.join(",")}
   ],
   exports: [
     IsErrorPipe,
+    IsSuccessPipe,
+    IsLoadingPipe,
   ]
 })
 export class ${this.api.angularClientModuleName} {}
@@ -210,7 +218,7 @@ export class ${this.api.apiName} {
 
 `);
         this.api.eachMethod((method) => {
-            // Verb
+            // CONSTANTS
             ts.push(`// source: ${path.basename(method.api.filename)}`);
             ts.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
             ts.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath || method.api.basePath, method.url))};`);

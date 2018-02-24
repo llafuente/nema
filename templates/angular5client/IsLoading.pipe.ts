@@ -4,11 +4,11 @@ import { Subject } from "rxjs/Subject";
 import { Subscription } from "rxjs/Subscription";
 
 @Pipe({
-  name: "isError",
+  name: "isLoading",
   pure: false
 })
-export class IsErrorPipe implements OnDestroy, PipeTransform {
-  result: CommonException = null;
+export class IsLoadingPipe implements OnDestroy, PipeTransform {
+  loading: boolean = false;
   subject: Subject<any> = null;
   subscription: Subscription = null;
 
@@ -20,27 +20,26 @@ export class IsErrorPipe implements OnDestroy, PipeTransform {
     }
   }
 
-  transform(value: Subject<any>): CommonException|null {
+  transform(value: Subject<any>): any {
     if (!this.subject) {
       if (value instanceof Subject) {
+        this.loading = true;
         this.subject = value;
         this.subscription = value.subscribe((response) => {
-          console.log("IsErrorPipe.success", response);
-          this.result = null;
+          this.loading = false;
           this._ref.markForCheck();
         }, (error) => {
-          console.log("IsErrorPipe.error", error);
-          this.result = error;
+          this.loading = false;
           this._ref.markForCheck();
         });
       }
     } else if (value !== this.subject) {
       this.subscription.unsubscribe();
       this.subject = null;
-      this.result = null;
+      this.loading = false;
       return this.transform(value);
     }
 
-    return this.result;
+    return this.loading;
   }
 }

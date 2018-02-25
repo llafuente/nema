@@ -111,7 +111,7 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
   },
 );
 
-export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("Role", ${model.mongooseSchema});
+export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});
 `);
         return s.join("\n");
     }

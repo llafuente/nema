@@ -6,7 +6,7 @@ import { Mongoose } from "./generators/Mongoose";
 import { Express } from "./generators/Express";
 import * as path from "path";
 import * as program from "commander";
-import * as chalk from "chalk";
+const chalk = require("chalk");
 
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
 

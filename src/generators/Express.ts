@@ -307,6 +307,8 @@ test.cb.serial("${method.operationId}", (t) => {
 
   index(): ModificableTemplate {
     return {
+      // internal-mongoose-initialization is not exported
+      // will be empty or override by mongoose generator
       tokens: ["custom-imports", "express-configuration", "request", "response"],
       template: `import * as express from "express";
 import * as path from "path";
@@ -339,8 +341,8 @@ app.set("cors", {
 //</express-configuration>
 
 // this is for mongoose generator usage, do not modify
-//<mongoose-initialization>
-//</mongoose-initialization>
+//<internal-mongoose-initialization>
+//</internal-mongoose-initialization>
 
 // declare our own interface for request to save our variables
 export class Upload {

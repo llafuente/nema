@@ -5,6 +5,7 @@ import { Type, Kind } from "../Type";
 import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
+import { ModificableTemplate } from "./CommonGenerator";
 
 function mkdirSafe(folder) {
   try {
@@ -67,7 +68,7 @@ export class Mongoose {
 
     CommonGenerator.setZonedTemplate(
       path.join(this.dstPath, "./src/index.ts"),
-      "mongoose-initialization",
+      "internal-mongoose-initialization",
       `
 import initMongoose from "./mongoose";
 initMongoose(app);
@@ -110,7 +111,7 @@ initMongoose(app);
   }
 
   mongooseModelFile(model: Model, filename: string) {
-    fs.writeFileSync(filename, this.mongooseModel(model));
+    CommonGenerator.writeZonedTemplate(filename, this.mongooseModel(model));
   }
 
   mongooseRepositoryFile(model: Model, filename: string) {
@@ -121,7 +122,7 @@ initMongoose(app);
     fs.writeFileSync(filename, this.packageJSON());
   }
 
-  mongooseModel(model: Model): string {
+  mongooseModel(model: Model): ModificableTemplate {
     const s = [];
     s.push(`import { ${model.interfaceName} } from "../models/${model.name}";`);
     s.push(`import * as mongoose from "mongoose";`);
@@ -147,9 +148,15 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
   },
 );
 
+//<mongoose-after-schema>
+//</mongoose-after-schema>
+
 export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});
 `);
-    return s.join("\n");
+    return {
+      tokens: ["mongoose-after-schema"],
+      template: s.join("\n")
+    }
   }
 
   mongooseRepository(model: Model): string {

@@ -57,7 +57,7 @@ class Mongoose {
                 this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
             }
         });
-        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose-initialization", `
+        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "internal-mongoose-initialization", `
 import initMongoose from "./mongoose";
 initMongoose(app);
       `);
@@ -79,7 +79,7 @@ initMongoose(app);
         }
     }
     mongooseModelFile(model, filename) {
-        fs.writeFileSync(filename, this.mongooseModel(model));
+        CommonGenerator.writeZonedTemplate(filename, this.mongooseModel(model));
     }
     mongooseRepositoryFile(model, filename) {
         fs.writeFileSync(filename, this.mongooseRepository(model));
@@ -111,9 +111,15 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
   },
 );
 
+//<mongoose-after-schema>
+//</mongoose-after-schema>
+
 export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});
 `);
-        return s.join("\n");
+        return {
+            tokens: ["mongoose-after-schema"],
+            template: s.join("\n")
+        };
     }
     mongooseRepository(model) {
         const s = [];

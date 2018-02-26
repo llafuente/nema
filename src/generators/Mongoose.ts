@@ -1,7 +1,7 @@
 import * as assert from "assert";
 import { Api, parseYML } from "../Api";
 import { Model } from "../Model";
-import { Type } from "../Type";
+import { Type, Kind } from "../Type";
 import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
@@ -32,7 +32,7 @@ export class Mongoose {
 
         // declare _id as  any
         const _id = new Type();
-        _id.type = "object";
+        _id.type = Kind.OBJECT;
         const p = model.type.properties;
         model.type.properties = {
           _id,

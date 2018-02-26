@@ -244,7 +244,7 @@ class Api {
                 }
                 return this.responses[target];
             default:
-                throw new Error("getReference: target not handled");
+                throw new Error(`getReference: target[${ref}] not handled`);
         }
     }
 }

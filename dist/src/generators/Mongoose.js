@@ -30,7 +30,7 @@ class Mongoose {
                 assert(model.type.type == "object");
                 // declare _id as  any
                 const _id = new Type_1.Type();
-                _id.type = "object";
+                _id.type = Type_1.Kind.OBJECT;
                 const p = model.type.properties;
                 model.type.properties = {
                     _id,

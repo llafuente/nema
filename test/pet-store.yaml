@@ -55,7 +55,7 @@ definitions:
         type: integer
       dob:
         type: string
-        format: 'date'
+        format: date
       type:
         $ref: "#/definitions/petType"
       address:

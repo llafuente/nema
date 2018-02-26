@@ -76,18 +76,20 @@ nema --swagger=./path-yo-file.yml --swagger=./path-yo-file2.yml --angular5-api
   error TS2395: Individual declarations in merged declaration 'XXX' must be all exported or all local.
   error TS2440: Import declaration conflicts with local declaration of 'XXX'.
   ```
+* `type:string` with `format: date|date-format` are treated the same:
+Javascript Date
+* `type:number` with `format: int32|int64|float|double` are the same:
+Javascript Number (double)
 
 Things that may change in the future:
 
 * `parameters.name` is a variable name, use `parameter.x-nema-header` for real
 header name
 
-### Caveats
-
-#### Zoned templates
+### Zoned templates
 
 Zoned templates are generated files that are safe to edit by end-user.
-Zones are delimited like HTML. for example:
+Zones are delimited with a HTML like comment. For example:
 
 ```html
 export const app = express();
@@ -99,7 +101,9 @@ app.set("cors", false);
 //</express-configuration>
 ```
 
-#### Type: any
+Internal zones are marked as `&lt>internal-\*&gt;`
+
+### Type: any
 
 If you dont add properties to and object type, will be any in TypeScript.
 

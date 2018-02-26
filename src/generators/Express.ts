@@ -307,12 +307,15 @@ test.cb.serial("${method.operationId}", (t) => {
 
   index(): ModificableTemplate {
     return {
-      tokens: ["express-configuration", "request", "response"],
+      tokens: ["custom-imports", "express-configuration", "request", "response"],
       template: `import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
 import { CommonException } from "./CommonException";
 import { NotFound } from "./Errors";
+
+//<custom-imports>
+//</custom-imports>
 
 const cors = require("cors");
 const morgan = require("morgan");

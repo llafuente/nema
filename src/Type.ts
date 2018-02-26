@@ -3,12 +3,25 @@ import { TypescriptFile } from "./TypescriptFile";
 import { Api } from "./Api";
 import { Model } from "./Model";
 
+export enum Kind {
+  STRING = "string",
+  NUMBER = "number",
+  BOOLEAN = "boolean",
+  OBJECT = "object",
+  ARRAY = "array",
+  VOID = "void",
+  ENUM = "enum",
+  REFERENCE = "reference",
+  DATE = "date",
+  FILE = "file",
+};
+
 export class Type {
   api: Api = null;
 
   name: string;
 
-  type: string = null;
+  type: Kind|null = null;
   description: string = undefined;
   /** is type defined at definitions?  */
   isDefinition: boolean = undefined;
@@ -35,6 +48,7 @@ export class Type {
     t.isDefinition = isDefinition;
 
     obj = obj || { type: "void" };
+    t.description = obj.description;
 
     // sanity checks
     if (!modelName && obj.type == "object" && obj.properties) {
@@ -60,31 +74,56 @@ export class Type {
       throw new Error("enum need to be in definitions at first level");
     }
 
-    if (obj.type) {
-      t.type = obj.type.toLocaleLowerCase();
-    } else {
-      t.type = "void";
+    switch ((obj.type || "").toLocaleLowerCase()) {
+      case "":
+      case "void":
+        t.type = Kind.VOID;
+        break;
+      case "file":
+        t.type = Kind.FILE;
+        break;
+      case "object":
+        t.type = Kind.OBJECT;
+        t.properties = _.mapValues(obj.properties, (x) => {
+          return Type.parseSwagger(api, x, null, false);
+        });
+        break;
+      case "array":
+        t.type = Kind.ARRAY;
+        t.items = Type.parseSwagger(api, obj.items, null, false);
+        break;
+      case "boolean":
+        t.type = Kind.BOOLEAN;
+        break;
+      case "number":
+      case "integer":
+        t.type = Kind.NUMBER;
+        break;
+      case "string":
+        t.type = Kind.STRING;
+        // check for date
+        if (obj.format == "date" || obj.format == "date-time") {
+          t.type = Kind.DATE;
+        }
+        break;
+      default:
+        // maybe void?
+        console.error(obj);
+        throw new Error("cannot determine type");
     }
-    t.description = obj.description;
 
     if (obj.enum) {
-      t.type = "enum";
+      if (t.type != Kind.STRING as string) {
+        throw new Error("nema cannot handle enum for non string type");
+      }
+
+      t.type = Kind.ENUM;
       t.choices = obj.enum;
-    }
-
-    if (t.type == "object") {
-      t.properties = _.mapValues(obj.properties, (x) => {
-        return Type.parseSwagger(api, x, null, false);
-      });
-    }
-
-    if (t.type == "array") {
-      t.items = Type.parseSwagger(api, obj.items, null, false);
     }
 
     if (obj.$ref) {
       t.referenceModel = obj.$ref;
-      t.type = "reference";
+      t.type = Kind.REFERENCE;
       t.foreignKey = obj["x-nema-fk"] || null;
     }
 
@@ -94,11 +133,11 @@ export class Type {
    * Returns if the type is a primitive
    */
   isPrimitive(): boolean {
-    if (this.type == "array") {
+    if (this.type == Kind.ARRAY) {
       return this.items.isPrimitive();
     }
 
-    return ["integer", "string", "boolean", "number", "void"].indexOf(this.type) !== -1;
+    return [Kind.NUMBER, Kind.STRING, Kind.BOOLEAN, Kind.VOID].indexOf(this.type) !== -1;
   }
   /**
    * get base type, only available for array or references.
@@ -132,24 +171,28 @@ export class Type {
     }
 
     switch (this.type) {
-      case "file":
+      case Kind.REFERENCE:
+      case Kind.ENUM:
+        throw new Error("should not happen");
+      case Kind.FILE:
         return "Blob";
-      case "string":
+     case Kind.BOOLEAN:
+       return "boolean";
+     case Kind.DATE:
+        return "Date";
+      case Kind.STRING:
         return "string";
-      case "array":
+      case Kind.ARRAY:
         return `${this.items.toTypeScriptType()}[]`;
-      case "number":
-      case "integer":
+      case Kind.NUMBER:
         return "number";
-      case "object":
+      case Kind.OBJECT:
         return "any";
+      case Kind.VOID:
+        return "void";
+      default:
+        throw new Error("unhandled type");
     }
-
-    if (!this.type) {
-      return "void";
-    }
-
-    return this.type;
   }
 
   toMongooseType() {
@@ -159,7 +202,7 @@ export class Type {
       //case FieldType.ObjectId:
       //  d.push(`type: mongoose.Schema.Types.ObjectId`);
       //  break;
-      case "object":
+      case Kind.OBJECT:
         // type:any
         if (!this.properties) {
           return `{ type: mongoose.Schema.Types.Mixed }`;
@@ -184,24 +227,26 @@ export class Type {
         d.push(`type: ${FieldType.Number}`);
         break;
 */
-      case "array":
+      case Kind.ARRAY:
         d.push(`type: Array`);
         d.push(`items: ${this.items.toMongooseType()}`);
         break;
-      case "string":
+      case Kind.DATE:
+        d.push(`type: Date`);
+        break;
+      case Kind.STRING:
         d.push(`type: String`);
         break;
-      case "integer":
-      case "number":
+      case Kind.NUMBER:
         d.push(`type: Number`);
         break;
-      case "boolean":
+      case Kind.BOOLEAN:
         d.push(`type: Boolean`);
         break;
-      case "enum":
+      case Kind.ENUM:
         d.push(`type: String, enum: ${JSON.stringify(this.choices)}`);
         break;
-      case "reference":
+      case Kind.REFERENCE:
         if (this.foreignKey) {
           d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKey)}`);
         } else {
@@ -260,16 +305,18 @@ export class Type {
    */
   getRandom(ts: TypescriptFile) {
     switch (this.type) {
-      case "reference":
+      case Kind.REFERENCE:
         return this.api.getReference(this.referenceModel).type.getRandom(ts);
-      case "enum":
+      case Kind.ENUM:
         ts.addImport(this.name, `/src/models/${this.name}.ts`);
         return `${this.name}.${this.choices[0].toUpperCase()}`;
-      case "void":
+      case Kind.VOID:
       // file is really a Blob and don't need to be casted
-      case "file":
+      case Kind.FILE:
         return "null";
-      case "array":
+      case Kind.DATE:
+        return "new Date()";
+      case Kind.ARRAY:
         // loop through arrays casting it's values
         if (this.items.isPrimitive()) {
           ts.addImport("Random", `/src/Random.ts`);
@@ -304,6 +351,8 @@ export class Type {
    */
   getParser(src, ts: TypescriptFile) {
     switch (this.type) {
+      case "date":
+        return `new Date(${src})`;
       case "reference":
         return this.api.getReference(this.referenceModel).type.getParser(src, ts);
       case "void":
@@ -366,7 +415,7 @@ export class Type {
     if (this.type == "array") {
       return "[]";
     }
-    if (this.isPrimitive() || !this.type || this.type == "file") {
+    if (this.isPrimitive() || !this.type || this.type == Kind.FILE || this.type == Kind.DATE) {
       return "null";
     }
 

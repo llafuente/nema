@@ -37,6 +37,12 @@ class Express {
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "package.json"), path.join(this.dstPath, "package.json"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
         fs.writeFileSync(path.join(this.dstPath, "./src/swagger.json.ts"), "export default " + JSON.stringify(this.api.originalSource, null, 2));
+        if (!fs.existsSync(path.join(this.dstPath, "test", "all.test.ts"))) {
+            fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", "all.test.ts"), path.join(this.dstPath, "test", "all.test.ts"));
+        }
+        else {
+            console.error("skip /test/all.test.ts");
+        }
         this.routesFile("/src/routes.ts");
         this.api.eachMethod((method, name) => {
             this.routeFile(method, `/src/routes/${method.operationId}.ts`);

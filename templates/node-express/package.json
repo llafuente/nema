@@ -7,8 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "npm run build && ava --verbose ./dist/test/*.js",
-    "testcv": "npm run build && ava --verbose ./dist/test/*.js",
+    "test": "npm run build && ava --verbose ./dist/test/all.test.js --fail-fast",
+    "testcv": "npm run build && ava --verbose ./dist/test/all.test.js",
     "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
     "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",
     "build": "tsc -p ./tsconfig.json",

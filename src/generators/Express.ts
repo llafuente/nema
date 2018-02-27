@@ -157,6 +157,7 @@ import { Request, Response, Upload } from "../";
 
     let firstFile = true;
     const getParams = ["req", "res", "next"];
+    const paramValidations = [];
     const params = [];
     const middleware = [];
     method.eachParam((p) => {
@@ -164,21 +165,24 @@ import { Request, Response, Upload } from "../";
 
       params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
 
+      // TODO what type of Error should the API return ?! ApiError? CommonException?
+
+      let src = null;
       switch (p.in) {
         case ParameterType.BODY:
-          getParams.push(p.type.getParser(`req.body.${p.name}`, ts));
+          src = `req.body.${p.name}`;
           break;
         case ParameterType.COOKIE:
-          getParams.push(p.type.getParser(`req.cookies.${p.name} || null`, ts));
+          src = `req.cookies.${p.name}`;
           break;
         case ParameterType.HEADER:
-          getParams.push(p.type.getParser(`req.get(${JSON.stringify(p.name)})`, ts));
+          src = `req.get(${JSON.stringify(p.name)})`;
           break;
         case ParameterType.PATH:
-          getParams.push(p.type.getParser(`req.params.${p.name}`, ts));
+          src = `req.params.${p.name}`;
           break;
         case ParameterType.QUERY:
-          getParams.push(p.type.getParser(`req.query.${p.name} || null`, ts));
+          src = `req.query.${p.name}`;
           break;
         case ParameterType.FORM_DATA_FILE:
           getParams.push(`req.files.${p.name} || null`);
@@ -204,7 +208,19 @@ let upload = multer({
 `);
             middleware.push(`upload.any()`);
           }
+
           break;
+        default:
+          throw new Error("unexpeted parameter type");
+      }
+
+      if (src != null) {
+        getParams.push(`${src} == null ? null : ${p.type.getParser(`${src}`, ts)}`);
+        if (p.required) {
+          paramValidations.push(`if (!${src}) {
+            return res.status(400).json({message: "${p.name} required in ${p.in}"})
+          }`);
+        }
       }
     });
 
@@ -231,6 +247,7 @@ let upload = multer({
 
     middleware.push(`
 function (req: Request, res: Response, next: express.NextFunction) {
+  ${paramValidations.join(";\n")}
   ${method.operationId}(${getParams.join(", ")});
 }
 `);

@@ -5,11 +5,21 @@ export class Cast {
 
     return parseFloat(num);
   }
+
   static integer(num): number {
     if (num === undefined) return undefined;
     if (num === null) return null;
 
     return parseInt(num, 10);
+  }
+
+  static date(d): Date {
+    if (d === undefined) return undefined;
+    if (d === null) return null;
+
+    if (d instanceof Date) return d;
+
+    return new Date(d);
   }
 
   static array(arr): any[] {

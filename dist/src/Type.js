@@ -323,7 +323,8 @@ class Type {
     getParser(src, ts) {
         switch (this.type) {
             case "date":
-                return `new Date(${src})`;
+                ts.addImport("Cast", `/src/Cast.ts`);
+                return `Cast.date(${src})`;
             case "reference":
                 return this.api.getReference(this.referenceModel).type.getParser(src, ts);
             case "void":

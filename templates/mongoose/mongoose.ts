@@ -24,3 +24,9 @@ export default function (app: express.Application) {
     },
   );
 }
+// close the Mongoose connection when process ends
+process.on('SIGINT', function() {
+  mongoose.connection.close(function () {
+    console.log('mongoose default connection disconnected through app termination');
+  });
+});

@@ -22,8 +22,6 @@ const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "..", "mongoos
 export class Mongoose {
   constructor(public dstPath: string, public api: Api) {
     this.api.parseSwaggerDefinitions(mongooseSwagger, true);
-
-    this.addIdToModel();
   }
 
   addIdToModel() {
@@ -46,6 +44,14 @@ export class Mongoose {
     });
   }
 
+  removeIdToModel() {
+    this.api.eachModel((model, modelName) => {
+      if (model.isDb) {
+        delete model.type.properties._id;
+      }
+    });
+  }
+
   generate(pretty: boolean, lint: boolean) {
     this.api.sort();
 
@@ -57,7 +63,9 @@ export class Mongoose {
     mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
 
     // generate all models
+    this.addIdToModel();
     CommonGenerator.models(this.api, this.dstPath);
+    this.removeIdToModel();
 
     this.api.eachModel((model, modelName) => {
       if (model.isDb) {
@@ -65,6 +73,17 @@ export class Mongoose {
         this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
       }
     });
+
+    if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
+      fs.copyFileSync(
+        path.join(process.cwd(), "templates", "mongoose", "mongoose.connection.test.ts"),
+        path.join(this.dstPath, "test", "mongoose.connection.test.ts"),
+      );
+    } else {
+      console.error("skip /test/mongoose.connection.test.ts");
+    }
+
+
 
     CommonGenerator.setZonedTemplate(
       path.join(this.dstPath, "./src/index.ts"),

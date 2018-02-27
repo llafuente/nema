@@ -3,12 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Type_1 = require("./Type");
 var ParameterType;
 (function (ParameterType) {
-    ParameterType[ParameterType["PATH"] = 0] = "PATH";
-    ParameterType[ParameterType["QUERY"] = 1] = "QUERY";
-    ParameterType[ParameterType["HEADER"] = 2] = "HEADER";
-    ParameterType[ParameterType["BODY"] = 3] = "BODY";
-    ParameterType[ParameterType["COOKIE"] = 4] = "COOKIE";
-    ParameterType[ParameterType["FORM_DATA_FILE"] = 5] = "FORM_DATA_FILE";
+    ParameterType["PATH"] = "path";
+    ParameterType["QUERY"] = "query";
+    ParameterType["HEADER"] = "header";
+    ParameterType["BODY"] = "body";
+    ParameterType["COOKIE"] = "cookie";
+    ParameterType["FORM_DATA_FILE"] = "file";
 })(ParameterType = exports.ParameterType || (exports.ParameterType = {}));
 const swaggerToParameterType = {
     path: ParameterType.PATH,

@@ -2,12 +2,12 @@ import { Type } from "./Type";
 import { Api } from "./Api";
 
 export enum ParameterType {
-  PATH,
-  QUERY,
-  HEADER,
-  BODY,
-  COOKIE,
-  FORM_DATA_FILE,
+  PATH = "path",
+  QUERY = "query",
+  HEADER = "header",
+  BODY = "body",
+  COOKIE = "cookie",
+  FORM_DATA_FILE = "file",
 }
 
 const swaggerToParameterType = {

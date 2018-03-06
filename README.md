@@ -2,12 +2,16 @@
 [![Build Status](https://travis-ci.org/llafuente/nema.svg?branch=master)](https://travis-ci.org/llafuente/nema)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/llafuente/nema/master/LICENSE)
 
-`nema` is an generator that target:
+`nema` is an generator that target full stack:
 
-* server: Node Express [WIP]
-* server: Mongoose [WIP]
-* client: Node, using request [PLANNED]
-* client: Angular 5 HttpClient [DONE]
+Frontend
+* Angular 5 api-client using HttpClient
+* Angular 5 forms (templates only) [Planned]
+
+Backend
+* Node server using Express
+* Mongoose
+* node-client using request [Planned]
 
 It generates from Swagger 2.0 YAMLS
 
@@ -275,7 +279,6 @@ paths:
           strategyId: strategyId
 
 ```
-
 
 ## Develop notes
 

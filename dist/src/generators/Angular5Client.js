@@ -28,8 +28,6 @@ class Angular5Client {
         mkdirSafe(path.join(this.dstPath, "src"));
         mkdirSafe(path.join(this.dstPath, "src/models"));
         mkdirSafe(path.join(this.dstPath, "src/resolve"));
-        // generate all models
-        CommonGenerator.models(this.api, this.dstPath);
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
@@ -183,7 +181,35 @@ import { Subject, Observable } from "rxjs";`);
             ts.addImport(model.name, model.filename);
         });
         // Api class
-        ts.push(`@Injectable()
+        ts.push(`
+
+// this fixes Angular async pipe usage
+// rxjs throw an error if no error handler is found in every subscription
+// https://github.com/ReactiveX/rxjs/issues/2145 2180
+// fixed in RXJS 6 (untested ^.^)
+
+Subject.prototype.error = function (err) {
+    if (this.closed) {
+        throw new Error("Subject closed");
+    }
+    this.hasError = true;
+    this.thrownError = err;
+    this.isStopped = true;
+    var observers = this.observers;
+    var len = observers.length;
+    var copy = observers.slice();
+    for (var i = 0; i < len; i++) {
+      try {
+        copy[i].error(err);
+      } catch(e) {
+        console.log("skip error!!!!!!");
+      }
+    }
+    this.observers.length = 0;
+};
+
+
+@Injectable()
 export class ${this.api.apiName} {
   scheme: string = ${JSON.stringify(this.api.schemes[0])};
   debug: boolean = false;
@@ -296,16 +322,17 @@ export class ${this.api.apiName} {
             }
             ts.push(`const $url: string = this.${method.operationId}URL(${pathParamsNames.concat(queryParamsNames).join(",")});`);
             /*
-             * Nasty thing below...
+             * Nasty things below...
              * this.http.get() need to be used for "text" response
              * this.http.get<type>() need to be used for "json" response
              *
              * also the responseType literal need to be casted to itself: "text" as "text"
              *
-             * In case of errors
-             * subject will be null ([], {}, null), otherwise loadings never stop
-             * We cannot return CommonException class because if the subject is used
-             * in an ngFor will throw errors
+             * Error handling
+             * subject.error is used to throw the CommonException.
+             * In many Angular versions the error thrown by rxjs is catched by
+             * WHO-KNOWS-WHO (I don't) when you have no error handler
+             * that why there is a try/catch and console.error to display proper error
              */
             ts.push(`const $options = {`);
             if (hasHeaders) {
@@ -349,15 +376,16 @@ export class ${this.api.apiName} {
             ts.push(`
         const ret = new Subject<${responseTypeTS}>();
         observable.subscribe((response: ${responseTypeTS == "void" ? "null" : responseTypeTS}) => {
-          console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response);
+          console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response, $reqOptions);
 
           ret.next(${responseTypeTS == "void" ? "null" : responseType.getParser("response", ts)});
           ret.complete();
         }, (response: HttpErrorResponse) => {
-          console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response);
+          console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response, $reqOptions);
+          response.error.status = response.error.status || response.status;
           const error = CommonException.parse(response.error);
 
-          ret.next(${responseType.getParser(responseType.getEmptyValue(), ts)}); // force cast
+          ret.error(error);
           ret.complete();
 
           // notify global error handler

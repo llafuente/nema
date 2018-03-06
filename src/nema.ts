@@ -4,6 +4,7 @@ import { Api } from "./Api";
 import { Angular5Client } from "./generators/Angular5Client";
 import { Mongoose } from "./generators/Mongoose";
 import { Express } from "./generators/Express";
+import { Common } from "./generators/Common";
 import * as path from "path";
 import * as program from "commander";
 const chalk = require("chalk");
@@ -96,6 +97,8 @@ const generators = [];
 
 // create all generators
 // some generator may modify api metadata
+
+generators.push(new Common(dstPath, api));
 
 if (program.angular5Api) {
   green("Instancing generator: angular5-api");

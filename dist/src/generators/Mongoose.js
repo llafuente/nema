@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const assert = require("assert");
-const Api_1 = require("../Api");
 const Type_1 = require("../Type");
 const fs = require("fs");
 const path = require("path");
@@ -16,12 +15,10 @@ function mkdirSafe(folder) {
         }
     }
 }
-const mongooseSwagger = Api_1.parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
 class Mongoose {
     constructor(dstPath, api) {
         this.dstPath = dstPath;
         this.api = api;
-        this.api.parseSwaggerDefinitions(mongooseSwagger, true);
     }
     addIdToModel() {
         this.api.eachModel((model, modelName) => {
@@ -55,7 +52,7 @@ class Mongoose {
         mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
         mkdirSafe(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
         mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
-        // generate all models
+        // override common generation
         this.addIdToModel();
         CommonGenerator.models(this.api, this.dstPath);
         this.removeIdToModel();

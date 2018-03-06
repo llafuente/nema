@@ -24,8 +24,6 @@ class CSV {
         mkdirSafe(path.join(this.dstPath));
         mkdirSafe(path.join(this.dstPath, "src"));
         mkdirSafe(path.join(this.dstPath, "src/csv"));
-        // generate all models
-        CommonGenerator.models(api, this.dstPath);
         api.eachModel((mdl, modelName) => {
             const dst = `/src/csv/${mdl.name}.ts`;
             fs.writeFileSync(path.join(this.dstPath, `.${dst}`), this.csv(api, mdl, dst));

@@ -214,4 +214,15 @@ function generateEnum(api, model) {
   }`;
 }
 exports.generateEnum = generateEnum;
+function mkdirSafe(folder) {
+    try {
+        fs.mkdirSync(folder);
+    }
+    catch (e) {
+        if (e.code != "EEXIST") {
+            throw e;
+        }
+    }
+}
+exports.mkdirSafe = mkdirSafe;
 //# sourceMappingURL=CommonGenerator.js.map

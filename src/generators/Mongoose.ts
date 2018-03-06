@@ -17,11 +17,8 @@ function mkdirSafe(folder) {
   }
 }
 
-const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "..", "mongoose.yml"));
-
 export class Mongoose {
   constructor(public dstPath: string, public api: Api) {
-    this.api.parseSwaggerDefinitions(mongooseSwagger, true);
   }
 
   addIdToModel() {
@@ -62,7 +59,7 @@ export class Mongoose {
     mkdirSafe(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
     mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
 
-    // generate all models
+    // override common generation
     this.addIdToModel();
     CommonGenerator.models(this.api, this.dstPath);
     this.removeIdToModel();

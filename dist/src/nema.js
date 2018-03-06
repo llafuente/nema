@@ -5,6 +5,7 @@ const Api_1 = require("./Api");
 const Angular5Client_1 = require("./generators/Angular5Client");
 const Mongoose_1 = require("./generators/Mongoose");
 const Express_1 = require("./generators/Express");
+const Common_1 = require("./generators/Common");
 const path = require("path");
 const program = require("commander");
 const chalk = require("chalk");
@@ -82,6 +83,7 @@ program.swagger.forEach((swagger) => {
 const generators = [];
 // create all generators
 // some generator may modify api metadata
+generators.push(new Common_1.Common(dstPath, api));
 if (program.angular5Api) {
     green("Instancing generator: angular5-api");
     generators.push(new Angular5Client_1.Angular5Client(dstPath, api));

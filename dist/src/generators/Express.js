@@ -28,8 +28,6 @@ class Express {
         mkdirSafe(path.join(this.dstPath, "src/models"));
         mkdirSafe(path.join(this.dstPath, "src/routes"));
         mkdirSafe(path.join(this.dstPath, "test"));
-        // generate all models
-        CommonGenerator.models(this.api, this.dstPath);
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", ".gitignore"), path.join(this.dstPath, ".gitignore"));

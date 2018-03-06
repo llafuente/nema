@@ -259,3 +259,14 @@ export function generateEnum(api: Api, model: Model): string {
       .join(",\n")}
   }`;
 }
+
+
+export function mkdirSafe(folder) {
+  try {
+    fs.mkdirSync(folder);
+  } catch (e) {
+    if (e.code != "EEXIST") {
+      throw e;
+    }
+  }
+}

@@ -28,6 +28,22 @@ class Model {
         //   m.name = m.name.substr(0, m.name.length -3);
         // }
         m.type = Type_1.Type.parseSwagger(api, obj, name, true);
+        if (m.isDb) {
+            if (m.type.type != "object") {
+                console.error(obj);
+                throw new Error("Only type: object can use x-nema-db");
+            }
+            // declare _id as any and place it first
+            const _id = new Type_1.Type();
+            _id.type = Type_1.Kind.OBJECT;
+            const p = m.type.properties;
+            m.type.properties = {
+                _id,
+            };
+            for (const i in p) {
+                m.type.properties[i] = p[i];
+            }
+        }
         m.description = obj.description;
         //m.dtoName = `${name}Dto`;
         m.interfaceName = `I${name}`;

@@ -201,9 +201,7 @@ Subject.prototype.error = function (err) {
     for (var i = 0; i < len; i++) {
       try {
         copy[i].error(err);
-      } catch(e) {
-        console.log("skip error!!!!!!");
-      }
+      } catch(e) {}
     }
     this.observers.length = 0;
 };

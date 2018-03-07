@@ -191,7 +191,9 @@ class Type {
                 d.push(`type: Object`);
                 const t = [];
                 for (const i in this.properties) {
-                    t.push(i + ":" + this.properties[i].toMongooseType());
+                    if (i != "_id") {
+                        t.push(i + ":" + this.properties[i].toMongooseType());
+                    }
                 }
                 if (this.isDefinition == null) {
                     return t.join(",\n");

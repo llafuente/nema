@@ -1,7 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const assert = require("assert");
-const Type_1 = require("../Type");
 const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
@@ -20,30 +18,6 @@ class Mongoose {
         this.dstPath = dstPath;
         this.api = api;
     }
-    addIdToModel() {
-        this.api.eachModel((model, modelName) => {
-            if (model.isDb) {
-                assert(model.type.type == "object");
-                // declare _id as  any
-                const _id = new Type_1.Type();
-                _id.type = Type_1.Kind.OBJECT;
-                const p = model.type.properties;
-                model.type.properties = {
-                    _id,
-                };
-                for (const i in p) {
-                    model.type.properties[i] = p[i];
-                }
-            }
-        });
-    }
-    removeIdToModel() {
-        this.api.eachModel((model, modelName) => {
-            if (model.isDb) {
-                delete model.type.properties._id;
-            }
-        });
-    }
     generate(pretty, lint) {
         this.api.sort();
         // create generation paths
@@ -52,10 +26,6 @@ class Mongoose {
         mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
         mkdirSafe(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
         mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
-        // override common generation
-        this.addIdToModel();
-        CommonGenerator.models(this.api, this.dstPath);
-        this.removeIdToModel();
         this.api.eachModel((model, modelName) => {
             if (model.isDb) {
                 this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
@@ -196,70 +166,76 @@ export function query(
   let query = ${model.mongooseModel}.find({});
   let qCount = ${model.mongooseModel}.find({}).count();
 
-  _.each(q.where, (w: Where, path: string) => {
-    // console.log("-- where", path, w);
+  if (q && q.where) {
+    _.each(q.where, (w: Where, path: string) => {
+      // console.log("-- where", path, w);
 
-    switch (w.operator) {
-      case Operators.IN:
-        const options = ${model.mongooseSchema}.path(path);
-        const items = (options as any).options.items;
-        // console.log(items);
+      switch (w.operator) {
+        case Operators.IN:
+          const options = ${model.mongooseSchema}.path(path);
+          const items = (options as any).options.items;
+          // console.log(items);
 
-        // TODO REVIEW it's working for array of ObjectIds... and the rest ?
-        if (Array.isArray(w.value)) {
-          query = query.where(path).in(w.value);
-          qCount = qCount.where(path).in(w.value);
-        } else {
-          query = query.where(path).in([items.type.prototype.cast(w.value)]);
-          qCount = qCount.where(path).in([items.type.prototype.cast(w.value)]);
-        }
-        break;
-      case Operators.LIKE:
-        query = query.where(path).regex(w.value);
-        qCount = qCount.where(path).regex(w.value);
-        break;
-      default:
-        query = query.where(path).equals(w.value);
-        qCount = qCount.where(path).equals(w.value);
-        break;
-    }
-  });
+          // TODO REVIEW it's working for array of ObjectIds... and the rest ?
+          if (Array.isArray(w.value)) {
+            query = query.where(path).in(w.value);
+            qCount = qCount.where(path).in(w.value);
+          } else {
+            query = query.where(path).in([items.type.prototype.cast(w.value)]);
+            qCount = qCount.where(path).in([items.type.prototype.cast(w.value)]);
+          }
+          break;
+        case Operators.LIKE:
+          query = query.where(path).regex(w.value);
+          qCount = qCount.where(path).regex(w.value);
+          break;
+        default:
+          query = query.where(path).equals(w.value);
+          qCount = qCount.where(path).equals(w.value);
+          break;
+      }
+    });
+  }
 
-  _.each(q.populate, (path: string) => {
-    const options = ${model.mongooseSchema}.path(path);
-    if (!options) {
-      throw new Error("populate[" + path + "] not found");
-    }
-    /*
-    if (!isPathRestricted(options.options.type)) {
-    if (!typeCanBePopulated(options.options.type)) {
-      throw new Error("populate[" + s + "] can't be populated");
-    }
-    */
-    query.populate(path);
-  });
+  if (q && q.populate) {
+    _.each(q.populate, (path: string) => {
+      const options = ${model.mongooseSchema}.path(path);
+      if (!options) {
+        throw new Error("populate[" + path + "] not found");
+      }
+      /*
+      if (!isPathRestricted(options.options.type)) {
+      if (!typeCanBePopulated(options.options.type)) {
+        throw new Error("populate[" + s + "] can't be populated");
+      }
+      */
+      query.populate(path);
+    });
+  }
 
-  if (q.offset) {
+  if (q && q.offset) {
     query.skip(q.offset);
   }
 
-  if (q.limit) {
+  if (q && q.limit) {
     query.limit(q.limit);
   }
 
-  if (q.fields.length) {
+  if (q && q.fields.length) {
     query.select(q.fields.join(" "));
   }
 
-  // http://mongoosejs.com/docs/api.html#query_Query-sort
-  query.sort(_.map((q.sort || []), (s: Order, key: string) => {
-    const options = ${model.mongooseSchema}.path(key);
-    if (!options) {
-      throw new Error("sort[" + key + "] not found");
-    }
+  if (q && q.sort) {
+    // http://mongoosejs.com/docs/api.html#query_Query-sort
+    query.sort(_.map((q.sort || []), (s: Order, key: string) => {
+      const options = ${model.mongooseSchema}.path(key);
+      if (!options) {
+        throw new Error("sort[" + key + "] not found");
+      }
 
-    return [key, s === Order.ASC ? Order.ASC : Order.DESC];
-  }));
+      return [key, s === Order.ASC ? Order.ASC : Order.DESC];
+    }));
+  }
 
 
   return new Promise((resolve, reject) => {

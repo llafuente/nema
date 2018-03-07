@@ -1,5 +1,5 @@
 import { Api } from "./Api";
-import { Type } from "./Type";
+import { Type, Kind } from "./Type";
 import * as _ from "lodash";
 import * as pluralize from "pluralize";
 
@@ -53,6 +53,26 @@ export class Model {
     // }
 
     m.type = Type.parseSwagger(api, obj, name, true);
+
+    if (m.isDb) {
+      if (m.type.type != "object") {
+        console.error(obj);
+        throw new Error("Only type: object can use x-nema-db");
+      }
+
+      // declare _id as any and place it first
+      const _id = new Type();
+      _id.type = Kind.OBJECT;
+      const p = m.type.properties;
+      m.type.properties = {
+        _id,
+      };
+
+      for (const i in p) {
+        m.type.properties[i] = p[i];
+      }
+    }
+
     m.description = obj.description;
 
     //m.dtoName = `${name}Dto`;

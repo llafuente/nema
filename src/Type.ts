@@ -212,7 +212,9 @@ export class Type {
 
         const t = [];
         for (const i in this.properties) {
-          t.push(i + ":" + this.properties[i].toMongooseType());
+          if (i != "_id") {
+            t.push(i + ":" + this.properties[i].toMongooseType());
+          }
         }
 
         if (this.isDefinition == null) {

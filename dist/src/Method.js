@@ -45,6 +45,17 @@ class Method {
         m.parameters = parameters.map((x) => {
             return Parameter_1.Parameter.parseSwagger(api, x);
         });
+        // check only one body allowed
+        let bodyCount = 0;
+        for (let param of m.parameters) {
+            if (param.in == Parameter_1.ParameterType.BODY) {
+                ++bodyCount;
+            }
+        }
+        if (bodyCount > 1) {
+            console.error(method, bodyCount);
+            throw new Error("exceed parameters in body, only 0 or 1");
+        }
         // Keep compat with our legacy generator
         // this is out of the swagger standard, sry
         if (Array.isArray(method.responses)) {

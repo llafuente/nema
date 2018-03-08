@@ -175,7 +175,7 @@ import { Request, Response, Upload } from "../";
       let src = null;
       switch (p.in) {
         case ParameterType.BODY:
-          src = `req.body.${p.name}`;
+          src = `req.body`;
           break;
         case ParameterType.COOKIE:
           src = `req.cookies.${p.name}`;

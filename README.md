@@ -87,6 +87,8 @@ Javascript Number (double)
 
 Things that may change in the future:
 
+* Only one body parameter is allowed. This is by design to keep compatibility
+with an older generator.
 * `parameters.name` is a variable name, use `parameter.x-nema-header` for real
 header name
 

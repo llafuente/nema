@@ -19,6 +19,7 @@ class Model {
             obj = obj.allOf[1];
         }
         m.name = name;
+        m.namePlural = obj["x-nema-plural"] || pluralize.plural(name.toLowerCase());
         m.filename = `/src/models/${name}.ts`;
         m.isDb = !!obj["x-nema-db"];
         // force: naming convention

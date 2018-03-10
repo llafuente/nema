@@ -11,6 +11,7 @@ export class Model {
   isDb: boolean = false;
 
   name: string;
+  namePlural: string;
   /** destination full path */
   filename: string;
   description: string;
@@ -41,6 +42,7 @@ export class Model {
     }
 
     m.name = name;
+    m.namePlural = obj["x-nema-plural"] || pluralize.plural(name.toLowerCase());
     m.filename = `/src/models/${name}.ts`;
 
     m.isDb = !!obj["x-nema-db"];

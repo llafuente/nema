@@ -186,6 +186,10 @@ paths:
           type: string
 ```
 
+#### definitions.model: x-nema-plural
+
+Optional: Set plural used for generating, bu default will use [pluralize](https://www.npmjs.com/package/pluralize)
+
 #### definitions.model: x-nema-db
 
 Mark model as a db entity (mongoose treat it as a collection)
@@ -212,6 +216,14 @@ definitions:
         x-nema-lowercase: true
         x-nema-unique: true
 ```
+
+#### type: x-nema-readonly
+
+Mark type as "cannot-be-created/updated".
+
+In forms is displayed as disabled.
+
+When you do the API implementation you should handle it manually.
 
 #### type: x-nema-lowercase
 

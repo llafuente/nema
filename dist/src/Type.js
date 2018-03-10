@@ -33,6 +33,7 @@ class Type {
         /** Reference to another model */
         this.referenceModel = undefined;
         this.required = false;
+        this.readOnly = false;
     }
     /**
      * Parse type from swagger
@@ -116,6 +117,7 @@ class Type {
             t.type = Kind.REFERENCE;
             t.foreignKey = obj["x-nema-fk"] || null;
         }
+        t.readOnly = obj["x-nema-readonly"] || false;
         return t;
     }
     /**

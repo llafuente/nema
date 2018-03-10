@@ -37,6 +37,7 @@ export class Type {
   referenceModel?: string = undefined;
 
   required: boolean = false;
+  readOnly: boolean = false;
 
   /**
    * Parse type from swagger
@@ -128,6 +129,7 @@ export class Type {
       t.type = Kind.REFERENCE;
       t.foreignKey = obj["x-nema-fk"] || null;
     }
+    t.readOnly = obj["x-nema-readonly"] || false;
 
     return t;
   }

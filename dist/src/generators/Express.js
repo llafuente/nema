@@ -5,16 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
-function mkdirSafe(folder) {
-    try {
-        fs.mkdirSync(folder);
-    }
-    catch (e) {
-        if (e.code != "EEXIST") {
-            throw e;
-        }
-    }
-}
+const mkdirp = require("mkdirp").sync;
 class Express {
     constructor(dstPath, api) {
         this.dstPath = dstPath;
@@ -23,11 +14,10 @@ class Express {
     generate(pretty, lint) {
         this.api.sort();
         // create generation paths
-        mkdirSafe(path.join(this.dstPath));
-        mkdirSafe(path.join(this.dstPath, "src"));
-        mkdirSafe(path.join(this.dstPath, "src/models"));
-        mkdirSafe(path.join(this.dstPath, "src/routes"));
-        mkdirSafe(path.join(this.dstPath, "test"));
+        mkdirp(path.join(this.dstPath, "src"));
+        mkdirp(path.join(this.dstPath, "src/models"));
+        mkdirp(path.join(this.dstPath, "src/routes"));
+        mkdirp(path.join(this.dstPath, "test"));
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "node-express", ".gitignore"), path.join(this.dstPath, ".gitignore"));

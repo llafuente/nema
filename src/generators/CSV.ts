@@ -5,15 +5,7 @@ import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
 import { TypescriptFile } from "../TypescriptFile";
 
-function mkdirSafe(folder) {
-  try {
-    fs.mkdirSync(folder);
-  } catch (e) {
-    if (e.code != "EEXIST") {
-      throw e;
-    }
-  }
-}
+const mkdirp = require("mkdirp").sync;
 
 export class CSV {
   constructor(public dstPath: string) {}
@@ -22,9 +14,7 @@ export class CSV {
     api.sort();
 
     // create generation paths
-    mkdirSafe(path.join(this.dstPath));
-    mkdirSafe(path.join(this.dstPath, "src"));
-    mkdirSafe(path.join(this.dstPath, "src/csv"));
+    mkdirp(path.join(this.dstPath, "src/csv"));
 
     api.eachModel((mdl, modelName) => {
       const dst = `/src/csv/${mdl.name}.ts`;

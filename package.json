@@ -21,6 +21,7 @@
     "commander": "2.13.0",
     "ejs": "2.5.7",
     "lodash": "4.17.4",
+    "mkdirp": "0.5.1",
     "pluralize": "7.0.0",
     "yamljs": "0.3.0"
   },

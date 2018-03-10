@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../Api");
-const CommonGenerator_1 = require("./CommonGenerator");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
+const mkdirp = require("mkdirp").sync;
 const mongooseSwagger = Api_1.parseYML(path.join(__dirname, "..", "..", "..", "common.yml"));
 class Common {
     constructor(dstPath, api) {
@@ -14,9 +14,7 @@ class Common {
     generate(pretty, lint) {
         this.api.sort();
         // create generation paths
-        CommonGenerator_1.mkdirSafe(path.join(this.dstPath));
-        CommonGenerator_1.mkdirSafe(path.join(this.dstPath, "src"));
-        CommonGenerator_1.mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
+        mkdirp(path.join(this.dstPath, "src/models")); // raw models
         CommonGenerator.models(this.api, this.dstPath);
     }
 }

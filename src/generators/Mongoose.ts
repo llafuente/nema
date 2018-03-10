@@ -7,15 +7,7 @@ import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
 import { ModificableTemplate } from "./CommonGenerator";
 
-function mkdirSafe(folder) {
-  try {
-    fs.mkdirSync(folder);
-  } catch (e) {
-    if (e.code != "EEXIST") {
-      throw e;
-    }
-  }
-}
+const mkdirp = require("mkdirp").sync;
 
 export class Mongoose {
   constructor(public dstPath: string, public api: Api) {
@@ -25,11 +17,9 @@ export class Mongoose {
     this.api.sort();
 
     // create generation paths
-    mkdirSafe(path.join(this.dstPath));
-    mkdirSafe(path.join(this.dstPath, "src"));
-    mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
-    mkdirSafe(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
-    mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
+    mkdirp(path.join(this.dstPath, "src/models")); // raw models
+    mkdirp(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
+    mkdirp(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
 
     this.api.eachModel((model, modelName) => {
       if (model.isDb) {

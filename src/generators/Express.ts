@@ -7,15 +7,7 @@ import * as CommonGenerator from "./CommonGenerator";
 import { ModificableTemplate } from "./CommonGenerator";
 import { TypescriptFile } from "../TypescriptFile";
 
-function mkdirSafe(folder) {
-  try {
-    fs.mkdirSync(folder);
-  } catch (e) {
-    if (e.code != "EEXIST") {
-      throw e;
-    }
-  }
-}
+const mkdirp = require("mkdirp").sync;
 
 export class Express {
   constructor(public dstPath: string, public api: Api) {}
@@ -24,11 +16,10 @@ export class Express {
     this.api.sort();
 
     // create generation paths
-    mkdirSafe(path.join(this.dstPath));
-    mkdirSafe(path.join(this.dstPath, "src"));
-    mkdirSafe(path.join(this.dstPath, "src/models"));
-    mkdirSafe(path.join(this.dstPath, "src/routes"));
-    mkdirSafe(path.join(this.dstPath, "test"));
+    mkdirp(path.join(this.dstPath, "src"));
+    mkdirp(path.join(this.dstPath, "src/models"));
+    mkdirp(path.join(this.dstPath, "src/routes"));
+    mkdirp(path.join(this.dstPath, "test"));
 
     // copy raw files (those that don't need to be generated)
     CommonGenerator.copyCommonTemplates(this.dstPath);

@@ -1,8 +1,8 @@
 import { Api, parseYML } from "../Api";
-import { mkdirSafe } from "./CommonGenerator";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
 
+const mkdirp = require("mkdirp").sync;
 const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "..", "common.yml"));
 
 export class Common {
@@ -14,9 +14,7 @@ export class Common {
     this.api.sort();
 
     // create generation paths
-    mkdirSafe(path.join(this.dstPath));
-    mkdirSafe(path.join(this.dstPath, "src"));
-    mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
+    mkdirp(path.join(this.dstPath, "src/models")); // raw models
 
     CommonGenerator.models(this.api, this.dstPath);
   }

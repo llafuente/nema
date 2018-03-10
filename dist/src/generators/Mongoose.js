@@ -3,16 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
-function mkdirSafe(folder) {
-    try {
-        fs.mkdirSync(folder);
-    }
-    catch (e) {
-        if (e.code != "EEXIST") {
-            throw e;
-        }
-    }
-}
+const mkdirp = require("mkdirp").sync;
 class Mongoose {
     constructor(dstPath, api) {
         this.dstPath = dstPath;
@@ -21,11 +12,9 @@ class Mongoose {
     generate(pretty, lint) {
         this.api.sort();
         // create generation paths
-        mkdirSafe(path.join(this.dstPath));
-        mkdirSafe(path.join(this.dstPath, "src"));
-        mkdirSafe(path.join(this.dstPath, "src/models")); // raw models
-        mkdirSafe(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
-        mkdirSafe(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
+        mkdirp(path.join(this.dstPath, "src/models")); // raw models
+        mkdirp(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
+        mkdirp(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
         this.api.eachModel((model, modelName) => {
             if (model.isDb) {
                 this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));

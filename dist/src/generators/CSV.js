@@ -4,16 +4,7 @@ const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
-function mkdirSafe(folder) {
-    try {
-        fs.mkdirSync(folder);
-    }
-    catch (e) {
-        if (e.code != "EEXIST") {
-            throw e;
-        }
-    }
-}
+const mkdirp = require("mkdirp").sync;
 class CSV {
     constructor(dstPath) {
         this.dstPath = dstPath;
@@ -21,9 +12,7 @@ class CSV {
     generate(api, pretty, lint) {
         api.sort();
         // create generation paths
-        mkdirSafe(path.join(this.dstPath));
-        mkdirSafe(path.join(this.dstPath, "src"));
-        mkdirSafe(path.join(this.dstPath, "src/csv"));
+        mkdirp(path.join(this.dstPath, "src/csv"));
         api.eachModel((mdl, modelName) => {
             const dst = `/src/csv/${mdl.name}.ts`;
             fs.writeFileSync(path.join(this.dstPath, `.${dst}`), this.csv(api, mdl, dst));

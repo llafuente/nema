@@ -68,11 +68,15 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
   {`);
         if (model.extends) {
             model.eachParentProperty((t, name) => {
-                s.push(`${name}: ${t.toMongooseType()},`);
+                if (name != "_id") {
+                    s.push(`${name}: ${t.toMongooseType()},`);
+                }
             });
         }
         model.eachProperty((t, name) => {
-            s.push(`${name}: ${t.toMongooseType()},`);
+            if (name != "_id") {
+                s.push(`${name}: ${t.toMongooseType()},`);
+            }
         });
         s.push(`
   },

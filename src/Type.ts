@@ -36,6 +36,8 @@ export class Type {
   /** Reference to another model */
   referenceModel?: string = undefined;
 
+  required: boolean = false;
+
   /**
    * Parse type from swagger
    */

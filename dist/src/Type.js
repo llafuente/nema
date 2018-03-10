@@ -32,6 +32,7 @@ class Type {
         this.choices = undefined;
         /** Reference to another model */
         this.referenceModel = undefined;
+        this.required = false;
     }
     /**
      * Parse type from swagger

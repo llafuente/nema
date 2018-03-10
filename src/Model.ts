@@ -89,7 +89,7 @@ export class Model {
     m.mongooseSchema = `${name}Schema`;
     m.mongooseRepository = `${name}Repository`;
     m.mongooseModel = `${name}Model`;
-    m.mongooseCollection = pluralize.plural(this.name.toLowerCase());
+    m.mongooseCollection = pluralize.plural(name.toLowerCase());
 
     return m;
   }

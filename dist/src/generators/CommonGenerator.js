@@ -5,9 +5,15 @@ const fs = require("fs");
 const path = require("path");
 const child_process_1 = require("child_process");
 const TypescriptFile_1 = require("../TypescriptFile");
-function getTokenRE(token) {
+function getTypeScriptZoneRE(token) {
     const startToken = `//<${token}>`;
     const endToken = `//</${token}>`;
+    const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}`, "m");
+    return re;
+}
+function getHTMLZoneRE(token) {
+    const startToken = `<!--${token}-->`;
+    const endToken = `<!--/${token}-->`;
     const re = new RegExp(`${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}(.|[\\r\\n])*${endToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}`, "m");
     return re;
 }
@@ -20,7 +26,7 @@ function copyZonedTemplate(srcFile, dstFile, tokens) {
 exports.copyZonedTemplate = copyZonedTemplate;
 function setZonedTemplate(srcFile, token, text) {
     const template = fs.readFileSync(srcFile).toString();
-    const re = getTokenRE(token);
+    const re = getTypeScriptZoneRE(token);
     const m = template.match(re);
     if (m !== null) {
         const finalTemplate = template.replace(m[0], `//<${token}>\n${text}\n//</${token}>`);
@@ -41,7 +47,17 @@ function writeZonedTemplate(filename, tpl) {
     }
     if (contents) {
         tpl.tokens.forEach((token) => {
-            const re = getTokenRE(token);
+            let re;
+            switch (path.extname(filename)) {
+                case ".ts":
+                    re = getTypeScriptZoneRE(token);
+                    break;
+                case ".html":
+                    re = getHTMLZoneRE(token);
+                    break;
+                default:
+                    throw new Error(`unhandled zone file: ${filename}`);
+            }
             const m = contents.match(re);
             // console.log(startToken, endToken);
             // console.log(re);

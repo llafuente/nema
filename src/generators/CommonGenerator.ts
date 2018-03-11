@@ -7,9 +7,23 @@ import * as path from "path";
 import { spawnSync } from "child_process";
 import { TypescriptFile } from "../TypescriptFile";
 
-function getTokenRE(token: string) {
+function getTypeScriptZoneRE(token: string) {
   const startToken = `//<${token}>`;
   const endToken = `//</${token}>`;
+
+  const re = new RegExp(
+    `${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}(.|[\\r\\n])*${endToken.replace(
+      /[-\/\\^$*+?.()|[\]{}]/g,
+      "\\$&",
+    )}`,
+    "m",
+  );
+  return re;
+}
+
+function getHTMLZoneRE(token: string) {
+  const startToken = `<!--${token}-->`;
+  const endToken = `<!--/${token}-->`;
 
   const re = new RegExp(
     `${startToken.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&")}(.|[\\r\\n])*${endToken.replace(
@@ -35,7 +49,7 @@ export function copyZonedTemplate(srcFile: string, dstFile, tokens: string[]) {
 
 export function setZonedTemplate(srcFile: string, token: string, text: string) {
   const template = fs.readFileSync(srcFile).toString();
-  const re = getTokenRE(token);
+  const re = getTypeScriptZoneRE(token);
   const m = template.match(re);
 
   if (m !== null) {
@@ -58,7 +72,17 @@ export function writeZonedTemplate(filename: string, tpl: ModificableTemplate) {
 
   if (contents) {
     tpl.tokens.forEach((token) => {
-      const re = getTokenRE(token);
+      let re;
+      switch(path.extname(filename)) {
+        case ".ts":
+          re = getTypeScriptZoneRE(token);
+        break;
+        case ".html":
+          re = getHTMLZoneRE(token);
+        break;
+        default:
+        throw new Error(`unhandled zone file: ${filename}`)
+      }
 
       const m = contents.match(re);
 

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+exports.controls = ["hidden", "customZone", "checkboxList"];
 var Kind;
 (function (Kind) {
     Kind["STRING"] = "string";
@@ -34,6 +35,7 @@ class Type {
         this.referenceModel = undefined;
         this.required = false;
         this.readOnly = false;
+        this.control = null;
     }
     /**
      * Parse type from swagger
@@ -115,9 +117,25 @@ class Type {
         if (obj.$ref) {
             t.referenceModel = obj.$ref;
             t.type = Kind.REFERENCE;
-            t.foreignKey = obj["x-nema-fk"] || null;
         }
+        t.foreignKey = obj["x-nema-fk"] || null;
         t.readOnly = obj["x-nema-readonly"] || false;
+        if (obj["x-nema-control"]) {
+            if ("string" === typeof obj["x-nema-control"]) {
+                t.control = [obj["x-nema-control"]];
+            }
+            else if (Array.isArray(obj["x-nema-control"])) {
+                t.control = obj["x-nema-control"];
+            }
+            else {
+                console.error(obj);
+                throw new Error("invalid x-nema-control type, only string or array");
+            }
+            if (exports.controls.indexOf(t.control[0]) === -1) {
+                console.error(obj);
+                throw new Error(`invalid value x-nema-control. Valid: ${exports.controls.join(", ")}`);
+            }
+        }
         return t;
     }
     /**

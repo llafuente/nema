@@ -217,6 +217,12 @@ definitions:
         x-nema-unique: true
 ```
 
+#### type: x-nema-control
+
+Force a custom control when generating form templates.
+
+for example: `type: string` will be an input text, if you want a textare use: `x-nema-control: textarea`
+
 #### type: x-nema-readonly
 
 Mark type as "cannot-be-created/updated".
@@ -247,7 +253,7 @@ definitions:
         description: Usuarios inscritos
         items:
           type: string
-          x-nema-fk: User
+          x-nema-fk: "#/definitions/User"
 ```
 
 ### Angular 5 Api client

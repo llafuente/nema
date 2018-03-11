@@ -3,6 +3,8 @@ import { TypescriptFile } from "./TypescriptFile";
 import { Api } from "./Api";
 import { Model } from "./Model";
 
+export const controls = ["hidden", "customZone", "checkboxList"];
+
 export enum Kind {
   STRING = "string",
   NUMBER = "number",
@@ -38,6 +40,7 @@ export class Type {
 
   required: boolean = false;
   readOnly: boolean = false;
+  control: string[] = null;
 
   /**
    * Parse type from swagger
@@ -127,9 +130,25 @@ export class Type {
     if (obj.$ref) {
       t.referenceModel = obj.$ref;
       t.type = Kind.REFERENCE;
-      t.foreignKey = obj["x-nema-fk"] || null;
     }
+    t.foreignKey = obj["x-nema-fk"] || null;
     t.readOnly = obj["x-nema-readonly"] || false;
+
+    if (obj["x-nema-control"]) {
+      if ("string" === typeof obj["x-nema-control"]) {
+        t.control = [obj["x-nema-control"]];
+      } else if (Array.isArray(obj["x-nema-control"])) {
+        t.control = obj["x-nema-control"];
+      } else {
+        console.error(obj);
+        throw new Error("invalid x-nema-control type, only string or array")
+      }
+
+      if (controls.indexOf(t.control[0]) === -1) {
+        console.error(obj);
+        throw new Error(`invalid value x-nema-control. Valid: ${controls.join(", ")}`)
+      }
+    }
 
     return t;
   }

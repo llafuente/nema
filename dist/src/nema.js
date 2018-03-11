@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("./Api");
 const Angular5Client_1 = require("./generators/Angular5Client");
+const Angular5FormTemplate_1 = require("./generators/Angular5FormTemplate");
 const Mongoose_1 = require("./generators/Mongoose");
 const Express_1 = require("./generators/Express");
 const Common_1 = require("./generators/Common");
@@ -33,9 +34,10 @@ exports.yellow = yellow;
 program
     .version(packageJSON.version)
     .description("Code generation from swagger")
-    .option("--angular5-api", "TARGET: Generate an Angular 5 Module Api client")
-    .option("--mongoose", "TARGET: Generate Mongoose Schema, Models & Repositories")
-    .option("--express", "TARGET: Generate Express app/routes")
+    .option("--angular5-api", "TARGET(project): Generate an Angular 5 Module Api client")
+    .option("--mongoose", "TARGET(project): Generate Mongoose Schema, Models & Repositories")
+    .option("--express", "TARGET(project): Generate Express app/routes")
+    .option("--angular5-form-template <path>", "TARGET(file): Generate an Angular 5 Template from given model")
     .option("--override-models", "Override all models while agreggating")
     .option("--override-methods", "Override all methods while agreggating")
     .option("--lint", "Lint output (tslint), this may take a while")
@@ -43,7 +45,8 @@ program
     memo.push(val);
     return memo;
 }, [])
-    .option("--dst <path>", "Destination path, default: same as the first swagger")
+    .option("--file <path>", "Output for file projectGenerators path")
+    .option("--dst <path>", "Output path for project projectGenerators, default: same as the first swagger")
     .parse(process.argv);
 program.on("--help", function () {
     console.log("");
@@ -61,7 +64,7 @@ if (!program.swagger) {
     program.help();
     process.exit(1);
 }
-if (!program.angular5Api && !program.mongoose && !program.express) {
+if (!program.angular5Api && !program.mongoose && !program.express && !program.angular5FormTemplate) {
     red("At least one TARGET is required");
     program.help();
     process.exit(1);
@@ -80,26 +83,34 @@ program.swagger.forEach((swagger) => {
         }
     }
 });
-const generators = [];
-// create all generators
+const projectGenerators = [];
+// create all projectGenerators
 // some generator may modify api metadata
-generators.push(new Common_1.Common(dstPath, api));
+projectGenerators.push(new Common_1.Common(dstPath, api));
 if (program.angular5Api) {
     green("Instancing generator: angular5-api");
-    generators.push(new Angular5Client_1.Angular5Client(dstPath, api));
+    projectGenerators.push(new Angular5Client_1.Angular5Client(dstPath, api));
 }
 if (program.express) {
     green("Instancing generator: express");
-    generators.push(new Express_1.Express(dstPath, api));
+    projectGenerators.push(new Express_1.Express(dstPath, api));
 }
 // NOTE express need to be before mongoose
 if (program.mongoose) {
     green("Instancing generator: mongoose");
-    generators.push(new Mongoose_1.Mongoose(dstPath, api));
+    projectGenerators.push(new Mongoose_1.Mongoose(dstPath, api));
 }
-green("Start generation");
 // then generate all with a common api source
-generators.forEach((g) => {
-    g.generate(true, !!program.lint);
-});
+if (projectGenerators.length > 1) {
+    green("Start generation");
+    projectGenerators.forEach((g) => {
+        g.generate(true, !!program.lint);
+    });
+    // file generators
+}
+else if (program.angular5FormTemplate) {
+    const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);
+    green("Generate Angular 5 template");
+    t.generate(program.angular5FormTemplate, program.file);
+}
 //# sourceMappingURL=nema.js.map

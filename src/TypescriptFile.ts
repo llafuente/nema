@@ -1,4 +1,5 @@
 import * as path from "path";
+import * as _ from "lodash";
 
 export interface TypescriptImport {
   list: string[];
@@ -11,6 +12,14 @@ export class TypescriptFile {
   imports: TypescriptImport[] = [];
 
   body: string[] = [];
+
+  klass: {
+    name: string,
+    extends: string,
+    implements: string[],
+    declarations: string[],
+    methods: string[]
+  } = null;
 
   push(s: string) {
     this.body.push(s);
@@ -60,6 +69,15 @@ export class TypescriptFile {
       this.body.forEach((body) => {
         s.push(body);
       });
+    }
+
+    if (this.klass) {
+      s.push(`
+export class ${this.klass.name}${this.klass.extends ? ` extends ${this.klass.extends}` : ""}${this.klass.implements ? ` implements ${this.klass.implements.join(", ")}` : ""} {
+  ${this.klass.declarations.length ? this.klass.declarations.join(";\n  ") + ";" : ""}
+  ${this.klass.methods.join("\n  ")}
+}
+`);
     }
 
     return s.join("\n");

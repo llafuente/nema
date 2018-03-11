@@ -7,6 +7,7 @@ class TypescriptFile {
         this.rawImports = "";
         this.imports = [];
         this.body = [];
+        this.klass = null;
     }
     push(s) {
         this.body.push(s);
@@ -51,6 +52,14 @@ class TypescriptFile {
             this.body.forEach((body) => {
                 s.push(body);
             });
+        }
+        if (this.klass) {
+            s.push(`
+export class ${this.klass.name}${this.klass.extends ? ` extends ${this.klass.extends}` : ""}${this.klass.implements ? ` implements ${this.klass.implements.join(", ")}` : ""} {
+  ${this.klass.declarations.length ? this.klass.declarations.join(";\n  ") + ";" : ""}
+  ${this.klass.methods.join("\n  ")}
+}
+`);
         }
         return s.join("\n");
     }

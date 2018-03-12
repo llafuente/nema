@@ -24,9 +24,16 @@ definitions:
         type: string
       description:
         type: string
-      photo:
-        $ref: "#/definitions/PetPhotoDto"
-        description: Information about the photo (size, file name, etc.)
+
+  PetPhotosFullDto:
+    allOf:
+      - $ref: '#/definitions/PetPhotosDto'
+      - type: object
+        properties:
+          photo:
+            $ref: "#/definitions/PetPhotoDto"
+            description: Information about the photo (size, file name, etc.)
+
   PetPhotoDto:
     type: object
     properties:
@@ -274,22 +281,28 @@ paths:
       consumes:
         - multipart/form-data
       parameters:
-        - name: id
+        - name: pet
           in: formData
-          description: The photo ID (generated automatically)
-          type: integer
-          format: int32
-          minimum: 1
-        - name: label
-          in: formData
-          description: A label for the photo
-          required: true
-          type: string
-          minLength: 1
-        - name: description
-          in: formData
-          description: An optional description of the photo
-          type: string
+          description: Pet information
+          schema:
+            $ref: "#/definitions/PetPhotosDto"
+# nema require this change
+#        - name: id
+#          in: formData
+#          description: The photo ID (generated automatically)
+#          type: integer
+#          format: int32
+#          minimum: 1
+#        - name: label
+#          in: formData
+#          description: A label for the photo
+#          required: true
+#          type: string
+#          minLength: 1
+#        - name: description
+#          in: formData
+#          description: An optional description of the photo
+#          type: string
         - name: photo
           in: formData
           description: The pet photo
@@ -316,7 +329,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: "#/definitions/PetPhotosDto"
+              $ref: "#/definitions/PetPhotosFullDto"
 
   /pets/{petName}/photos/{id}:
     parameters:

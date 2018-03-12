@@ -32,6 +32,7 @@ test.cb.serial("parse swagger file", (t) => {
   t.deepEqual(Object.keys(api.models), [
     "PetPhotoDto",
     "PetPhotosDto",
+    "PetPhotosFullDto",
     "addressDto",
     "petDto",
     "veterinarianDto",

@@ -6,6 +6,12 @@ const _ = require("lodash");
 const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
 const mkdirp = require("mkdirp").sync;
+// TODO
+function id(path) {
+}
+// TODO
+function name(path) {
+}
 function camelcase(str) {
     return str
         .replace(/\[.*\]/g, "")
@@ -290,6 +296,27 @@ ${this.wrapIn}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
     #${camelcase(path.join("-"))}="ngModel" />
+</bb-input-container>
+
+<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+${this.wrapOut}
+`;
+    }
+    textarea(t, path) {
+        // TODO: <% if (field.controlHelp) { %> help="<%= field.controlHelp %>" <% } %>
+        // class="bordered top-label"
+        return `
+${this.wrapIn}
+<bb-input-container
+  label="${t.description}">
+  <textarea
+    bb-child
+    id="${path.join("-")}"
+    name="${path.join("_")}"
+    ${t.required ? 'required="required"' : ''}
+    ${t.readOnly ? 'disabled="disabled"' : ''}
+    [(ngModel)]="${path.join(".")}"
+    #${camelcase(path.join("-"))}="ngModel"></textarea>
 </bb-input-container>
 
 <bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>

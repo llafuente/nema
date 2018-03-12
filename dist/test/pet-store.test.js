@@ -26,13 +26,7 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
         "getPetPhotos",
         "updatePetByName",
     ], "all methods added");
-    t.deepEqual(Object.keys(api.models), [
-        "PetPhotoDto",
-        "PetPhotosDto",
-        "addressDto",
-        "petDto",
-        "veterinarianDto",
-    ], "all methods added");
+    t.deepEqual(Object.keys(api.models), [], "all methods added");
     t.deepEqual(Object.keys(api.enums), [
         "petType",
     ], "all methods added");

@@ -52,8 +52,8 @@ program
     },
     [],
   )
-  .option("--file <path>", "Output for file projectGenerators path")
-  .option("--dst <path>", "Output path for project projectGenerators, default: same as the first swagger")
+  .option("--file <path>", "Output path for TARGET(file) path")
+  .option("--dst <path>", "Output path for TARGET(project), default: same as the first swagger")
   .parse(process.argv);
 
 program.on("--help", function() {

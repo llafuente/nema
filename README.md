@@ -406,6 +406,14 @@ class TestComponent implements OnDestroy {
 
 Notes to develop. Not meant to anybody of you :)
 
+While developing rebuild is necessary evrytime, edit `bin/nema.js` and
+uncomment the compilation step,
+then remove from working copy so it won't be committed
+
+```
+git update-index --assume-unchanged bin/nema.js
+```
+
 
 ```
 # Install mongodb

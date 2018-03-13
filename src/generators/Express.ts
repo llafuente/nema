@@ -39,6 +39,10 @@ export class Express {
       path.join(process.cwd(), "templates", "node-express", "tsconfig.json"),
       path.join(this.dstPath, "tsconfig.json"),
     );
+    fs.copyFileSync(
+      path.join(process.cwd(), "templates", "HttpErrors.ts"),
+      path.join(this.dstPath, "./src/HttpErrors.ts"),
+    );
     fs.writeFileSync(
       path.join(this.dstPath, "./src/swagger.json.ts"),
       "export default " + JSON.stringify(this.api.originalSource, null, 2),
@@ -250,7 +254,11 @@ function (req: Request, res: Response, next: express.NextFunction) {
 
     ts.push(`
 export const ${method.operationId}Route = [
+  //<pre-middleware>
+  //</pre-middleware>
   ${middleware.join(",\n")}
+  //<post-middleware>
+  //</post-middleware>
 ];
 export function ${method.operationId}(req: Request, res: Response, next: express.NextFunction, ${params.join(", ")}) {
 //<method-body>
@@ -263,7 +271,7 @@ ${responses.join("\n\n")}
 `);
 
     return {
-      tokens: ["custom-imports", "method-body", "extras"],
+      tokens: ["custom-imports", "method-body", "extras", "pre-middleware", "post-middleware"],
       template: ts.toString(filename),
     };
   }
@@ -327,7 +335,7 @@ test.cb.serial("${method.operationId}", (t) => {
 import * as path from "path";
 import * as bodyParser from "body-parser";
 import { CommonException } from "./CommonException";
-import { NotFound } from "./Errors";
+import { NotFound, Unauthorized } from "./HttpErrors";
 
 //<custom-imports>
 //</custom-imports>
@@ -401,7 +409,7 @@ app.use(
 routes(app);
 
 app.use((req: Request, res: express.Response, next: express.NextFunction) => {
-  res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
+  res.status(404).json(new CommonException(404, "not-found", "Route not found", null, null, Date.now()));
 });
 
 app.use((err: Error, req: Request, res: express.Response, next: express.NextFunction) => {
@@ -412,8 +420,13 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
   }
 
   if (err instanceof NotFound) {
-    return res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
+    return res.status(404).json(new CommonException(404, "not-found", err.message || "Not found", null, null, Date.now()));
   }
+
+  if (err instanceof Unauthorized) {
+    return res.status(401).json(new CommonException(401, "unauthorized", err.message || "Unauthorized", null, null, Date.now()));
+  }
+
 
   if (!(err instanceof CommonException)) {
     console.warn("Unhandled error thrown", err);

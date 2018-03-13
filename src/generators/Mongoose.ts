@@ -60,8 +60,8 @@ initMongoose(app);
     // copy raw files (those that don't need to be generated)
     CommonGenerator.copyCommonTemplates(this.dstPath);
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "mongoose", "Errors.ts"),
-      path.join(this.dstPath, "src", "Errors.ts"),
+      path.join(process.cwd(), "templates", "HttpErrors.ts"),
+      path.join(this.dstPath, "src", "HttpErrors.ts"),
     );
     fs.copyFileSync(
       path.join(process.cwd(), "templates", "mongoose", "Query.ts"),
@@ -142,7 +142,7 @@ export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>
 import { ${model.mongooseModel}, ${model.mongooseSchema}, ${model.mongooseInterface} } from "../mongoose/${model.name}";
 import * as mongoose from "mongoose";
 import * as _ from "lodash";
-import { NotFound } from "../Errors";
+import { NotFound } from "../HttpErrors";
 import { Query, Operators, Order, Page, Where } from "../Query";
 import { Promise } from "bluebird";
 

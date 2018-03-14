@@ -3,5 +3,5 @@
   "ext": "ts",
   "ignore": ["src/**/*.spec.ts"],
   "delay": "5",
-  "exec": "npm start"
+  "exec": "npm run nodemon"
 }

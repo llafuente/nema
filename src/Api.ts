@@ -210,6 +210,10 @@ export class Api {
         this.addModel(mdl, false);
       }
     });
+
+    _.each(swagger.parameters, (param, paramName) => {
+      this.parameters[paramName] = Parameter.parseSwagger(this, param);
+    });
   }
 
   static parseSwaggerFile(filename: string): Api {

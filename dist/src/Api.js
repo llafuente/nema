@@ -146,6 +146,9 @@ class Api {
                 this.addModel(mdl, false);
             }
         });
+        _.each(swagger.parameters, (param, paramName) => {
+            this.parameters[paramName] = Parameter_1.Parameter.parseSwagger(this, param);
+        });
     }
     static parseSwaggerFile(filename) {
         let swaggerJSON;

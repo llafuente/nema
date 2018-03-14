@@ -198,6 +198,58 @@ Subject.prototype.error = function (err) {
     this.observers.length = 0;
 };
 
+// Angular 5 doesn't support object via get
+// but we must do
+function qsStringify(a) {
+  var s = [];
+  var rbracket = /\[\]$/;
+  var add = function (k, v) {
+    // ignore functions, because are part of TypeScript classes :S
+    if (typeof v !== 'function') {
+      v = typeof v === 'function' ? v() : v;
+      v = v === null ? '' : v === undefined ? '' : v;
+      s[s.length] = encodeURIComponent(k) + '=' + encodeURIComponent(v);
+    }
+  }
+
+  var buildParams = function (prefix, obj) {
+      var i, len, key;
+
+      if (prefix) {
+          if (Array.isArray(obj)) {
+              for (i = 0, len = obj.length; i < len; i++) {
+                  if (rbracket.test(prefix)) {
+                      add(prefix, obj[i]);
+                  } else {
+                      buildParams(
+                          prefix + '[' + (typeof obj[i] === 'object' && obj[i] ? i : '') + ']',
+                          obj[i]
+                      );
+                  }
+              }
+          } else if (String(obj) === '[object Object]') {
+              for (key in obj) {
+                  buildParams(prefix + '[' + key + ']', obj[key]);
+              }
+          } else {
+              add(prefix, obj);
+          }
+      } else if (Array.isArray(obj)) {
+          for (i = 0, len = obj.length; i < len; i++) {
+              add(obj[i].name, obj[i].value);
+          }
+      } else {
+          for (key in obj) {
+              buildParams(key, obj[key]);
+          }
+      }
+      return s;
+  };
+
+  return buildParams('', a).join('&');
+};
+
+
 
 @Injectable()
 export class ${this.api.apiName} {
@@ -254,11 +306,7 @@ export class ${this.api.apiName} {
             method.eachQueryParam((p) => {
                 queryParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
                 queryParamsNames.push(`${p.name}`);
-                queryParamsCheck.push(`
-        if (${p.name} != null) {
-            $params = $params.set(${JSON.stringify(p.name)}, ${p.name}.toString())
-        }
-        `);
+                queryParamsCheck.push(`${JSON.stringify(p.name)}: ${p.name}`);
             });
             method.eachHeaderParam((p) => {
                 headerParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
@@ -277,8 +325,12 @@ export class ${this.api.apiName} {
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
       ): string {
-        let $params = new HttpParams();
-        ${queryParamsCheck.join("\n")}
+        let $params = new HttpParams({
+          fromString: qsStringify({
+            ${queryParamsCheck.join(",\n")}
+          })
+        });
+
 
         const $url = this.getFullURL(this.${method.operationId}URI)
         ${pathParamsReplace.join("\n")};

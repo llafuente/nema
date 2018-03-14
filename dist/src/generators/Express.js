@@ -338,7 +338,7 @@ app.use(
 routes(app);
 
 app.use((req: Request, res: express.Response, next: express.NextFunction) => {
-  res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
+  res.status(404).json(new CommonException(404, "not-found", "Route not found", null, null, Date.now()));
 });
 
 app.use((err: Error, req: Request, res: express.Response, next: express.NextFunction) => {
@@ -349,11 +349,11 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
   }
 
   if (err instanceof NotFound) {
-    return res.status(404).json(new CommonException(404, "not-found", "Not found", null, null, Date.now()));
+    return res.status(404).json(new CommonException(404, "not-found", err.message || "Not found", null, null, Date.now()));
   }
 
   if (err instanceof Unauthorized) {
-    return res.status(401).json(new CommonException(401, "unauthorized", "Unauthorized", null, null, Date.now()));
+    return res.status(401).json(new CommonException(401, "unauthorized", err.message || "Unauthorized", null, null, Date.now()));
   }
 
 

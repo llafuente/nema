@@ -102,7 +102,7 @@ import { ${model.mongooseModel}, ${model.mongooseSchema}, ${model.mongooseInterf
 import * as mongoose from "mongoose";
 import * as _ from "lodash";
 import { NotFound } from "../HttpErrors";
-import { Query, Operators, Order, Page, Where } from "../Query";
+import { Operators, Order, Where } from "../Query";
 import { Promise } from "bluebird";
 
 export function insert(
@@ -154,13 +154,18 @@ export function updateById(entity: ${model.name}): Promise<${model.mongooseInter
 }
 
 export function query(
-  q: Query
+  limit: number,
+  offset: number,
+  populate: string[],
+  fields: string[],
+  where: {[name: string]: Where},
+  sort: {[name: string]: Order},
 ): Promise<{result: ${model.mongooseInterface}[], total: number}> {
   let query = ${model.mongooseModel}.find({});
   let qCount = ${model.mongooseModel}.find({}).count();
 
-  if (q && q.where) {
-    _.each(q.where, (w: Where, path: string) => {
+  if (where) {
+    _.each(where, (w: Where, path: string) => {
       // console.log("-- where", path, w);
 
       switch (w.operator) {
@@ -190,8 +195,8 @@ export function query(
     });
   }
 
-  if (q && q.populate) {
-    _.each(q.populate, (path: string) => {
+  if (populate) {
+    _.each(populate, (path: string) => {
       const options = ${model.mongooseSchema}.path(path);
       if (!options) {
         throw new Error("populate[" + path + "] not found");
@@ -206,21 +211,21 @@ export function query(
     });
   }
 
-  if (q && q.offset) {
-    query.skip(q.offset);
+  if (offset) {
+    query.skip(offset);
   }
 
-  if (q && q.limit) {
-    query.limit(q.limit);
+  if (limit) {
+    query.limit(limit);
   }
 
-  if (q && q.fields.length) {
-    query.select(q.fields.join(" "));
+  if (fields && fields.length) {
+    query.select(fields.join(" "));
   }
 
-  if (q && q.sort) {
+  if (sort) {
     // http://mongoosejs.com/docs/api.html#query_Query-sort
-    query.sort(_.map((q.sort || []), (s: Order, key: string) => {
+    query.sort(_.map((sort || []), (s: Order, key: string) => {
       const options = ${model.mongooseSchema}.path(key);
       if (!options) {
         throw new Error("sort[" + key + "] not found");

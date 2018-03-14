@@ -1,3 +1,29 @@
+parameters:
+  QueryLimit:
+    name: limit
+    in: query
+    description: Query limit
+    type: number
+  QueryOffset:
+    name: offset
+    in: query
+    description: Query offset
+    type: number
+  QueryPopulate:
+    name: populate
+    in: query
+    description: List of fields to be populated
+    type: array
+    items:
+      type: string
+  QueryFields:
+    name: fields
+    in: query
+    description: List of fields to be fetch
+    type: array
+    items:
+      type: string
+
 definitions:
   Operators:
     type: string

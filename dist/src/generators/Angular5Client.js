@@ -67,6 +67,9 @@ export { ${this.api.apiName} } from "./src/${this.api.apiName}";
         this.api.eachModel((model, modelName) => {
             s.push(`export { ${modelName} } from "./src/models/${modelName}";`);
         });
+        this.api.eachEnum((model, modelName) => {
+            s.push(`export { ${modelName} } from "./src/models/${modelName}";`);
+        });
         const resolves = [];
         this.api.eachResolve((method, operationId) => {
             s.push(`import { ${method.resolve.name} } from "./src/resolve/${method.resolve.name}";`);

@@ -20,9 +20,6 @@ class Angular5Client {
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.dstPath);
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
-        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsError.pipe.ts"), path.join(this.dstPath, "src", "IsError.pipe.ts"));
-        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsSuccess.pipe.ts"), path.join(this.dstPath, "src", "IsSuccess.pipe.ts"));
-        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "IsLoading.pipe.ts"), path.join(this.dstPath, "src", "IsLoading.pipe.ts"));
         fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "RequestOptions.ts"), path.join(this.dstPath, "src", "RequestOptions.ts"));
         // generate all resolves
         this.api.eachResolve((method, modelName) => {
@@ -57,9 +54,6 @@ class Angular5Client {
             `import { NgModule, InjectionToken } from "@angular/core";
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";
 export { CommonException } from "./src/CommonException";
-import { IsErrorPipe } from "./src/IsError.pipe";
-import { IsSuccessPipe } from "./src/IsSuccess.pipe";
-import { IsLoadingPipe } from "./src/IsLoading.pipe";
 import { ${this.api.apiName} } from "./src/${this.api.apiName}";
 export { ${this.api.apiName} } from "./src/${this.api.apiName}";
 `,
@@ -82,17 +76,11 @@ export { ${this.api.apiName} } from "./src/${this.api.apiName}";
     HttpClientModule
   ],
   declarations: [
-    IsErrorPipe,
-    IsSuccessPipe,
-    IsLoadingPipe,
   ],
   providers: [
     ${this.api.apiName}, ${resolves.join(",")}
   ],
   exports: [
-    IsErrorPipe,
-    IsSuccessPipe,
-    IsLoadingPipe,
   ]
 })
 export class ${this.api.angularClientModuleName} {}
@@ -200,6 +188,7 @@ Subject.prototype.error = function (err) {
 
 // Angular 5 doesn't support object via get
 // but we must do
+// credits/license: https://github.com/knowledgecode/jquery-param
 function qsStringify(a) {
   var s = [];
   var rbracket = /\[\]$/;

@@ -27,9 +27,17 @@ class TypescriptFile {
             s.push(this.rawImports);
         }
         if (this.imports.length) {
+            console.log(this.imports);
             this.imports
                 .map((imp) => {
-                let filepath = path.posix.relative(path.dirname(filename), imp.file);
+                console.log(imp);
+                let filepath;
+                if (imp.file.indexOf(".") !== -1 /* || imp.file.indexOf("/") !== -1*/) {
+                    filepath = path.posix.relative(path.dirname(filename), imp.file);
+                }
+                else {
+                    filepath = imp.file;
+                }
                 // it's a TS file?, remove extension and add ./
                 if (path.extname(filepath) == ".ts") {
                     if (filepath[0] == ".") {
@@ -38,6 +46,10 @@ class TypescriptFile {
                     else {
                         filepath = `./${filepath.substr(0, filepath.length - 3)}`;
                     }
+                }
+                // case: * as xxx
+                if (imp.list[0][0] == "*") {
+                    return `import ${imp.list[0]} from ${JSON.stringify(filepath)}`;
                 }
                 return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
             })

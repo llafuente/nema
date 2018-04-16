@@ -185,7 +185,9 @@ import { Request, Response, Upload } from "../";
           src = `req.query.${p.name}`;
           break;
         case ParameterType.FORM_DATA_FILE:
-          getParams.push(`req.files.${p.name} || null`);
+          //getParams.push(`req.files.${p.name} || null`);
+          getParams.push(`_.find(req.files, { fieldname: '${p.name}'}) || null`);
+          ts.addImport("* as _", "lodash");
 
           // if required
           //  if (!req.file) {

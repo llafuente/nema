@@ -363,17 +363,22 @@ export class ${this.api.apiName} {
         ${pathParams.join("\n")}
         ${queryParams.join("\n")}
       ): string {
+`);
+      if (queryParams.length > 0) {
+      ts.push(`
         let $params = new HttpParams({
           fromString: qsStringify({
             ${queryParamsCheck.join(",\n")}
           })
         });
+`);
+      }
 
-
+      ts.push(`
         const $url = this.getFullURL(this.${method.operationId}URI)
         ${pathParamsReplace.join("\n")};
 
-        return $url + "?" + $params.toString().replace(/\\+/g, '%2B');
+        return $url + "?" ${queryParams.length > 0 ? `+ $params.toString().replace(/\\+/g, '%2B')`: ``};
       }
 
       ${method.operationId}(

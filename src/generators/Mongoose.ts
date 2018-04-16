@@ -143,7 +143,9 @@ import { ${model.mongooseModel}, ${model.mongooseSchema}, ${model.mongooseInterf
 import * as mongoose from "mongoose";
 import * as _ from "lodash";
 import { NotFound } from "../HttpErrors";
-import { Operators, Order, Where } from "../Query";
+import { Operators } from "../models/Operators";
+import { Where } from "../models/Where";
+import { Order } from "../Query";
 import { Promise } from "bluebird";
 
 export function insert(
@@ -210,6 +212,10 @@ export function query(
       // console.log("-- where", path, w);
 
       switch (w.operator) {
+        // guard: avoid emptyInstance() to enter here
+        case null:
+          return;
+
         case Operators.IN:
           const options = ${model.mongooseSchema}.path(path);
           const items = (options as any).options.items;
@@ -227,6 +233,10 @@ export function query(
         case Operators.LIKE:
           query = query.where(path).regex(w.value);
           qCount = qCount.where(path).regex(w.value);
+          break;
+        case Operators.RAW:
+          query = query.and(w.value);
+          qCount = qCount.and(w.value);
           break;
         default:
           query = query.where(path).equals(w.value);

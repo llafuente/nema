@@ -332,7 +332,7 @@ test.cb.serial("${method.operationId}", (t) => {
     return {
       // internal-mongoose-initialization is not exported
       // will be empty or override by mongoose generator
-      tokens: ["custom-imports", "express-configuration", "request", "response"],
+      tokens: ["custom-imports", "express-configuration", "request", "response", "pre-routes", "post-routes"],
       template: `import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
@@ -408,7 +408,13 @@ app.use(
   }),
 );
 
+//<pre-routes>
+//</pre-routes>
+
 routes(app);
+
+//<post-routes>
+//</post-routes>
 
 app.use((req: Request, res: express.Response, next: express.NextFunction) => {
   res.status(404).json(new CommonException(404, "not-found", "Route not found", null, null, Date.now()));

@@ -2,6 +2,6 @@
   "watch": ["src"],
   "ext": "ts",
   "ignore": ["src/**/*.spec.ts"],
-  "delay": "5",
+  "delay": "5000",
   "exec": "npm run nodemon"
 }

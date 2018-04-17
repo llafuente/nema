@@ -55,14 +55,6 @@ export class Model {
     // }
 
     m.type = Type.parseSwagger(api, obj, name, true);
-    (obj.required || []).forEach((r) => {
-      if (!m.type.properties[r]) {
-        console.error(obj)
-        throw new Error(`cannot found required property name: ${r}`);
-      }
-
-      m.type.properties[r].required = true;
-    });
 
     if (m.isDb) {
       if (m.type.type != "object") {

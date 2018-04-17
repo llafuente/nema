@@ -44,6 +44,7 @@ export class Type {
 
   /**
    * Parse type from swagger
+   * https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
    */
   static parseSwagger(api: Api, obj, modelName: string, isDefinition: boolean): Type {
     const t = new Type();
@@ -90,9 +91,21 @@ export class Type {
         break;
       case "object":
         t.type = Kind.OBJECT;
+
         t.properties = _.mapValues(obj.properties, (x) => {
           return Type.parseSwagger(api, x, null, false);
         });
+
+        console.log(obj.required);
+        (obj.required || []).forEach((r) => {
+          if (!t.properties[r]) {
+            console.error(obj)
+            throw new Error(`cannot found required property name: ${r}`);
+          }
+
+          t.properties[r].required = true;
+        });
+
         break;
       case "array":
         t.type = Kind.ARRAY;

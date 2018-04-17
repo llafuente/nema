@@ -8,6 +8,7 @@ import * as path from "path";
 import * as _ from "lodash";
 import * as CommonGenerator from "./CommonGenerator";
 import { TypescriptFile } from "../TypescriptFile";
+import { camelcase } from "../utils";
 
 const mkdirp = require("mkdirp").sync;
 
@@ -19,12 +20,7 @@ function id(path: string[]) {
 function name(path: string[]) {
 }
 
-function camelcase(str) {
-  return str
-    .replace(/\[.*\]/g, "")
-    .toLowerCase()
-    .replace(/[_.\- ]+(\w|$)/g, (m, p1) => p1.toUpperCase());
-}
+
 
 export class Angular5FormTemplate {
   indexes: string[] = [];

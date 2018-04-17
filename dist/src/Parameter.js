@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Type_1 = require("./Type");
+const utils_1 = require("./utils");
 var ParameterType;
 (function (ParameterType) {
     ParameterType["PATH"] = "path";
@@ -19,31 +20,64 @@ const swaggerToParameterType = {
     body: ParameterType.BODY,
     formData: ParameterType.BODY,
 };
+const varNameRE = new RegExp("^[^a-zA-Z_]+|[^a-zA-Z_0-9]+", "g");
 class Parameter {
     constructor() {
         this.api = null;
+        /** variable/real name (no dashes) */
+        this.name = null;
+        /** real header name (may contain dashes) */
+        this.headerName = null;
+        this.description = null;
+        /** parameter location */
+        this.in = null;
+        this.required = false;
+        this.reference = null;
+        this.type = null;
     }
+    /**
+     * documentation: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+     */
     static parseSwagger(api, obj) {
         const p = new Parameter();
         Object.defineProperty(p, "api", { value: api, writable: true, enumerable: false });
-        p.name = obj.name;
-        p.headerName = obj["x-alias"] || obj["x-nema-header"];
-        p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
-        p.description = obj.description;
-        if (obj.in == "formData" && obj.type == "file") {
-            p.in = ParameterType.FORM_DATA_FILE;
-        }
-        else {
-            p.in = swaggerToParameterType[obj.in];
-        }
         p.required = !!obj.required;
         p.reference = obj.$ref || null;
-        // do not parse $ref as type...
-        if (p.reference) {
-            p.type = null;
-        }
-        else {
-            p.type = Type_1.Type.parseSwagger(api, obj.schema || obj, null, false);
+        // $ref do not need anything more to parse
+        if (!p.reference) {
+            if (!obj.name) {
+                console.error(obj);
+                throw new Error("ParameterObject.name is required");
+            }
+            if (!obj.in) {
+                console.error(obj);
+                throw new Error("ParameterObject.in is required");
+            }
+            p.name = obj.name.replace(varNameRE, "_");
+            p.headerName = obj.name;
+            if (p.name != p.headerName) {
+                p.name = utils_1.camelcase(p.name);
+            }
+            // NOTE: x-nema-header was removed only legacy behaviour
+            if (obj["x-alias"]) {
+                p.name = obj.name; // name must be valid in this case!
+                p.headerName = obj["x-alias"];
+            }
+            if (obj.in == "formData" && obj.type == "file") {
+                p.in = ParameterType.FORM_DATA_FILE;
+            }
+            else {
+                p.in = swaggerToParameterType[obj.in];
+            }
+            if (obj.in == "body") {
+                // force schema to be used when body
+                p.type = Type_1.Type.parseSwagger(api, obj.schema, null, false);
+            }
+            else {
+                p.type = Type_1.Type.parseSwagger(api, obj.schema || obj, null, false);
+            }
+            p.description = obj.description;
+            p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
         }
         return p;
     }

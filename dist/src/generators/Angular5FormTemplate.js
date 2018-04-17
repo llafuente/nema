@@ -5,18 +5,13 @@ const path = require("path");
 const _ = require("lodash");
 const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
+const utils_1 = require("../utils");
 const mkdirp = require("mkdirp").sync;
 // TODO
 function id(path) {
 }
 // TODO
 function name(path) {
-}
-function camelcase(str) {
-    return str
-        .replace(/\[.*\]/g, "")
-        .toLowerCase()
-        .replace(/[_.\- ]+(\w|$)/g, (m, p1) => p1.toUpperCase());
 }
 class Angular5FormTemplate {
     constructor(api) {
@@ -169,24 +164,24 @@ ${this.wrapIn}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel">
+    #${utils_1.camelcase(path.join("-"))}="ngModel">
     ${t.choices.map((choice) => {
             return `<option value="${choice}">${choice}</option>`;
         })}
     </select>
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
     array(t, path, ts) {
         const lastPath = path[path.length - 1];
-        const indexName = camelcase(path[path.length - 1] + "-id");
+        const indexName = utils_1.camelcase(path[path.length - 1] + "-id");
         const ngModel = path.join(".");
-        const ccName = camelcase(path.join("-"));
-        const addFunction = camelcase("add-" + path.join("-"));
-        const removeFunction = camelcase("remove-" + path.join("-"));
+        const ccName = utils_1.camelcase(path.join("-"));
+        const addFunction = utils_1.camelcase("add-" + path.join("-"));
+        const removeFunction = utils_1.camelcase("remove-" + path.join("-"));
         path.pop();
         path.push(`${lastPath}[${indexName}]`);
         this.indexes.push(indexName);
@@ -272,12 +267,12 @@ ${this.wrapIn}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel">
+    #${utils_1.camelcase(path.join("-"))}="ngModel">
     <option [ngValue]="row._id" *ngFor="let row of ${model.namePlural}">{{row.label}}</option>
     </select>
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
@@ -295,10 +290,10 @@ ${this.wrapIn}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel" />
+    #${utils_1.camelcase(path.join("-"))}="ngModel" />
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
@@ -316,10 +311,10 @@ ${this.wrapIn}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel"></textarea>
+    #${utils_1.camelcase(path.join("-"))}="ngModel"></textarea>
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
@@ -338,10 +333,10 @@ ${this.wrapIn}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel" />
+    #${utils_1.camelcase(path.join("-"))}="ngModel" />
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }

@@ -105,8 +105,6 @@ Things that may change in the future:
 * Only one body parameter is allowed. This is by design to keep compatibility
 with an older generator.
 
-* `parameters.name` is a variable name, use `parameter.x-nema-header` for real
-header name
 
 ## Zoned templates
 
@@ -185,15 +183,12 @@ The final operation id will be: getBook
 
 ## [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject)
 
-### x-nema-auto-injected / x-nema-header
+### x-nema-auto-injected
 
-Some parameter could be injected by a reverse proxy, those are useful for
-backend, but you don't want it in your front application, you
-could don't know it
+Some parameter could be injected by a reverse proxy / microgateway,
+those are useful for backend,
+but you don't want those in your front application.
 
-Headers and variable names have different naming requirements:
-* `nema` will use name as variable name (so no dashes)
-* `nema` will use x-nema-header as the header final name (could have dashes)
 
 ```
 paths:
@@ -204,8 +199,7 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: reverseProxyIp
-          x-nema-header: reverse-proxy-ip
+        - name: reverse-proxy-ip
           x-nema-auto-injected: true
           in: header
           description: BBVA user code.

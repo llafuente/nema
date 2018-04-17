@@ -3,17 +3,17 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/llafuente/nema/master/LICENSE)
 
 `nema` is a command line generator that target full stack:
+It generates API/Templates from Swagger 2.0 YAMLS.
 
 Frontend
 * Angular 5 api-client using HttpClient
-* Angular 5 forms (temaplate and componet)
+* Angular 5 forms (template and componet)
 
 Backend
-* Node server using Express
-* Mongoose repositories
+* Node server using [express](https://github.com/expressjs/express)
+* [mongoose](http://mongoosejs.com/) repositories
 * node api-client using request [Planned]
 
-It generates from Swagger 2.0 YAMLS
 
 # nema Command line Help
 
@@ -21,7 +21,6 @@ It generates from Swagger 2.0 YAMLS
  _  _  _ _  _
 | |(/_| | |(_|1.0.0
 
-At least one TARGET is required
 
   Usage: nema [options]
 
@@ -31,10 +30,10 @@ At least one TARGET is required
   Options:
 
     -V, --version                    output the version number
-    --angular5-api                   TARGET(project): Generate an Angular 5 Module Api client
-    --mongoose                       TARGET(project): Generate Mongoose Schema, Models & Repositories
-    --express                        TARGET(project): Generate Express app/routes
-    --angular5-form-template <path>  TARGET(file): Generate an Angular 5 Template from given model
+    --angular5-api                   TARGET(full project): Generate an Angular 5 Module Api client
+    --mongoose                       TARGET(plugin@express): Generate Mongoose Schema, Models & Repositories
+    --express                        TARGET(full project): Generate Express app/routes
+    --angular5-form-template <path>  TARGET(plugin@angular5-api): Generate an Angular 5 Template from given model
     --override-models                Override all models while agreggating
     --override-methods               Override all methods while agreggating
     --lint                           Lint output (tslint), this may take a while

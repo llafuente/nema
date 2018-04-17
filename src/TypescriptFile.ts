@@ -43,12 +43,8 @@ export class TypescriptFile {
     }
 
     if (this.imports.length) {
-      console.log(this.imports);
-
       this.imports
         .map((imp) => {
-          console.log(imp);
-
           let filepath;
 
           if (imp.file.indexOf(".") !== -1/* || imp.file.indexOf("/") !== -1*/) {

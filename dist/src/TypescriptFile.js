@@ -27,10 +27,8 @@ class TypescriptFile {
             s.push(this.rawImports);
         }
         if (this.imports.length) {
-            console.log(this.imports);
             this.imports
                 .map((imp) => {
-                console.log(imp);
                 let filepath;
                 if (imp.file.indexOf(".") !== -1 /* || imp.file.indexOf("/") !== -1*/) {
                     filepath = path.posix.relative(path.dirname(filename), imp.file);

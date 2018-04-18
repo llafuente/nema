@@ -7,7 +7,7 @@ It generates API/Templates from Swagger 2.0 YAMLS.
 
 Frontend
 * Angular 5 api-client using HttpClient
-* Angular 5 forms (template and componet)
+* Angular 5 forms (template and componet) require: [angular-bootstrap-ui](https://github.com/llafuente/angular-bootstrap-ui)
 
 Backend
 * Node server using [express](https://github.com/expressjs/express)
@@ -15,7 +15,7 @@ Backend
 * node api-client using request [Planned]
 
 
-# nema Command line Help
+# `nema` Command line Help
 
 ```
  _  _  _ _  _
@@ -67,7 +67,7 @@ Be aware of collisions :)
 nema --swagger=./base-api.yml --swagger=./products-api.yml --angular5-api
 ```
 
-## Limitations / Changes
+## Limitations / Changes / Caveats
 
 `nema` has to do some triage, we cannot support all SWAGGER features and also
 can't do everything 100% `standard`.
@@ -77,7 +77,7 @@ can't do everything 100% `standard`.
 
 * Operation Object: `operationId` is required
 
-* Schema: `schemes` is required
+* `schemes` is required
 
 * Do not support `$ref` to external source files
 
@@ -112,7 +112,7 @@ with an older generator.
 can even work. Like express routes.
 
 Zoned templates are generated files that are safe to edit by you
-(our belobed end-user). Zones are delimited with a HTML like comment.
+(our beloved end-user). Zones are delimited with an HTML like comment.
 
 For example:
 
@@ -128,7 +128,8 @@ app.set("cors", false);
 ...
 ```
 
-Internal zones are marked as `<internal-*>`
+Internal zones are marked as `<internal-*>` and should not be edited. This is
+used to compose generated files.
 
 ## Type: any
 
@@ -164,7 +165,7 @@ Create an [angular 5 resolve see example below](#angular5-resolve)
 
 ### x-nema-override
 
-Override endpoint properties, this allow to use other generator without
+Override endpoint properties, this allow to use other generators without
 collisions or aggregate multiple files renaming operationIds...
 
 ```
@@ -211,7 +212,8 @@ paths:
 
 ### x-nema-plural
 
-Optional: Set plural used for generating, bu default will use [pluralize](https://www.npmjs.com/package/pluralize)
+Set plural used for generating, but default will use
+[pluralize](https://www.npmjs.com/package/pluralize)
 
 ### x-nema-db
 
@@ -246,7 +248,8 @@ definitions:
 
 Force a custom control when generating form templates.
 
-for example: `type: string` will be an input text, if you want a textare use: `x-nema-control: textarea`
+for example: `type: string` will be an input text, if you want a textare use:
+`x-nema-control: textarea`
 
 #### x-nema-readonly
 
@@ -325,9 +328,9 @@ paths:
 
 ```
 
-## Error handling
+## Error handling (Angular 5 Client)
 
-### global error handling (RestApi.onError)
+### Global error handling (RestApi.onError)
 
 It's recommended to use a global component, so you don't need to handle
 subscriptions.
@@ -363,7 +366,7 @@ class TestComponent implements OnDestroy {
 }
 ```
 
-### local error handling
+### Local error handling
 
 ```
 import { RestApi } from "./api";
@@ -399,7 +402,7 @@ class TestComponent implements OnDestroy {
 
 Notes to develop. Not meant to anybody of you :)
 
-While developing rebuild is necessary evrytime, edit `bin/nema.js` and
+While developing rebuild is necessary everytime, edit `bin/nema.js` and
 uncomment the compilation step,
 then remove from working copy so it won't be committed
 

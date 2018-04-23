@@ -217,18 +217,35 @@ export function query(
           return;
 
         case Operators.IN:
+          // leave some debug here, need to catch some edge cases that are still unhandled
           const options = ${model.mongooseSchema}.path(path);
-          const items = (options as any).options.items;
-          // console.log(items);
+          console.log("options", options);
 
-          // TODO REVIEW it's working for array of ObjectIds... and the rest ?
-          if (Array.isArray(w.value)) {
-            query = query.where(path).in(w.value);
-            qCount = qCount.where(path).in(w.value);
+          let caster = null;
+          if (options instanceof mongoose.SchemaTypes.Array) {
+            const items = (options as any).options.items;
+            caster = items.type ? items.type.prototype.cast : null;
+          } else if (options instanceof mongoose.SchemaTypes.ObjectId) {
+            caster = mongoose.Types.ObjectId;
           } else {
-            query = query.where(path).in([items.type.prototype.cast(w.value)]);
-            qCount = qCount.where(path).in([items.type.prototype.cast(w.value)]);
+            caster = (options as any).options.type;
           }
+          console.log("caster", caster);
+
+          if (Array.isArray(w.value)) {
+            w.value = w.value.map(
+              v => (caster ? new caster(v) : v)
+            );
+          } else {
+            w.value = [w.value].map(
+              v => (caster ? new caster(v) : v)
+            );
+          }
+
+          console.log("w.value", w.value);
+
+          query = query.where(path).in(w.value);
+          qCount = qCount.where(path).in(w.value);
           break;
         case Operators.LIKE:
           query = query.where(path).regex(w.value);

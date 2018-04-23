@@ -120,6 +120,7 @@ import { Component, Input } from "@angular/core";
         return this.enum(type, path);
       case Kind.NUMBER:
         return this.number(type, path);
+      case Kind.ID:
       case Kind.STRING:
         if (type.foreignKey) {
           return this.foreignKey(type, path, ts);
@@ -230,7 +231,7 @@ ${this.wrapOut}
     t.items.getParser("x", ts); // addImports
     ts.klass.methods.push(`
 ${addFunction}(${indexesDeclArgs}) {
-  this.${ngModel}.push(${t.items.isPrimitive() ? t.items.getEmptyValue() : t.items.toTypeScriptType()+ ".emptyInstance()"});
+  this.${ngModel}.push(${t.items.getEmptyValue()});
 }
 ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number) {
   this.${ngModel}.splice(index, 1);

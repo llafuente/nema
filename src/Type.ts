@@ -6,6 +6,7 @@ import { Model } from "./Model";
 export const controls = ["hidden", "customZone", "checkboxList"];
 
 export enum Kind {
+  ID = "id",
   STRING = "string",
   NUMBER = "number",
   BOOLEAN = "boolean",
@@ -29,6 +30,8 @@ export class Type {
   isDefinition: boolean = undefined;
   /** is a foreign key?  */
   foreignKey: string = undefined;
+  /** Referenced model name  */
+  foreignKeyModel: string = undefined;
   /** Object properties */
   properties?: { [name: string]: Type } = undefined;
   /** Array sub type */
@@ -145,6 +148,17 @@ export class Type {
       t.type = Kind.REFERENCE;
     }
     t.foreignKey = obj["x-nema-fk"] || null;
+
+    if (t.foreignKey && !obj.$ref) {
+      const ref = t.foreignKey.substr(2);
+      const c = ref.indexOf("/");
+      const where = ref.substr(0, c);
+      const target = ref.substr(c + 1);
+
+      t.foreignKeyModel = target;
+      t.type = Kind.ID;
+    }
+
     t.readOnly = obj["x-nema-readonly"] || false;
 
     if (obj["x-nema-control"]) {
@@ -216,6 +230,7 @@ export class Type {
        return "boolean";
      case Kind.DATE:
         return "Date";
+      case Kind.ID:
       case Kind.STRING:
         return "string";
       case Kind.ARRAY:
@@ -268,6 +283,11 @@ export class Type {
       case Kind.ARRAY:
         d.push(`type: Array`);
         d.push(`items: ${this.items.toMongooseType()}`);
+
+        // needed to support array of references
+        if (this.items.type == Kind.ID) {
+          d.push(`set: function(v) { return v ? v.map(x => new mongoose.Types.ObjectId(x)) : null; }`);
+        }
         break;
       case Kind.DATE:
         d.push(`type: Date`);
@@ -286,11 +306,14 @@ export class Type {
         break;
       case Kind.REFERENCE:
         if (this.foreignKey) {
-          d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKey)}`);
+          d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKeyModel)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
         } else {
           const m = this.api.getReference(this.referenceModel);
           return m.type.toMongooseType();
         }
+        break;
+      case Kind.ID:
+        d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKeyModel)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
         break;
       default:
         d.push(`type: ${this.type}`);
@@ -362,6 +385,8 @@ export class Type {
         }
 
         return `[${this.items.getRandom(ts)}, ${this.items.getRandom(ts)}]`;
+      case Kind.ID:
+        return `Random.string(24)`;
     }
 
     if (this.isPrimitive()) {
@@ -389,23 +414,23 @@ export class Type {
    */
   getParser(src, ts: TypescriptFile) {
     switch (this.type) {
-      case "date":
+      case Kind.DATE:
         ts.addImport("Cast", `/src/Cast.ts`);
         return `Cast.date(${src})`;
-      case "reference":
+      case Kind.REFERENCE:
         return this.api.getReference(this.referenceModel).type.getParser(src, ts);
-      case "void":
+      case Kind.VOID:
         return "void(0)";
-      case "file":
+      case Kind.FILE:
         // file is really a Blob and don't need to be casted
         return src;
-      case "enum":
+      case Kind.ENUM:
         ts.addImport(this.name, `/src/models/${this.name}.ts`);
         //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
         return `[${this.choices
           .map((x) => this.name + "." + x.toUpperCase())
           .join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
-      case "array":
+      case Kind.ARRAY:
         if (this.items.isPrimitive()) {
           ts.addImport("Cast", `/src/Cast.ts`);
           return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
@@ -414,6 +439,8 @@ export class Type {
         //ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
         //return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
         return `(${src} || []).map((x) => ${this.items.getParser("x", ts)})`;
+      case Kind.ID:
+        return `Cast.string(${src})`;
     }
 
     if (this.isPrimitive()) {
@@ -454,7 +481,7 @@ export class Type {
     if (this.type == "array") {
       return "[]";
     }
-    if (this.isPrimitive() || !this.type || this.type == Kind.FILE || this.type == Kind.DATE) {
+    if (this.isPrimitive() || !this.type || this.type == Kind.FILE || this.type == Kind.DATE || this.type == Kind.ID) {
       return "null";
     }
 

@@ -144,7 +144,7 @@ definitions:
         type: object
 ```
 
-# Nema (custom) metadata
+# `nema` (custom) metadata
 
 
 ## [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema)

@@ -239,13 +239,11 @@ export class Method {
   }
 
   producesText(): boolean {
-    return this.produces.indexOf("text/plain") !== -1 || this.produces.indexOf("text/html") !== -1;
+    return this.produces.indexOf("text/") !== -1;
   }
 
   producesBlob(): boolean {
-    return this.produces.some((produce) => {
-      return produce.indexOf("image/") == 0;
-    });
+    return this.produces.length && !this.producesJSON() && !this.producesText();
   }
   /**
    * The method require body?

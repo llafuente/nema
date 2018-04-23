@@ -440,9 +440,11 @@ export class ${this.api.apiName} {
       } else if (responseTypeTS != "void") {
         console.error(method, responseTypeTS);
         throw new Error(
-          `invalid produces, only: application/json, text/plain, text/html found: "${method.produces}" at ${
-            method.api.filename
-          }/${method.operationId}`,
+          `invalid produces, only
+* application/json treated as json
+* text/plain, text/html treated as text
+* the rest as blob
+found: "${method.produces}" at ${method.api.filename}/${method.operationId}`,
         );
       }
 

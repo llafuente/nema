@@ -87,7 +87,6 @@ class Type {
                 t.properties = _.mapValues(obj.properties, (x) => {
                     return Type.parseSwagger(api, x, null, false);
                 });
-                console.log(obj.required);
                 (obj.required || []).forEach((r) => {
                     if (!t.properties[r]) {
                         console.error(obj);

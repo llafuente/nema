@@ -99,7 +99,6 @@ export class Type {
           return Type.parseSwagger(api, x, null, false);
         });
 
-        console.log(obj.required);
         (obj.required || []).forEach((r) => {
           if (!t.properties[r]) {
             console.error(obj)

@@ -22,7 +22,7 @@ class Mongoose {
             }
         });
         if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
-            fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.dstPath, "test", "mongoose.connection.test.ts"));
+            fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.dstPath, "test", "mongoose.connection.test.ts"));
         }
         else {
             console.error("skip /test/mongoose.connection.test.ts");
@@ -36,16 +36,16 @@ initMongoose(app);
 // ????
       `);
         // copy raw files (those that don't need to be generated)
-        CommonGenerator.copyCommonTemplates(this.dstPath);
-        fs.copyFileSync(path.join(process.cwd(), "templates", "HttpErrors.ts"), path.join(this.dstPath, "src", "HttpErrors.ts"));
-        fs.copyFileSync(path.join(process.cwd(), "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
-        CommonGenerator.copyZonedTemplate(path.join(process.cwd(), "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"]);
+        CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
+        fs.copyFileSync(path.join(this.api.root, "templates", "HttpErrors.ts"), path.join(this.dstPath, "src", "HttpErrors.ts"));
+        fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
+        CommonGenerator.copyZonedTemplate(path.join(this.api.root, "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"]);
         if (pretty) {
-            CommonGenerator.pretty(this.dstPath);
+            CommonGenerator.pretty(this.api, this.dstPath);
         }
         // this may take a long time...
         if (lint) {
-            CommonGenerator.lint(this.dstPath);
+            CommonGenerator.lint(this.api, this.dstPath);
         }
     }
     mongooseModelFile(model, filename) {

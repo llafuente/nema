@@ -21,13 +21,13 @@ export class Angular5Client {
     mkdirp(path.join(this.dstPath, "src/resolve"));
 
     // copy raw files (those that don't need to be generated)
-    CommonGenerator.copyCommonTemplates(this.dstPath);
+    CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "angular5client", "tsconfig.json"),
+      path.join(this.api.root, "templates", "angular5client", "tsconfig.json"),
       path.join(this.dstPath, "tsconfig.json"),
     );
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "angular5client", "RequestOptions.ts"),
+      path.join(this.api.root, "templates", "angular5client", "RequestOptions.ts"),
       path.join(this.dstPath, "src", "RequestOptions.ts"),
     );
 
@@ -43,11 +43,11 @@ export class Angular5Client {
     this.packageJSONFile(`/package.json`);
 
     if (pretty) {
-      CommonGenerator.pretty(this.dstPath);
+      CommonGenerator.pretty(this.api, this.dstPath);
     }
     // this may take a long time...
     if (lint) {
-      CommonGenerator.lint(this.dstPath);
+      CommonGenerator.lint(this.api, this.dstPath);
     }
   }
 

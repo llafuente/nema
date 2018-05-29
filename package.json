@@ -4,7 +4,7 @@
   "description": "`nema` is an api server/client from a swagger definition (raml is planned).",
   "main": "index.js",
   "bin": {
-    "nema": "nema.js"
+    "nema": "bin/nema.js"
   },
   "scripts": {
     "test": "npm run build && ava --verbose ./dist/test/*.test.js",

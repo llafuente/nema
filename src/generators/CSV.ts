@@ -22,11 +22,11 @@ export class CSV {
     });
 
     if (pretty) {
-      CommonGenerator.pretty(this.dstPath);
+      CommonGenerator.pretty(api, this.dstPath);
     }
     // this may take a long time...
     if (lint) {
-      CommonGenerator.lint(this.dstPath);
+      CommonGenerator.lint(api, this.dstPath);
     }
   }
 

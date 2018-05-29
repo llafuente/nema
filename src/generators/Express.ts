@@ -22,25 +22,25 @@ export class Express {
     mkdirp(path.join(this.dstPath, "test"));
 
     // copy raw files (those that don't need to be generated)
-    CommonGenerator.copyCommonTemplates(this.dstPath);
+    CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "node-express", ".gitignore"),
+      path.join(this.api.root, "templates", "node-express", ".gitignore"),
       path.join(this.dstPath, ".gitignore"),
     );
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "node-express", "nodemon.json"),
+      path.join(this.api.root, "templates", "node-express", "nodemon.json"),
       path.join(this.dstPath, "nodemon.json"),
     );
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "node-express", "package.json"),
+      path.join(this.api.root, "templates", "node-express", "package.json"),
       path.join(this.dstPath, "package.json"),
     );
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "node-express", "tsconfig.json"),
+      path.join(this.api.root, "templates", "node-express", "tsconfig.json"),
       path.join(this.dstPath, "tsconfig.json"),
     );
     fs.copyFileSync(
-      path.join(process.cwd(), "templates", "HttpErrors.ts"),
+      path.join(this.api.root, "templates", "HttpErrors.ts"),
       path.join(this.dstPath, "./src/HttpErrors.ts"),
     );
     fs.writeFileSync(
@@ -49,7 +49,7 @@ export class Express {
     );
     if (!fs.existsSync(path.join(this.dstPath, "test", "all.test.ts"))) {
       fs.copyFileSync(
-        path.join(process.cwd(), "templates", "node-express", "all.test.ts"),
+        path.join(this.api.root, "templates", "node-express", "all.test.ts"),
         path.join(this.dstPath, "test", "all.test.ts"),
       );
     } else {
@@ -66,18 +66,18 @@ export class Express {
     this.indexFile("./src/index.ts");
 
     if (pretty) {
-      CommonGenerator.pretty(this.dstPath);
+      CommonGenerator.pretty(this.api, this.dstPath);
     }
     // this may take a long time...
     if (lint) {
-      CommonGenerator.lint(this.dstPath);
+      CommonGenerator.lint(this.api, this.dstPath);
     }
   }
 
   templates(dstPath: string) {
     ["Cast.ts", "CommonException.ts", "Random.ts"].forEach((filename) => {
       fs.copyFileSync(
-        path.join(process.cwd(), "templates", "node-express", filename),
+        path.join(this.api.root, "templates", "node-express", filename),
         path.join(this.dstPath, filename),
       );
     });

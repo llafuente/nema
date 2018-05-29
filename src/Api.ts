@@ -98,7 +98,12 @@ export class Api {
    */
   responses: { [name: string]: Response } = {};
 
-  constructor() {}
+  root: string;
+
+  constructor() {
+    // two levels when executed as JS
+    this.root = path.join(__dirname, "..", "..");
+  }
 
   static parseSwagger(filename: string, swagger: any): Api {
     const api = new Api();

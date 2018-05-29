@@ -18,9 +18,9 @@ class Angular5Client {
         mkdirp(path.join(this.dstPath, "src/models"));
         mkdirp(path.join(this.dstPath, "src/resolve"));
         // copy raw files (those that don't need to be generated)
-        CommonGenerator.copyCommonTemplates(this.dstPath);
-        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
-        fs.copyFileSync(path.join(process.cwd(), "templates", "angular5client", "RequestOptions.ts"), path.join(this.dstPath, "src", "RequestOptions.ts"));
+        CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
+        fs.copyFileSync(path.join(this.api.root, "templates", "angular5client", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
+        fs.copyFileSync(path.join(this.api.root, "templates", "angular5client", "RequestOptions.ts"), path.join(this.dstPath, "src", "RequestOptions.ts"));
         // generate all resolves
         this.api.eachResolve((method, modelName) => {
             this.resolveFile(method, `/src/resolve/${method.resolve.name}.ts`);
@@ -29,11 +29,11 @@ class Angular5Client {
         this.moduleFile(`/index.ts`);
         this.packageJSONFile(`/package.json`);
         if (pretty) {
-            CommonGenerator.pretty(this.dstPath);
+            CommonGenerator.pretty(this.api, this.dstPath);
         }
         // this may take a long time...
         if (lint) {
-            CommonGenerator.lint(this.dstPath);
+            CommonGenerator.lint(this.api, this.dstPath);
         }
     }
     resolveFile(method, filename) {

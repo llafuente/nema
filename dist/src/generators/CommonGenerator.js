@@ -74,8 +74,8 @@ function writeZonedTemplate(filename, tpl) {
     fs.writeFileSync(filename, template);
 }
 exports.writeZonedTemplate = writeZonedTemplate;
-function pretty(dstPath) {
-    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/prettier.cmd"), [
+function pretty(api, dstPath) {
+    child_process_1.spawnSync(path.join(api.root, "node_modules/.bin/prettier.cmd"), [
         "--write",
         "--parser",
         "typescript",
@@ -90,8 +90,8 @@ function pretty(dstPath) {
     });
 }
 exports.pretty = pretty;
-function lint(dstPath) {
-    child_process_1.spawnSync(path.join(process.cwd(), "node_modules/.bin/tslint.cmd"), ["-c", "./tslint.json", "--project", JSON.stringify(path.join(dstPath + "/tsconfig.json")), "--fix"], {
+function lint(api, dstPath) {
+    child_process_1.spawnSync(path.join(api.root, "node_modules/.bin/tslint.cmd"), ["-c", "./tslint.json", "--project", JSON.stringify(path.join(dstPath + "/tsconfig.json")), "--fix"], {
         cwd: process.cwd(),
         env: process.env,
         shell: true,
@@ -99,11 +99,11 @@ function lint(dstPath) {
     });
 }
 exports.lint = lint;
-function copyCommonTemplates(dstPath) {
+function copyCommonTemplates(api, dstPath) {
     ["Cast.ts", "CommonException.ts", "Random.ts"].forEach((filename) => {
-        fs.copyFileSync(path.join(process.cwd(), "templates", filename), path.join(dstPath, "src", filename));
+        fs.copyFileSync(path.join(api.root, "templates", filename), path.join(dstPath, "src", filename));
     });
-    fs.copyFileSync(path.join(process.cwd(), "templates", "tslint.json"), path.join(dstPath, "tslint.json"));
+    fs.copyFileSync(path.join(api.root, "templates", "tslint.json"), path.join(dstPath, "tslint.json"));
 }
 exports.copyCommonTemplates = copyCommonTemplates;
 function models(api, dstPath) {

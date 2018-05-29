@@ -65,6 +65,8 @@ class Api {
          * references: #/responses/XXXX
          */
         this.responses = {};
+        // two levels when executed as JS
+        this.root = path.join(__dirname, "..", "..");
     }
     static parseSwagger(filename, swagger) {
         const api = new Api();

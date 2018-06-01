@@ -1,5 +1,5 @@
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
+import { Angular5Api } from "../src/generators/Angular5Api";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
 
@@ -11,6 +11,6 @@ test.cb.serial("parse global parameters", (t) => {
 
   api.sort();
 
-  (new Angular5Client(`./test/apiguru/aws.workmail/`, api)).generate(true, false);
+  (new Angular5Api(`./test/apiguru/aws.workmail/`, api)).generate(true, false);
   t.end();
 });

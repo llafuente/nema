@@ -289,9 +289,12 @@ definitions:
 <a name="angular5-resolve"></a>
 ## Resolves
 
-`nema` can create resolvers for any API if you left the required information
-in the route.
+`nema` create a Resolve for Angular and search parameters in parents routes:
+`params` (`route.snapshot.params`) &amp; `data` (`route.snapshot.data`).
 
+`params` has higher priority than `data`.
+
+### Resolve example
 
 Angular route configuration:
 
@@ -325,6 +328,77 @@ paths:
         errorURL: /error
         parameters: # map route.snapshot.params with the method parameter name
           strategyId: strategyId
+
+```
+
+### Resolve advanced example
+
+Angular route configuration:
+
+```
+  {
+    data: {
+      ref2Id: 6
+    },
+    children: [
+      {
+        path: "App1/files/:fileId",
+        component: GetFilesComponent,
+        data: {
+          appName: "App1"
+        },
+        resolve: {
+          strategy: FileResolve, // id -> fileId: ?, app -> appName: "App", refId -> ref2Id: 6
+        }
+      },
+    ]
+  }
+  {
+    path: "App2/files/:fileId",
+    component: GetFilesComponent,
+    data: {
+      appName: "App2",
+      refId: 7
+    },
+    resolve: {
+      strategy: MagicResolve, // id -> fileId: ?, app -> appName: "App2", refId -> refId: 7
+    }
+  }
+```
+
+Swagger extension:
+
+```
+paths:
+  /strategy/{id}
+    parameters:
+      - name: id
+        in: path
+        description: identifier
+        required: true
+        type: string
+      - name: app
+        in: path
+        description: Application name
+        required: true
+        type: string
+     - name: refId
+        in: path
+        description: Reference Id, depends on your application
+        required: true
+        type: string
+    get:
+      name: getFiles
+      description: Give me some sparks
+      x-nema-resolve:
+        name: FileResolve
+        errorURL: /error
+        parameters:
+          id: fileId
+          app: appName
+          refId: # search any, the first found is used
+            - refId
+            - ref2Id
 
 ```
 

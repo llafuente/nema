@@ -1,5 +1,5 @@
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
+import { Angular5Api } from "../src/generators/Angular5Api";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
 
@@ -26,6 +26,6 @@ test.cb.serial("parse global parameters", (t) => {
     t.is(param.type.toTypeScriptType(), "number");
   });
 
-  (new Angular5Client(`./test/angular5client-parameters/`, api)).generate(true, false);
+  (new Angular5Api(`./test/angular5client-parameters/`, api)).generate(true, false);
   t.end();
 });

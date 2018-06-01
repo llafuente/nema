@@ -9,61 +9,56 @@ import { TypescriptFile } from "../TypescriptFile";
 
 const mkdirp = require("mkdirp").sync;
 
-export class Express {
+export class ExpressApi {
+  expressAppRoot: string;
+
   constructor(public dstPath: string, public api: Api) {}
+
+  static getExpressAppRoot(dstPath: string): string {
+    let p = dstPath;
+    let parsed;
+
+    // find the relative path to index.ts form express
+    do {
+      if (fs.existsSync(path.join(p, "package.json"))) {
+        return p;
+      }
+
+      p = path.resolve(p, "..");
+      parsed = path.parse(p);
+    } while(parsed.root != parsed.dir);
+
+    throw new Error("package.json cannot be found");
+  }
 
   generate(pretty: boolean, lint: boolean) {
     this.api.sort();
 
+    this.expressAppRoot = ExpressApi.getExpressAppRoot(this.dstPath);
+
+    console.log(`Located package.json at: ${this.expressAppRoot}`);
+
     // create generation paths
-    mkdirp(path.join(this.dstPath, "src"));
     mkdirp(path.join(this.dstPath, "src/models"));
     mkdirp(path.join(this.dstPath, "src/routes"));
     mkdirp(path.join(this.dstPath, "test"));
 
+    CommonGenerator.models(this.api, this.dstPath);
+
     // copy raw files (those that don't need to be generated)
     CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "node-express", ".gitignore"),
-      path.join(this.dstPath, ".gitignore"),
-    );
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "node-express", "nodemon.json"),
-      path.join(this.dstPath, "nodemon.json"),
-    );
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "node-express", "package.json"),
-      path.join(this.dstPath, "package.json"),
-    );
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "node-express", "tsconfig.json"),
-      path.join(this.dstPath, "tsconfig.json"),
-    );
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "HttpErrors.ts"),
-      path.join(this.dstPath, "./src/HttpErrors.ts"),
-    );
+
     fs.writeFileSync(
       path.join(this.dstPath, "./src/swagger.json.ts"),
       "export default " + JSON.stringify(this.api.originalSource, null, 2),
     );
-    if (!fs.existsSync(path.join(this.dstPath, "test", "all.test.ts"))) {
-      fs.copyFileSync(
-        path.join(this.api.root, "templates", "node-express", "all.test.ts"),
-        path.join(this.dstPath, "test", "all.test.ts"),
-      );
-    } else {
-      console.error("skip /test/all.test.ts");
-    }
 
-
+    this.indexFile("/index.ts");
     this.routesFile("/src/routes.ts");
     this.api.eachMethod((method, name) => {
       this.routeFile(method, `/src/routes/${method.operationId}.ts`);
       this.routeTestFile(method, `/test/${method.operationId}.test.ts`);
     });
-
-    this.indexFile("./src/index.ts");
 
     if (pretty) {
       CommonGenerator.pretty(this.api, this.dstPath);
@@ -72,15 +67,6 @@ export class Express {
     if (lint) {
       CommonGenerator.lint(this.api, this.dstPath);
     }
-  }
-
-  templates(dstPath: string) {
-    ["Cast.ts", "CommonException.ts", "Random.ts"].forEach((filename) => {
-      fs.copyFileSync(
-        path.join(this.api.root, "templates", "node-express", filename),
-        path.join(this.dstPath, filename),
-      );
-    });
   }
 
   indexFile(filename: string) {
@@ -148,10 +134,15 @@ export function routes(app: express.Application) {
   }
 
   route(method: Method, filename: string): ModificableTemplate {
+
+    // NOTE cannot resolve as linux directly
+    const targetDir = path.join(this.dstPath, path.dirname(filename));
+    const relPath = path.relative(targetDir, path.join(this.expressAppRoot, "src")).replace(/\\/g, "/");
+
     const ts = new TypescriptFile();
     ts.header = `// EDIT ONLY SAFE ZONES`;
     ts.rawImports = `import * as express from "express";
-import { Request, Response, Upload } from "../";
+import { Request, Response, Upload } from "${relPath}/";
 //<custom-imports>
 //</custom-imports>`;
 
@@ -329,129 +320,28 @@ test.cb.serial("${method.operationId}", (t) => {
   }
 
   index(): ModificableTemplate {
+    const s = [];
+    this.api.eachModel((model, name) => {
+      s.push(`
+      import { ${name} } from ".${model.filename.substr(0, model.filename.length - 3)}";
+      export { ${name} } from ".${model.filename.substr(0, model.filename.length - 3)}";
+`);
+    });
+    this.api.eachMethod((method, name) => {
+      s.push(`
+      import { ${method.operationId} } from "./src/routes/${method.operationId}";
+      export { ${method.operationId} } from "./src/routes/${method.operationId}";
+`);
+    });
+
     return {
       // internal-mongoose-initialization is not exported
       // will be empty or override by mongoose generator
-      tokens: ["custom-imports", "express-configuration", "request", "response", "pre-routes", "post-routes"],
-      template: `import * as express from "express";
-import * as path from "path";
-import * as bodyParser from "body-parser";
-import { CommonException } from "./CommonException";
-import { NotFound, Unauthorized } from "./HttpErrors";
+      tokens: [""],
+      template: `
+export { routes } from "./src/routes";
 
-//<custom-imports>
-//</custom-imports>
-
-const cors = require("cors");
-const morgan = require("morgan");
-
-import { routes } from "./routes";
-
-// nodemon kill
-process.on("SIGUSR2", () => {
-  process.exit(0);
-});
-
-export const app = express();
-//<express-configuration>
-app.set("mongodb", process.env.MONGO_URI || "mongodb://127.0.0.1:27017/test");
-
-// false to disable
-app.set("cors", {
-  origin: "http://localhost:3003",
-  credentials: true,
-})
-//</express-configuration>
-
-// this is for mongoose generator usage, do not modify
-//<internal-mongoose-initialization>
-//</internal-mongoose-initialization>
-
-// declare our own interface for request to save our variables
-export class Upload {
-  fieldname: string;
-  originalname: string;
-  encoding: string;
-  mimetype: string;
-  size: string;
-  destination: string;
-  filename: string;
-  path: string;
-  buffer: string;
-}
-
-export interface Request extends express.Request {
-  file: Upload;
-  files: { [s: string]: Upload };
-  //<request>
-  //</request>
-}
-
-export interface Response extends express.Response {
-  //<response>
-  //</response>
-}
-
-app.use(morgan("tiny"));
-if (app.get("cors")) {
-  app.use(
-    cors(app.get("cors")),
-  );
-}
-
-// use query json body parser
-app.use(bodyParser.json());
-// use query string parser
-app.use(
-  bodyParser.urlencoded({
-    extended: true,
-  }),
-);
-
-//<pre-routes>
-//</pre-routes>
-
-routes(app);
-
-//<post-routes>
-//</post-routes>
-
-app.use((req: Request, res: express.Response, next: express.NextFunction) => {
-  res.status(404).json(new CommonException(404, "not-found", "Route not found", null, null, Date.now()));
-});
-
-app.use((err: Error, req: Request, res: express.Response, next: express.NextFunction) => {
-  console.error("Error handler: ", err);
-
-  if (res.headersSent) {
-    return next(err);
-  }
-
-  if (err instanceof NotFound) {
-    return res.status(404).json(new CommonException(404, "not-found", err.message || "Not found", null, null, Date.now()));
-  }
-
-  if (err instanceof Unauthorized) {
-    return res.status(401).json(new CommonException(401, "unauthorized", err.message || "Unauthorized", null, null, Date.now()));
-  }
-
-
-  if (!(err instanceof CommonException)) {
-    console.warn("Unhandled error thrown", err);
-    return res.status(500).json(new CommonException(500, "internal-error", "Internal server error", null, null, Date.now()));
-  }
-
-//<mongoose-error-handling>
-//</mongoose-error-handling>
-
-  return res.status(404).json(err);
-});
-
-if (process.env.NODE_ENV !== "test") {
-  const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
-  console.log("listening at: 0.0.0.0:" + port);
-  app.listen(port, "0.0.0.0");
-}
+${s.join("\n")}
 `,
     };
   }

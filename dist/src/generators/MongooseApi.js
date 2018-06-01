@@ -1,124 +1,77 @@
-import * as assert from "assert";
-import { Api, parseYML } from "../Api";
-import { Model } from "../Model";
-import { Type, Kind } from "../Type";
-import * as fs from "fs";
-import * as path from "path";
-import * as CommonGenerator from "./CommonGenerator";
-import { ModificableTemplate } from "./CommonGenerator";
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const fs = require("fs");
+const path = require("path");
+const CommonGenerator = require("./CommonGenerator");
+const ExpressApi_1 = require("./ExpressApi");
 const mkdirp = require("mkdirp").sync;
-
-export class Mongoose {
-  constructor(public dstPath: string, public api: Api) {
-  }
-
-  generate(pretty: boolean, lint: boolean) {
-    this.api.sort();
-
-    // create generation paths
-    mkdirp(path.join(this.dstPath, "src/models")); // raw models
-    mkdirp(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
-    mkdirp(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
-
-    this.api.eachModel((model, modelName) => {
-      if (model.isDb) {
-        this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
-        this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
-      }
-    });
-
-    if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
-      fs.copyFileSync(
-        path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"),
-        path.join(this.dstPath, "test", "mongoose.connection.test.ts"),
-      );
-    } else {
-      console.error("skip /test/mongoose.connection.test.ts");
+class MongooseApi {
+    constructor(dstPath, api) {
+        this.dstPath = dstPath;
+        this.api = api;
     }
-
-
-
-    CommonGenerator.setZonedTemplate(
-      path.join(this.dstPath, "./src/index.ts"),
-      "internal-mongoose-initialization",
-      `
-import initMongoose from "./mongoose";
-initMongoose(app);
-      `,
-    );
-
-    // TODO do it!
-    CommonGenerator.setZonedTemplate(
-      path.join(this.dstPath, "./src/index.ts"),
-      "mongoose-error-handling",
-      `
-// ????
-      `,
-    );
-
-    // copy raw files (those that don't need to be generated)
-    CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "HttpErrors.ts"),
-      path.join(this.dstPath, "src", "HttpErrors.ts"),
-    );
-    fs.copyFileSync(
-      path.join(this.api.root, "templates", "mongoose", "Query.ts"),
-      path.join(this.dstPath, "src", "Query.ts"),
-    );
-
-    CommonGenerator.copyZonedTemplate(
-      path.join(this.api.root, "templates", "mongoose", "mongoose.ts"),
-      path.join(this.dstPath, "src", "mongoose.ts"),
-      ["import-models"],
-    );
-
-    if (pretty) {
-      CommonGenerator.pretty(this.api, this.dstPath);
+    generate(pretty, lint) {
+        this.api.sort();
+        this.expressAppRoot = ExpressApi_1.ExpressApi.getExpressAppRoot(this.dstPath);
+        // create generation paths
+        mkdirp(path.join(this.dstPath, "src/models")); // raw models
+        mkdirp(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
+        mkdirp(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
+        this.api.eachModel((model, modelName) => {
+            if (model.isDb) {
+                this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
+                this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+            }
+        });
+        if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
+            fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.dstPath, "test", "mongoose.connection.test.ts"));
+        }
+        else {
+            console.error("skip /test/mongoose.connection.test.ts");
+        }
+        // copy raw files (those that don't need to be generated)
+        CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
+        fs.copyFileSync(path.join(this.api.root, "templates", "HttpErrors.ts"), path.join(this.dstPath, "src", "HttpErrors.ts"));
+        fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
+        if (pretty) {
+            CommonGenerator.pretty(this.api, this.dstPath);
+        }
+        // this may take a long time...
+        if (lint) {
+            CommonGenerator.lint(this.api, this.dstPath);
+        }
     }
-    // this may take a long time...
-    if (lint) {
-      CommonGenerator.lint(this.api, this.dstPath);
+    mongooseModelFile(model, filename) {
+        CommonGenerator.writeZonedTemplate(filename, this.mongooseModel(model));
     }
-  }
-
-  mongooseModelFile(model: Model, filename: string) {
-    CommonGenerator.writeZonedTemplate(filename, this.mongooseModel(model));
-  }
-
-  mongooseRepositoryFile(model: Model, filename: string) {
-    fs.writeFileSync(filename, this.mongooseRepository(model));
-  }
-
-  packageJSONFile(filename: string) {
-    fs.writeFileSync(filename, this.packageJSON());
-  }
-
-  mongooseModel(model: Model): ModificableTemplate {
-    const s = [];
-    s.push(`import { ${model.interfaceName} } from "../models/${model.name}";`);
-    s.push(`import * as mongoose from "mongoose";`);
-    s.push(`
+    mongooseRepositoryFile(model, filename) {
+        fs.writeFileSync(filename, this.mongooseRepository(model));
+    }
+    packageJSONFile(filename) {
+        fs.writeFileSync(filename, this.packageJSON());
+    }
+    mongooseModel(model) {
+        const s = [];
+        s.push(`import { ${model.interfaceName} } from "../models/${model.name}";`);
+        s.push(`import * as mongoose from "mongoose";`);
+        s.push(`
 export interface ${model.mongooseInterface} extends ${model.interfaceName}, mongoose.Document {}
 
 export const ${model.mongooseSchema} = new mongoose.Schema(
   {`);
-
-    if (model.extends) {
-      model.eachParentProperty((t, name) => {
-        if (name != "_id") {
-          s.push(`${name}: ${t.toMongooseType()},`);
+        if (model.extends) {
+            model.eachParentProperty((t, name) => {
+                if (name != "_id") {
+                    s.push(`${name}: ${t.toMongooseType()},`);
+                }
+            });
         }
-      });
-    }
-    model.eachProperty((t, name) => {
-      if (name != "_id") {
-        s.push(`${name}: ${t.toMongooseType()},`);
-      }
-    });
-
-    s.push(`
+        model.eachProperty((t, name) => {
+            if (name != "_id") {
+                s.push(`${name}: ${t.toMongooseType()},`);
+            }
+        });
+        s.push(`
   },
   {
     collection: ${JSON.stringify(model.mongooseCollection)},
@@ -130,19 +83,21 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
 
 export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});
 `);
-    return {
-      tokens: ["mongoose-after-schema"],
-      template: s.join("\n")
+        return {
+            tokens: ["mongoose-after-schema"],
+            template: s.join("\n")
+        };
     }
-  }
-
-  mongooseRepository(model: Model): string {
-    const s = [];
-    s.push(`import { ${model.name}, ${model.interfaceName} } from "../models/${model.name}";
+    mongooseRepository(model) {
+        // NOTE cannot resolve as linux directly
+        const targetDir = path.join(this.dstPath, path.dirname(model.filename));
+        const relPath = path.relative(targetDir, path.join(this.expressAppRoot, "src")).replace(/\\/g, "/");
+        const s = [];
+        s.push(`import { ${model.name}, ${model.interfaceName} } from "../models/${model.name}";
 import { ${model.mongooseModel}, ${model.mongooseSchema}, ${model.mongooseInterface} } from "../mongoose/${model.name}";
 import * as mongoose from "mongoose";
 import * as _ from "lodash";
-import { NotFound } from "../HttpErrors";
+import { NotFound } from "${path.posix.join(relPath, "HttpErrors")}";
 import { Operators } from "../models/Operators";
 import { Where } from "../models/Where";
 import { Order } from "../Query";
@@ -317,29 +272,25 @@ export function query(
 
 
   `);
-
-    return s.join("\n");
-  }
-
-  packageJSON() {
-    return JSON.stringify(
-      {
-        name: this.api.angularClientNodeModuleName,
-        version: this.api.version,
-        description: this.api.description,
-        author: {
-          name: this.api.authorName,
-          email: this.api.authorEmail,
-          url: this.api.authorURL,
-        },
-        peerDependencies: {
-          "@angular/core": ">=5.2.0",
-          typescript: "*",
-        },
-        main: "./index.ts",
-      },
-      null,
-      2,
-    );
-  }
+        return s.join("\n");
+    }
+    packageJSON() {
+        return JSON.stringify({
+            name: this.api.angularClientNodeModuleName,
+            version: this.api.version,
+            description: this.api.description,
+            author: {
+                name: this.api.authorName,
+                email: this.api.authorEmail,
+                url: this.api.authorURL,
+            },
+            peerDependencies: {
+                "@angular/core": ">=5.2.0",
+                typescript: "*",
+            },
+            main: "./index.ts",
+        }, null, 2);
+    }
 }
+exports.MongooseApi = MongooseApi;
+//# sourceMappingURL=MongooseApi.js.map

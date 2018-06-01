@@ -7,13 +7,13 @@ export class CommonException {
    * @param status with the status code
    */
   constructor(
-    public status   : number,
-    public error    : string,
-    public message  : string,
+    public status: number,
+    public error: string,
+    public message: string,
     public exception: string,
-    public path     : string,
-    public timestamp: number|Date,
-  ) { }
+    public path: string,
+    public timestamp: number | Date
+  ) {}
 
   static parse(json: any): CommonException {
     return new CommonException(
@@ -22,10 +22,9 @@ export class CommonException {
       json.message,
       json.exception,
       json.path,
-      json.timestamp,
+      json.timestamp
     );
   }
-
 
   /**
    * @return the object as string
@@ -33,4 +32,4 @@ export class CommonException {
   toString() {
     return JSON.stringify(this, null, 2);
   }
-};
+}

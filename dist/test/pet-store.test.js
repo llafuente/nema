@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../src/Api");
-const Angular5Client_1 = require("../src/generators/Angular5Client");
-const Mongoose_1 = require("../src/generators/Mongoose");
-const Express_1 = require("../src/generators/Express");
+const Angular5Api_1 = require("../src/generators/Angular5Api");
+const MongooseApi_1 = require("../src/generators/MongooseApi");
+const ExpressApi_1 = require("../src/generators/ExpressApi");
 const CSV_1 = require("../src/generators/CSV");
 const TypescriptFile_1 = require("../src/TypescriptFile");
 const ava_1 = require("ava");
@@ -57,12 +57,12 @@ ava_1.default.cb.serial("parse swagger file", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("angular 5 generation", (t) => {
-    (new Angular5Client_1.Angular5Client(`./test/pet-store-client/`, api)).generate(true, false);
+    (new Angular5Api_1.Angular5Api(`./test/pet-store-client/`, api)).generate(true, false);
     t.end();
 });
 ava_1.default.cb.serial("express generation", (t) => {
-    (new Express_1.Express(`./test/pet-store-server/`, api)).generate(false, false);
-    (new Mongoose_1.Mongoose(`./test/pet-store-server/`, api)).generate(false, false);
+    (new ExpressApi_1.ExpressApi(`./test/pet-store-server/`, api)).generate(false, false);
+    (new MongooseApi_1.MongooseApi(`./test/pet-store-server/`, api)).generate(false, false);
     (new CSV_1.CSV(`./test/pet-store-server/`)).generate(api, true, false);
     t.end();
 });

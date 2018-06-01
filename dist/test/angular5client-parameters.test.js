@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const Api_1 = require("../src/Api");
-const Angular5Client_1 = require("../src/generators/Angular5Client");
+const Angular5Api_1 = require("../src/generators/Angular5Api");
 const Parameter_1 = require("../src/Parameter");
 const ava_1 = require("ava");
 let api;
@@ -21,7 +21,7 @@ ava_1.default.cb.serial("parse global parameters", (t) => {
         t.is(param.name, "userId");
         t.is(param.type.toTypeScriptType(), "number");
     });
-    (new Angular5Client_1.Angular5Client(`./test/angular5client-parameters/`, api)).generate(true, false);
+    (new Angular5Api_1.Angular5Api(`./test/angular5client-parameters/`, api)).generate(true, false);
     t.end();
 });
 //# sourceMappingURL=angular5client-parameters.test.js.map

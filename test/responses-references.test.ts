@@ -1,7 +1,7 @@
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
-import { Mongoose } from "../src/generators/Mongoose";
-import { Express } from "../src/generators/Express";
+import { Angular5Api } from "../src/generators/Angular5Api";
+import { MongooseApi } from "../src/generators/MongooseApi";
+import { ExpressApi } from "../src/generators/ExpressApi";
 import test from "ava";
 import { validateTypes } from "./common";
 
@@ -36,12 +36,12 @@ test.cb.serial("parse swagger file", (t) => {
 });
 
 test.cb.serial("angular 5 generation", (t) => {
-  (new Angular5Client(`./test/responses-references-client/`, api)).generate(true, false);
+  (new Angular5Api(`./test/responses-references-client/`, api)).generate(true, false);
   t.end();
 });
 
 test.cb.serial("express generation", (t) => {
-   (new Express(`./test/responses-references-server/`, api)).generate(true, false);
-   (new Mongoose(`./test/responses-references-server/`, api)).generate(false, false);
+   (new ExpressApi(`./test/responses-references-server/`, api)).generate(true, false);
+   (new MongooseApi(`./test/responses-references-server/`, api)).generate(false, false);
    t.end();
  });

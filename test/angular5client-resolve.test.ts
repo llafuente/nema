@@ -1,5 +1,5 @@
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
+import { Angular5Api } from "../src/generators/Angular5Api";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
 
@@ -25,6 +25,6 @@ test.cb.serial("parse swagger file", (t) => {
   t.is(api.methods.getStrategies.countParams(ParameterType.HEADER, false), 1);
   t.is(api.methods.getStrategies.countParams(ParameterType.HEADER, true), 0);
 
-  (new Angular5Client(`./test/angular5client-resolve/`, api)).generate(true, false);
+  (new Angular5Api(`./test/angular5client-resolve/`, api)).generate(true, false);
   t.end();
 });

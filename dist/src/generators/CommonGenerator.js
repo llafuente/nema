@@ -100,7 +100,7 @@ function lint(api, dstPath) {
 }
 exports.lint = lint;
 function copyCommonTemplates(api, dstPath) {
-    ["Cast.ts", "CommonException.ts", "Random.ts"].forEach((filename) => {
+    ["Cast.ts", "Random.ts"].forEach((filename) => {
         fs.copyFileSync(path.join(api.root, "templates", filename), path.join(dstPath, "src", filename));
     });
     fs.copyFileSync(path.join(api.root, "templates", "tslint.json"), path.join(dstPath, "tslint.json"));

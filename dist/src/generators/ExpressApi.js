@@ -6,7 +6,7 @@ const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
 const mkdirp = require("mkdirp").sync;
-class Express {
+class ExpressApi {
     constructor(dstPath, api) {
         this.dstPath = dstPath;
         this.api = api;
@@ -26,7 +26,7 @@ class Express {
     }
     generate(pretty, lint) {
         this.api.sort();
-        this.expressAppRoot = Express.getExpressAppRoot(this.dstPath);
+        this.expressAppRoot = ExpressApi.getExpressAppRoot(this.dstPath);
         console.log(`Located package.json at: ${this.expressAppRoot}`);
         // create generation paths
         mkdirp(path.join(this.dstPath, "src/models"));
@@ -285,5 +285,5 @@ ${s.join("\n")}
         };
     }
 }
-exports.Express = Express;
-//# sourceMappingURL=Express.js.map
+exports.ExpressApi = ExpressApi;
+//# sourceMappingURL=ExpressApi.js.map

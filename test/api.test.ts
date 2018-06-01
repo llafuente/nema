@@ -1,5 +1,5 @@
 import { Api } from "../src/Api";
-import { Angular5Client } from "../src/generators/Angular5Client";
+import { Angular5Api } from "../src/generators/Angular5Api";
 import test from "ava";
 
 
@@ -90,7 +90,7 @@ test.cb.serial("parse swagger", (t) => {
     ["type", "quantity", "monitoringType"], "type extends parsed ok",
   );
 
-  (new Angular5Client(`./test/api-test-001/`, swagger)).generate(true, false);
+  (new Angular5Api(`./test/api-test-001/`, swagger)).generate(true, false);
 
   t.end();
 });

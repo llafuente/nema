@@ -15,7 +15,7 @@ export class Random {
   }
 
   static boolean(): boolean {
-    return Random.number() > 0.5;
+    return Math.random() > 0.5;
   }
 
   static string(max: number = 16): string {

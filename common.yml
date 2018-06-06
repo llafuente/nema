@@ -25,22 +25,22 @@ parameters:
       type: string
 
 definitions:
-  CommonException:
-    type: object
-    properties:
-      status:
-        type: number
-      error:
-        type: string
-      message:
-        type: string
-      exception:
-        type: string
-      path:
-        type: string
-      timestamp:
-        type: number
-        # format: date
+  # CommonException:
+  #   type: object
+  #   properties:
+  #     status:
+  #       type: number
+  #     error:
+  #       type: string
+  #     message:
+  #       type: string
+  #     exception:
+  #       type: string
+  #     path:
+  #       type: string
+  #     timestamp:
+  #       type: number
+  #       # format: date
 
   Operators:
     type: string

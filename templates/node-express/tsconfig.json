@@ -13,12 +13,10 @@
       "./node_modules/@types"
     ],
     "types": [
-      "bluebird",
       "node",
       "express",
       "supertest",
-      "sinon",
-      "mongoose"
+      "sinon"
     ],
     "baseUrl": ".",
     "sourceMap": true

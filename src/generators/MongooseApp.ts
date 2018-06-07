@@ -6,6 +6,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
 import { ModificableTemplate } from "./CommonGenerator";
+import { ksort, uniquePush } from "../utils";
 
 const mkdirp = require("mkdirp").sync;
 
@@ -20,6 +21,52 @@ export class MongooseApp {
     mkdirp(path.join(this.dstPath, "src/"));
     mkdirp(path.join(this.dstPath, "test/"));
 
+    const packageJSONFile = path.join(this.dstPath, "package.json");
+    try {
+      const packageJSON = require(packageJSONFile);
+
+      packageJSON.dependencies["bluebird"] = "3.5.1";
+      packageJSON.dependencies["mongoose"] = "5.0.10";
+      packageJSON.dependencies["mongoosemask"] = "0.0.6";
+
+      packageJSON.devDependencies["@types/bluebird"] = "3.5.20";
+      packageJSON.devDependencies["@types/mongoose"] = "5.0.7";
+
+      packageJSON.devDependencies = ksort(packageJSON.devDependencies);
+      packageJSON.dependencies = ksort(packageJSON.dependencies);
+
+      try {
+        fs.writeFileSync(packageJSONFile, JSON.stringify(packageJSON, null, 2));
+      } catch (e) {
+        console.log(`cannot write: ${packageJSONFile}`);
+      }
+
+    } catch(e) {
+      console.log(`cannot read: ${packageJSONFile}`);
+    }
+
+    const tsconfigFile = path.join(this.dstPath, "tsconfig.json");
+    try {
+      const tsconfig = require(tsconfigFile);
+
+      uniquePush(tsconfig.compilerOptions.types, "bluebird");
+      uniquePush(tsconfig.compilerOptions.types, "mongoose");
+
+      try {
+        fs.writeFileSync(tsconfigFile, JSON.stringify(tsconfig, null, 2));
+      } catch (e) {
+        console.log(`cannot write: ${tsconfigFile}`);
+      }
+
+    } catch(e) {
+      console.log(`cannot read: ${tsconfigFile}`);
+    }
+
+      ,
+
+
+
+
     if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
       fs.copyFileSync(
         path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"),
@@ -32,7 +79,7 @@ export class MongooseApp {
 
     const indexFile = path.join(this.dstPath, "./src/index.ts");
     if (!fs.existsSync(indexFile)) {
-      throw new Error(`${indexFile} must exists. Execute --express-bootstrap before this generator`)
+      throw new Error(`${indexFile} must exists. Execute --express-app before this generator`)
     }
 
     CommonGenerator.setZonedTemplate(

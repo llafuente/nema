@@ -7,16 +7,7 @@ import { Model } from "./Model";
 import { Parameter } from "./Parameter";
 import { Response } from "./Response";
 
-function ksort(obj) {
-  const ret = {};
-  Object.keys(obj)
-    .sort()
-    .forEach((k) => {
-      ret[k] = obj[k];
-    });
-
-  return ret;
-}
+import { ksort } from "./utils";
 
 const blacklist = [
   "Error",

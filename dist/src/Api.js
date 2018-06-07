@@ -7,15 +7,7 @@ const Method_1 = require("./Method");
 const Model_1 = require("./Model");
 const Parameter_1 = require("./Parameter");
 const Response_1 = require("./Response");
-function ksort(obj) {
-    const ret = {};
-    Object.keys(obj)
-        .sort()
-        .forEach((k) => {
-        ret[k] = obj[k];
-    });
-    return ret;
-}
+const utils_1 = require("./utils");
 const blacklist = [
     "Error",
     "CommonException",
@@ -222,9 +214,9 @@ class Api {
         });
     }
     sort() {
-        this.methods = ksort(this.methods);
-        this.models = ksort(this.models);
-        this.enums = ksort(this.enums);
+        this.methods = utils_1.ksort(this.methods);
+        this.models = utils_1.ksort(this.models);
+        this.enums = utils_1.ksort(this.enums);
     }
     getReference(ref) {
         //console.log(`getReference(${ref})`);

@@ -7,6 +7,7 @@ import { MongooseApi } from "./generators/MongooseApi";
 import { MongooseApp } from "./generators/MongooseApp";
 import { ExpressApi } from "./generators/ExpressApi";
 import { ExpressApp } from "./generators/ExpressApp";
+import { ExpressCSV } from "./generators/ExpressCSV";
 
 
 import * as path from "path";
@@ -48,6 +49,8 @@ require --express-api in the same destination`)
 
   .option("--express-api", "TARGET(project) Generate Express routes/models")
   .option("--express-app", "TARGET(project) Generate Express app")
+
+  .option("--express-csv", "TARGET(project) Experimental")
 
   .option("--angular5-form-template <path>", "TARGET(file) Generate an Angular 5 Template from given model")
 
@@ -96,8 +99,8 @@ const targets =
   (program.mongooseApp ? 1 : 0) +
   (program.expressApi ? 1 : 0) +
   (program.expressApp ? 1 : 0) +
+  (program.expressCsv ? 1 : 0) +
   (program.angular5FormTemplate ? 1 : 0);
-
 
 if (targets == 0) {
   red("You must specify a target to generate");
@@ -115,6 +118,10 @@ if (targets == 2) {
 
 let api: Api;
 let dstPath = program.dst;
+if (!path.isAbsolute(dstPath)) {
+  dstPath = path.join(process.cwd(), dstPath);
+}
+
 program.swagger.forEach((swagger) => {
   if (api) {
     api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
@@ -141,19 +148,22 @@ const projectGenerators = [];
 
 if (program.angular5Api) {
   green("Instancing generator: angular5-api");
-  new Angular5Api(dstPath, api).generate(true, !!program.lint)
+  new Angular5Api(dstPath, api).generate(true, !!program.lint);
 } else if (program.expressApi) {
   green("Instancing generator: express");
-  new ExpressApi(dstPath, api).generate(true, !!program.lint)
+  new ExpressApi(dstPath, api).generate(true, !!program.lint);
 } else if (program.expressApp) {
-  green("Instancing generator: express bootstrap");
-  new ExpressApp(dstPath, api).generate(true, !!program.lint)
+  green("Instancing generator: express App");
+  new ExpressApp(dstPath, api).generate(true, !!program.lint);
 } else if (program.mongooseApi) {
   green("Instancing generator: mongoose");
-  new MongooseApi(dstPath, api).generate(true, !!program.lint)
+  new MongooseApi(dstPath, api).generate(true, !!program.lint);
 } else if (program.mongooseApp) {
-  green("Instancing generator: mongoose bootstrap");
-  new MongooseApp(dstPath, api).generate(true, !!program.lint)
+  green("Instancing generator: mongoose App");
+  new MongooseApp(dstPath, api).generate(true, !!program.lint);
+} else if (program.expressCsv) {
+  green("Instancing generator: express CSV");
+  new ExpressCSV(dstPath, api).generate(true, !!program.lint);
 } else if (program.angular5FormTemplate) {
   const t = new Angular5FormTemplate(api);
   green("Generate Angular 5 template");

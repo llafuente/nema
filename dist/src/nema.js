@@ -8,6 +8,7 @@ const MongooseApi_1 = require("./generators/MongooseApi");
 const MongooseApp_1 = require("./generators/MongooseApp");
 const ExpressApi_1 = require("./generators/ExpressApi");
 const ExpressApp_1 = require("./generators/ExpressApp");
+const ExpressCSV_1 = require("./generators/ExpressCSV");
 const path = require("path");
 const program = require("commander");
 const chalk = require("chalk");
@@ -41,6 +42,7 @@ program
 require --express-api in the same destination`)
     .option("--express-api", "TARGET(project) Generate Express routes/models")
     .option("--express-app", "TARGET(project) Generate Express app")
+    .option("--express-csv", "TARGET(project) Experimental")
     .option("--angular5-form-template <path>", "TARGET(file) Generate an Angular 5 Template from given model")
     .option("--override-models", "Override all models while agreggating")
     .option("--override-methods", "Override all methods while agreggating")
@@ -78,6 +80,7 @@ const targets = (program.angular5Api ? 1 : 0) +
     (program.mongooseApp ? 1 : 0) +
     (program.expressApi ? 1 : 0) +
     (program.expressApp ? 1 : 0) +
+    (program.expressCsv ? 1 : 0) +
     (program.angular5FormTemplate ? 1 : 0);
 if (targets == 0) {
     red("You must specify a target to generate");
@@ -92,6 +95,9 @@ if (targets == 2) {
 // parse and aggregate definitions files
 let api;
 let dstPath = program.dst;
+if (!path.isAbsolute(dstPath)) {
+    dstPath = path.join(process.cwd(), dstPath);
+}
 program.swagger.forEach((swagger) => {
     if (api) {
         api.aggregate(Api_1.Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
@@ -121,7 +127,7 @@ else if (program.expressApi) {
     new ExpressApi_1.ExpressApi(dstPath, api).generate(true, !!program.lint);
 }
 else if (program.expressApp) {
-    green("Instancing generator: express bootstrap");
+    green("Instancing generator: express App");
     new ExpressApp_1.ExpressApp(dstPath, api).generate(true, !!program.lint);
 }
 else if (program.mongooseApi) {
@@ -129,8 +135,12 @@ else if (program.mongooseApi) {
     new MongooseApi_1.MongooseApi(dstPath, api).generate(true, !!program.lint);
 }
 else if (program.mongooseApp) {
-    green("Instancing generator: mongoose bootstrap");
+    green("Instancing generator: mongoose App");
     new MongooseApp_1.MongooseApp(dstPath, api).generate(true, !!program.lint);
+}
+else if (program.expressCsv) {
+    green("Instancing generator: express CSV");
+    new ExpressCSV_1.ExpressCSV(dstPath, api).generate(true, !!program.lint);
 }
 else if (program.angular5FormTemplate) {
     const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);

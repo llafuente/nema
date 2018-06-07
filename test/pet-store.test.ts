@@ -3,7 +3,7 @@ import { Model } from "../src/Model";
 import { Angular5Api } from "../src/generators/Angular5Api";
 import { MongooseApi } from "../src/generators/MongooseApi";
 import { ExpressApi } from "../src/generators/ExpressApi";
-import { CSV } from "../src/generators/CSV";
+import { ExpressCSV } from "../src/generators/ExpressCSV";
 import { TypescriptFile } from "../src/TypescriptFile";
 import test from "ava";
 import * as _ from "lodash";
@@ -80,6 +80,6 @@ test.cb.serial("angular 5 generation", (t) => {
 test.cb.serial("express generation", (t) => {
    (new ExpressApi(`./test/pet-store-server/`, api)).generate(false, false);
    (new MongooseApi(`./test/pet-store-server/`, api)).generate(false, false);
-   (new CSV(`./test/pet-store-server/`)).generate(api, true, false);
+   (new ExpressCSV(`./test/pet-store-server/`, api)).generate(true, false);
    t.end();
 });

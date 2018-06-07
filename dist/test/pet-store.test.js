@@ -4,7 +4,7 @@ const Api_1 = require("../src/Api");
 const Angular5Api_1 = require("../src/generators/Angular5Api");
 const MongooseApi_1 = require("../src/generators/MongooseApi");
 const ExpressApi_1 = require("../src/generators/ExpressApi");
-const CSV_1 = require("../src/generators/CSV");
+const ExpressCSV_1 = require("../src/generators/ExpressCSV");
 const TypescriptFile_1 = require("../src/TypescriptFile");
 const ava_1 = require("ava");
 const _ = require("lodash");
@@ -63,7 +63,7 @@ ava_1.default.cb.serial("angular 5 generation", (t) => {
 ava_1.default.cb.serial("express generation", (t) => {
     (new ExpressApi_1.ExpressApi(`./test/pet-store-server/`, api)).generate(false, false);
     (new MongooseApi_1.MongooseApi(`./test/pet-store-server/`, api)).generate(false, false);
-    (new CSV_1.CSV(`./test/pet-store-server/`)).generate(api, true, false);
+    (new ExpressCSV_1.ExpressCSV(`./test/pet-store-server/`, api)).generate(true, false);
     t.end();
 });
 //# sourceMappingURL=pet-store.test.js.map

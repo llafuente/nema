@@ -62,11 +62,6 @@ export class MongooseApp {
       console.log(`cannot read: ${tsconfigFile}`);
     }
 
-      ,
-
-
-
-
     if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
       fs.copyFileSync(
         path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"),

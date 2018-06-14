@@ -118,7 +118,8 @@ if (targets == 2) {
 
 let api: Api;
 let dstPath = program.dst;
-if (!path.isAbsolute(dstPath)) {
+
+if (dstPath && !path.isAbsolute(dstPath)) {
   dstPath = path.join(process.cwd(), dstPath);
 }
 

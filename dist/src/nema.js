@@ -95,7 +95,7 @@ if (targets == 2) {
 // parse and aggregate definitions files
 let api;
 let dstPath = program.dst;
-if (!path.isAbsolute(dstPath)) {
+if (dstPath && !path.isAbsolute(dstPath)) {
     dstPath = path.join(process.cwd(), dstPath);
 }
 program.swagger.forEach((swagger) => {

@@ -1,15 +1,18 @@
 import { Api } from "../src/Api";
 import { Angular5Api } from "../src/generators/Angular5Api";
 import test from "ava";
+import * as path from "path";
+import { validateTypes, parse } from "./common";
 
-
-let swagger: Api;
+let api: Api;
 test.cb.serial("parse swagger", (t) => {
-  swagger = Api.parseSwaggerFile("./test/api-test-001.yaml");
-
+  api = parse("swaggers/api-test-001.yaml", false);
   //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
+  t.end();
+});
 
-  t.deepEqual(Object.keys(swagger.methods), [
+test.cb.serial("check methods", (t) => {
+  t.deepEqual(Object.keys(api.methods), [
     "createStrategyRest",
     "initStrategyRest",
     "startStrategyRest",
@@ -49,8 +52,11 @@ test.cb.serial("parse swagger", (t) => {
     "getAutoHedgerStatus",
     "getExecutionsByStrategyAndOrder",
   ], "all methods added");
+  t.end();
+});
 
-  t.deepEqual(Object.keys(swagger.models), [
+test.cb.serial("check models", (t) => {
+  t.deepEqual(Object.keys(api.models), [
     "StrategyIdDto",
     "StringBooleanMap",
     "StringStringMap",
@@ -68,29 +74,35 @@ test.cb.serial("parse swagger", (t) => {
     "StrategyStatusMessage",
     "ParameterChangedMessage",
   ], "all models added");
+  t.end();
+});
 
-  t.deepEqual(swagger.models.ParametersDto.type.toTypeScriptType(), "ParametersDto", "typescript type ok");
+test.cb.serial("check models/methods", (t) => {
+  t.deepEqual(api.models.ParametersDto.type.toTypeScriptType(), "ParametersDto", "typescript type ok");
   t.deepEqual(
-    swagger.methods.createStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
+    api.methods.createStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
     ["string", "string"],
     "typescript type ok",
   );
   t.deepEqual(
-    swagger.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
+    api.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
     ["InitiParametersDto", "string"],
     "typescript type ok",
   );
 
   t.deepEqual(
-    swagger.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends",
+    api.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends",
   );
 
   t.deepEqual(
-    Object.keys(swagger.models.OrderMonitoring.type.properties),
+    Object.keys(api.models.OrderMonitoring.type.properties),
     ["type", "quantity", "monitoringType"], "type extends parsed ok",
   );
 
-  (new Angular5Api(`./test/api-test-001/`, swagger)).generate(true, false);
+  t.end();
+});
 
+test.cb.serial("generate angular 5 api", (t) => {
+  (new Angular5Api(path.join(__dirname, `../test-generated/api-test-001/`), api)).generate(true, false);
   t.end();
 });

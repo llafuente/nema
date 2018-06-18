@@ -1,0 +1,577 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>nema</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.js" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">nema</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+							<input type="checkbox" id="tsd-filter-only-exported" />
+							<label class="tsd-widget" for="tsd-filter-only-exported">Only exported</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<ul class="tsd-breadcrumb">
+				<li>
+					<a href="globals.html">Globals</a>
+				</li>
+			</ul>
+			<h1> nema</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<h1 id="nema-node-express-mongo-angular-generator-">nema: Node Express Mongo Angular (Generator)</h1>
+				<p><a href="https://travis-ci.org/llafuente/nema"><img src="https://travis-ci.org/llafuente/nema.svg?branch=master" alt="Build Status"></a>
+				<a href="https://raw.githubusercontent.com/llafuente/nema/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="GitHub license"></a></p>
+				<p><code>nema</code> is a command line generator that target full stack:
+				It generates API/Templates from Swagger 2.0 YAMLS.</p>
+				<p>Frontend</p>
+				<ul>
+					<li>Angular 5 api-client using HttpClient</li>
+					<li>Angular 5 forms (template and componet) require: <a href="https://github.com/llafuente/angular-bootstrap-ui">angular-bootstrap-ui</a></li>
+				</ul>
+				<p>Backend</p>
+				<ul>
+					<li>Node server using <a href="https://github.com/expressjs/express">express</a></li>
+					<li><a href="http://mongoosejs.com/">mongoose</a> repositories</li>
+					<li>node api-client using request [Planned]</li>
+				</ul>
+				<h1 id="-nema-command-line-help"><code>nema</code> Command line Help</h1>
+				<pre><code> _  _  _ _  _
+| |(/_| | |(_|<span class="hljs-number">1.0</span>.<span class="hljs-number">0</span>
+
+
+  Usage: nema [<span class="hljs-keyword">options</span>]
+
+  Code generation from swagger
+
+
+  Option<span class="hljs-variable">s:</span>
+
+    -V, --<span class="hljs-keyword">version</span>                    output the <span class="hljs-keyword">version</span> <span class="hljs-keyword">number</span>
+    --angular5-api                   TARGET(full project): Generate <span class="hljs-keyword">an</span> Angular <span class="hljs-number">5</span> Module Api client
+    --mongoose                       TARGET(plugin@express): Generate Mongoose Schema, Models &amp; Repositories
+    --express                        TARGET(full project): Generate Express app/routes
+    --angular5-form-template <span class="hljs-symbol">&lt;path&gt;</span>  TARGET(plugin@angular5-api): Generate <span class="hljs-keyword">an</span> Angular <span class="hljs-number">5</span> Template from given model
+    --override-models                Override <span class="hljs-keyword">all</span> models <span class="hljs-keyword">while</span> agreggating
+    --override-methods               Override <span class="hljs-keyword">all</span> methods <span class="hljs-keyword">while</span> agreggating
+    --lint                           Lint output (tslint), this may take <span class="hljs-keyword">a</span> <span class="hljs-keyword">while</span>
+    --swagger <span class="hljs-symbol">&lt;path&gt;</span>                 Path <span class="hljs-keyword">to</span> swagger yml, <span class="hljs-built_in">repeat</span> <span class="hljs-keyword">to</span> aggregate (defaul<span class="hljs-variable">t:</span> )
+    --<span class="hljs-keyword">file</span> <span class="hljs-symbol">&lt;path&gt;</span>                    Output path <span class="hljs-keyword">for</span> TARGET(<span class="hljs-keyword">file</span>) path
+    --dst <span class="hljs-symbol">&lt;path&gt;</span>                     Output path <span class="hljs-keyword">for</span> TARGET(project), defaul<span class="hljs-variable">t:</span> same <span class="hljs-keyword">as</span> the <span class="hljs-keyword">first</span> swagger
+    -h, --<span class="hljs-keyword">help</span>                       output usage information
+
+  At least one swagger <span class="hljs-keyword">file</span> <span class="hljs-keyword">is</span> required
+  At least one TARGET <span class="hljs-keyword">is</span> required
+
+  Example<span class="hljs-variable">s:</span>
+
+    nema --swagger=swagger-<span class="hljs-keyword">file</span>.yml --mongoose --express --dst server/
+    nema --swagger=swagger-<span class="hljs-keyword">file</span>.yml --angular5-api --dst angular/app/src/api/
+</code></pre><h2 id="swagger-aggregation">Swagger aggregation</h2>
+				<p>You can aggregate many Swaggers into one unique generation.</p>
+				<p><code>nema</code> will take global schema configuration from the first file and
+				add parameters, definitions and paths from each other files.</p>
+				<p>In the end you will have one unique module with all methods an models.</p>
+				<p>Be aware of collisions :)</p>
+				<pre><code>nema <span class="hljs-params">--swagger=</span><span class="hljs-string">./base-api.yml</span> <span class="hljs-params">--swagger=</span><span class="hljs-string">./products-api.yml</span> <span class="hljs-params">--angular5-api</span>
+</code></pre><h2 id="limitations-changes-caveats">Limitations / Changes / Caveats</h2>
+				<p><code>nema</code> has to do some triage, we cannot support all SWAGGER features and also
+				can&#39;t do everything 100% <code>standard</code>.</p>
+				<ul>
+					<li><p>Every <code>type</code> with <code>type:object</code> must be declared at definitions (first level).
+						everything in <code>nema</code> need a name</p>
+					</li>
+					<li><p>Operation Object: <code>operationId</code> is required</p>
+					</li>
+					<li><p><code>schemes</code> is required</p>
+					</li>
+					<li><p>Do not support <code>$ref</code> to external source files</p>
+					</li>
+					<li><p><code>/swagger</code> path is forbidden it&#39;s used by swagger-ui</p>
+					</li>
+					<li><p>A sucess Response (2xx) must be defined and only one
+						<code>default</code> response is considered as 200</p>
+					</li>
+					<li><p>No recursive types</p>
+						<p>It will give you compile errors on generated code:</p>
+						<pre><code><span class="hljs-keyword">error </span>TS2395: Individual declarations in merged declaration 'XXX' must be all exported or all local.
+<span class="hljs-keyword">error </span>TS2440: Import declaration conflicts with local declaration of 'XXX'.
+</code></pre></li>
+					<li><p><code>type:string</code> with <code>format: date|date-format</code> are treated the same:
+						Javascript Date</p>
+					</li>
+					<li><p><code>type:number</code> with <code>format: int32|int64|float|double</code> are the same:
+						Javascript Number (double)</p>
+					</li>
+				</ul>
+				<p>Things that may change in the future:</p>
+				<ul>
+					<li>Only one body parameter is allowed. This is by design to keep compatibility
+					with an older generator.</li>
+				</ul>
+				<h2 id="zoned-templates">Zoned templates</h2>
+				<p><code>nema</code> generated files are meant to be committed. And inside some files you
+				can even work. Like express routes.</p>
+				<p>Zoned templates are generated files that are safe to edit by you
+				(our beloved end-user). Zones are delimited with an HTML like comment.</p>
+				<p>For example:</p>
+				<pre><code class="lang-html">...
+export const app = express();
+//<span class="hljs-tag">&lt;<span class="hljs-name">express-configuration</span>&gt;</span>
+app.set("mongodb", process.env.MONGO_URI || "mongodb://127.0.0.1:27017/test");
+
+// false to disable
+app.set("cors", false);
+//<span class="hljs-tag">&lt;/<span class="hljs-name">express-configuration</span>&gt;</span>
+...
+</code></pre>
+				<p>Internal zones are marked as <code>&lt;internal-*&gt;</code> and should not be edited. This is
+				used to compose generated files.</p>
+				<h2 id="type-any">Type: any</h2>
+				<p>If you dont add properties to and object type, will be any in TypeScript.</p>
+				<pre><code>definitions:
+  object_with_any:
+    <span class="hljs-class"><span class="hljs-keyword">type</span></span>: <span class="hljs-class"><span class="hljs-keyword">object</span></span>
+    properties:
+      this_is_any:
+        <span class="hljs-class"><span class="hljs-keyword">type</span></span>: <span class="hljs-class"><span class="hljs-keyword">object</span></span>
+</code></pre><h1 id="-nema-custom-metadata"><code>nema</code> (custom) metadata</h1>
+				<h2 id="-schema-https-github-com-oai-openapi-specification-blob-master-versions-2-0-md-schema-"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema">Schema</a></h2>
+				<pre><code>x-nema:
+<span class="hljs-symbol">  angularClientModuleName:</span> XXX
+<span class="hljs-symbol">  angularClientNodeModuleName:</span> xxx
+<span class="hljs-symbol">  apiName:</span> XXXApi
+<span class="hljs-symbol">  frontBasePath:</span> <span class="hljs-meta-keyword">/reverse-proxy/</span>api/v1 <span class="hljs-meta"># optional</span>
+</code></pre><h2 id="-operation-object-https-github-com-oai-openapi-specification-blob-master-versions-2-0-md-operationobject-"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject">Operation Object</a></h2>
+				<h3 id="x-nema-resolve">x-nema-resolve</h3>
+				<p>Create an <a href="#angular5-resolve">angular 5 resolve see example below</a></p>
+				<h3 id="x-nema-override">x-nema-override</h3>
+				<p>Override endpoint properties, this allow to use other generators without
+				collisions or aggregate multiple files renaming operationIds...</p>
+				<pre><code><span class="hljs-attr">basePath:</span> <span class="hljs-string">/books</span>
+<span class="hljs-attr">paths:</span>
+  <span class="hljs-string">/{productId}:</span>
+<span class="hljs-attr">    get:</span>
+<span class="hljs-attr">      description:</span> <span class="hljs-string">get</span> <span class="hljs-string">book</span> <span class="hljs-string">product</span>
+<span class="hljs-attr">      operationId:</span> <span class="hljs-string">getProduct</span>
+<span class="hljs-attr">      x-override-front:</span>
+<span class="hljs-attr">        operationId:</span> <span class="hljs-string">getBook</span>
+</code></pre><p>The final operation id will be: getBook
+				<em>dev note</em>: getProduct won&#39;t be accesible at any target generation.</p>
+				<h2 id="-parameter-object-https-github-com-oai-openapi-specification-blob-master-versions-2-0-md-parameterobject-"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject">Parameter Object</a></h2>
+				<h3 id="x-nema-auto-injected">x-nema-auto-injected</h3>
+				<p>Some parameter could be injected by a reverse proxy / microgateway,
+					those are useful for backend,
+				but you don&#39;t want those in your front application.</p>
+				<pre><code><span class="hljs-attr">paths:</span>
+  <span class="hljs-string">/{productId}:</span>
+<span class="hljs-attr">    get:</span>
+<span class="hljs-attr">      description:</span> <span class="hljs-string">get</span> <span class="hljs-string">book</span> <span class="hljs-string">product</span>
+<span class="hljs-attr">      operationId:</span> <span class="hljs-string">getProduct</span>
+<span class="hljs-attr">      produces:</span>
+<span class="hljs-bullet">        -</span> <span class="hljs-string">application/json</span>
+<span class="hljs-attr">      parameters:</span>
+<span class="hljs-attr">        - name:</span> <span class="hljs-string">reverse-proxy-ip</span>
+<span class="hljs-attr">          x-nema-auto-injected:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">          in:</span> <span class="hljs-string">header</span>
+<span class="hljs-attr">          description:</span> <span class="hljs-string">BBVA</span> <span class="hljs-string">user</span> <span class="hljs-string">code.</span>
+<span class="hljs-attr">          required:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">          type:</span> <span class="hljs-string">string</span>
+</code></pre><h2 id="-definitions-object-https-github-com-oai-openapi-specification-blob-master-versions-2-0-md-definitionsobject-"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject">Definitions Object</a></h2>
+				<h3 id="x-nema-plural">x-nema-plural</h3>
+				<p>Set plural used for generating, but default will use
+				<a href="https://www.npmjs.com/package/pluralize">pluralize</a></p>
+				<h3 id="x-nema-db">x-nema-db</h3>
+				<p>Mark model as a db entity (mongoose treat it as a collection)</p>
+				<pre><code><span class="hljs-attr">definitions:</span>
+<span class="hljs-attr">  User:</span>
+<span class="hljs-attr">    x-nema-db:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">    type:</span> <span class="hljs-string">object</span>
+<span class="hljs-attr">    required:</span>
+<span class="hljs-bullet">      -</span> <span class="hljs-string">userlogin</span>
+<span class="hljs-bullet">      -</span> <span class="hljs-string">password</span>
+<span class="hljs-attr">    properties:</span>
+<span class="hljs-attr">      userlogin:</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">Userlogin</span>
+<span class="hljs-attr">        maxLength:</span> <span class="hljs-number">64</span>
+<span class="hljs-attr">        x-nema-lowercase:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        x-nema-unique:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">      password:</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">Userlogin</span>
+<span class="hljs-attr">        maxLength:</span> <span class="hljs-number">64</span>
+<span class="hljs-attr">        x-nema-lowercase:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        x-nema-unique:</span> <span class="hljs-literal">true</span>
+</code></pre><h2 id="-schema-object-https-github-com-oai-openapi-specification-blob-master-versions-2-0-md-schemaobject-"><a href="https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject">Schema Object</a></h2>
+				<h3 id="x-nema-control">x-nema-control</h3>
+				<p>Force a custom control when generating form templates.</p>
+				<p>for example: <code>type: string</code> will be an input text, if you want a textare use:
+				<code>x-nema-control: textarea</code></p>
+				<h4 id="x-nema-readonly">x-nema-readonly</h4>
+				<p>Mark type as &quot;cannot-be-created/updated&quot;.</p>
+				<p>In forms is displayed as disabled.</p>
+				<p>When you do the API implementation you should handle it manually.
+				&lt;!--</p>
+				<h4 id="x-nema-lowercase">x-nema-lowercase</h4>
+				<p>Force lowercase</p>
+				<h4 id="x-nema-unique">x-nema-unique</h4>
+				<p>Mark the property as unique.
+				--&gt;</p>
+				<h3 id="x-nema-fk">x-nema-fk</h3>
+				<p>Tell nema your type is a foreignKey (mongoose treat it as a ref)</p>
+				<pre><code><span class="hljs-attribute">definitions</span>:
+  <span class="hljs-attribute">Test</span>:
+    <span class="hljs-attribute">type</span>: object
+    <span class="hljs-attribute">properties</span>:
+      <span class="hljs-attribute">subscribers_user_ids</span>:
+        <span class="hljs-attribute">type</span>: array
+        <span class="hljs-attribute">description</span>: Usuarios inscritos
+        <span class="hljs-attribute">items</span>:
+          <span class="hljs-attribute">type</span>: string
+          <span class="hljs-attribute">x-nema-fk</span>: <span class="hljs-string">"#/definitions/User"</span>
+</code></pre><h1 id="angular-5-api-client">Angular 5 Api client</h1>
+				<p><a name="angular5-resolve"></a></p>
+				<h2 id="resolves">Resolves</h2>
+				<p><code>nema</code> create a Resolve for Angular and search parameters in parents routes:
+				<code>params</code> (<code>route.snapshot.params</code>) &amp; <code>data</code> (<code>route.snapshot.data</code>).</p>
+				<p><code>params</code> has higher priority than <code>data</code>.</p>
+				<h3 id="resolve-example">Resolve example</h3>
+				<p>Angular route configuration:</p>
+				<pre><code>  {
+    <span class="hljs-attribute">path</span>: <span class="hljs-string">"strategy/:strategyId"</span>,
+    component: RootComponent,
+    data: {},
+    <span class="hljs-selector-tag">resolve</span>: {
+      <span class="hljs-attribute">strategy</span>: StrategyResolve,
+    }
+  }
+</code></pre><p>Swagger extension:</p>
+				<pre><code><span class="hljs-attr">paths:</span>
+  <span class="hljs-string">/strategy/{strategyId}</span>
+<span class="hljs-attr">    parameters:</span>
+<span class="hljs-attr">      - name:</span> <span class="hljs-string">strategyId</span>
+<span class="hljs-attr">        in:</span> <span class="hljs-string">path</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">Strategy</span> <span class="hljs-string">identifier</span>
+<span class="hljs-attr">        required:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">    get:</span>
+<span class="hljs-attr">      name:</span> <span class="hljs-string">getStrategy</span>
+<span class="hljs-attr">      description:</span> <span class="hljs-string">Get</span> <span class="hljs-string">a</span> <span class="hljs-string">single</span> <span class="hljs-string">strategy</span> <span class="hljs-string">by</span> <span class="hljs-string">Id</span>
+<span class="hljs-attr">      x-nema-resolve:</span>
+<span class="hljs-attr">        name:</span> <span class="hljs-string">StrategyResolve</span>
+<span class="hljs-attr">        errorURL:</span> <span class="hljs-string">/error</span>
+<span class="hljs-attr">        parameters:</span> <span class="hljs-comment"># map route.snapshot.params with the method parameter name</span>
+<span class="hljs-attr">          strategyId:</span> <span class="hljs-string">strategyId</span>
+</code></pre><h3 id="resolve-advanced-example">Resolve advanced example</h3>
+				<p>Angular route configuration:</p>
+				<pre><code>  {
+<span class="hljs-symbol">    data:</span> {
+<span class="hljs-symbol">      ref2Id:</span> <span class="hljs-number">6</span>
+    },
+<span class="hljs-symbol">    children:</span> [
+      {
+<span class="hljs-symbol">        path:</span> <span class="hljs-string">"App1/files/:fileId"</span>,
+<span class="hljs-symbol">        component:</span> GetFilesComponent,
+<span class="hljs-symbol">        data:</span> {
+<span class="hljs-symbol">          appName:</span> <span class="hljs-string">"App1"</span>
+        },
+<span class="hljs-symbol">        resolve:</span> {
+<span class="hljs-symbol">          strategy:</span> FileResolve, <span class="hljs-comment">// id -&gt; fileId: ?, app -&gt; appName: "App", refId -&gt; ref2Id: 6</span>
+        }
+      },
+    ]
+  }
+  {
+<span class="hljs-symbol">    path:</span> <span class="hljs-string">"App2/files/:fileId"</span>,
+<span class="hljs-symbol">    component:</span> GetFilesComponent,
+<span class="hljs-symbol">    data:</span> {
+<span class="hljs-symbol">      appName:</span> <span class="hljs-string">"App2"</span>,
+<span class="hljs-symbol">      refId:</span> <span class="hljs-number">7</span>
+    },
+<span class="hljs-symbol">    resolve:</span> {
+<span class="hljs-symbol">      strategy:</span> MagicResolve, <span class="hljs-comment">// id -&gt; fileId: ?, app -&gt; appName: "App2", refId -&gt; refId: 7</span>
+    }
+  }
+</code></pre><p>Swagger extension:</p>
+				<pre><code><span class="hljs-attr">paths:</span>
+  <span class="hljs-string">/strategy/{id}</span>
+<span class="hljs-attr">    parameters:</span>
+<span class="hljs-attr">      - name:</span> <span class="hljs-string">id</span>
+<span class="hljs-attr">        in:</span> <span class="hljs-string">path</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">identifier</span>
+<span class="hljs-attr">        required:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">      - name:</span> <span class="hljs-string">app</span>
+<span class="hljs-attr">        in:</span> <span class="hljs-string">path</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">Application</span> <span class="hljs-string">name</span>
+<span class="hljs-attr">        required:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">     - name:</span> <span class="hljs-string">refId</span>
+<span class="hljs-attr">        in:</span> <span class="hljs-string">path</span>
+<span class="hljs-attr">        description:</span> <span class="hljs-string">Reference</span> <span class="hljs-string">Id,</span> <span class="hljs-string">depends</span> <span class="hljs-string">on</span> <span class="hljs-string">your</span> <span class="hljs-string">application</span>
+<span class="hljs-attr">        required:</span> <span class="hljs-literal">true</span>
+<span class="hljs-attr">        type:</span> <span class="hljs-string">string</span>
+<span class="hljs-attr">    get:</span>
+<span class="hljs-attr">      name:</span> <span class="hljs-string">getFiles</span>
+<span class="hljs-attr">      description:</span> <span class="hljs-string">Give</span> <span class="hljs-string">me</span> <span class="hljs-string">some</span> <span class="hljs-string">sparks</span>
+<span class="hljs-attr">      x-nema-resolve:</span>
+<span class="hljs-attr">        name:</span> <span class="hljs-string">FileResolve</span>
+<span class="hljs-attr">        errorURL:</span> <span class="hljs-string">/error</span>
+<span class="hljs-attr">        parameters:</span>
+<span class="hljs-attr">          id:</span> <span class="hljs-string">fileId</span>
+<span class="hljs-attr">          app:</span> <span class="hljs-string">appName</span>
+<span class="hljs-attr">          refId:</span> <span class="hljs-comment"># search any, the first found is used</span>
+<span class="hljs-bullet">            -</span> <span class="hljs-string">refId</span>
+<span class="hljs-bullet">            -</span> <span class="hljs-string">ref2Id</span>
+</code></pre><h2 id="error-handling-angular-5-client-">Error handling (Angular 5 Client)</h2>
+				<h3 id="global-error-handling-restapi-onerror-">Global error handling (RestApi.onError)</h3>
+				<p>It&#39;s recommended to use a global component, so you don&#39;t need to handle
+				subscriptions.</p>
+				<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { RestApi } <span class="hljs-keyword">from</span> <span class="hljs-string">"./api"</span>;
+<span class="hljs-keyword">import</span> { Component } <span class="hljs-keyword">from</span> <span class="hljs-string">"@angular/core"</span>;
+<span class="hljs-keyword">import</span> { Subscription } <span class="hljs-keyword">from</span> <span class="hljs-string">"rxjs/Subscription"</span>;
+
+<span class="hljs-meta">@Component</span>({
+  templateUrl: <span class="hljs-string">"./PlanDetails.component.html"</span>,
+})
+<span class="hljs-keyword">class</span> TestComponent <span class="hljs-keyword">implements</span> OnDestroy {
+  subscription: Subscription;
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">
+    <span class="hljs-keyword">public</span> restApi: RestApi,
+  </span>) {
+
+      <span class="hljs-keyword">this</span>.subscription = <span class="hljs-keyword">this</span>.restApi.onError.subscribe(<span class="hljs-function">(<span class="hljs-params">err: CommonException</span>) =&gt;</span> {
+        <span class="hljs-comment">// guard: only once!</span>
+        <span class="hljs-comment">// this may not be needed... if you have a global component</span>
+        <span class="hljs-keyword">if</span> ((err <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).handled !== <span class="hljs-literal">true</span>) {
+          (err <span class="hljs-keyword">as</span> <span class="hljs-built_in">any</span>).handled = <span class="hljs-literal">true</span>;
+          <span class="hljs-comment">//display the error!</span>
+          <span class="hljs-built_in">console</span>.log(err.message);
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    <span class="hljs-keyword">this</span>.subscription.unsubscribe();
+  }
+}
+</code></pre>
+				<h3 id="local-error-handling">Local error handling</h3>
+				<pre><code><span class="hljs-keyword">import</span> { RestApi } <span class="hljs-keyword">from</span> <span class="hljs-string">"./api"</span>;
+<span class="hljs-keyword">import</span> { Component } <span class="hljs-keyword">from</span> <span class="hljs-string">"@angular/core"</span>;
+<span class="hljs-keyword">import</span> { Subscription } <span class="hljs-keyword">from</span> <span class="hljs-string">"rxjs/Subscription"</span>;
+
+<span class="hljs-meta">@Component</span>({
+  templateUrl: <span class="hljs-string">"./PlanDetails.component.html"</span>,
+})
+<span class="hljs-keyword">class</span> TestComponent <span class="hljs-keyword">implements</span> OnDestroy {
+  testId: <span class="hljs-built_in">number</span>;
+  <span class="hljs-keyword">constructor</span>(<span class="hljs-params">
+    <span class="hljs-keyword">public</span> restApi: RestApi,
+  </span>) {
+  }
+
+  test() {
+    <span class="hljs-keyword">const</span> x = <span class="hljs-keyword">this</span>.restApi.test(
+      <span class="hljs-keyword">this</span>.testId,
+      { emitError: <span class="hljs-literal">false</span> } <span class="hljs-comment">// handle error locally</span>
+    );
+
+    x.subscribe(<span class="hljs-function">(<span class="hljs-params">response</span>) =&gt;</span> {
+      <span class="hljs-comment">// sucess</span>
+    }, <span class="hljs-function">(<span class="hljs-params">err: api.CommonException</span>) =&gt;</span> {
+      <span class="hljs-comment">// error</span>
+    });
+  }
+}
+</code></pre><h1 id="develop-notes">Develop notes</h1>
+				<p>Notes to develop. Not meant to anybody of you :)</p>
+				<p>While developing rebuild is necessary everytime, edit <code>bin/nema.js</code> and
+					uncomment the compilation step,
+				then remove from working copy so it won&#39;t be committed</p>
+				<pre><code>git <span class="hljs-keyword">update</span>-<span class="hljs-keyword">index</span> <span class="hljs-comment">--assume-unchanged bin/nema.js</span>
+</code></pre><pre><code># Install mongodb
+# run server
+"C:<span class="hljs-symbol">\P</span>rogram Files<span class="hljs-symbol">\M</span>ongoDB<span class="hljs-symbol">\S</span>erver<span class="hljs-symbol">\3</span>.6<span class="hljs-symbol">\b</span>in<span class="hljs-symbol">\m</span>ongod.exe" --dbpath C:<span class="hljs-symbol">\d</span>ata<span class="hljs-symbol">\d</span>b
+</code></pre>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class="globals  ">
+						<a href="globals.html"><em>Globals</em></a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_api_.html">"<wbr>Api"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_method_.html">"<wbr>Method"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_model_.html">"<wbr>Model"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_parameter_.html">"<wbr>Parameter"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_response_.html">"<wbr>Response"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_type_.html">"<wbr>Type"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_typescriptfile_.html">"<wbr>Typescript<wbr>File"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_angular5api_.html">"generators/<wbr>Angular5<wbr>Api"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_angular5formtemplate_.html">"generators/<wbr>Angular5<wbr>Form<wbr>Template"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_commongenerator_.html">"generators/<wbr>Common<wbr>Generator"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_expressapi_.html">"generators/<wbr>Express<wbr>Api"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_expressapp_.html">"generators/<wbr>Express<wbr>App"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_expresscsv_.html">"generators/<wbr>ExpressCSV"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_mongooseapi_.html">"generators/<wbr>Mongoose<wbr>Api"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_generators_mongooseapp_.html">"generators/<wbr>Mongoose<wbr>App"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_nema_.html">"nema"</a>
+					</li>
+					<li class=" tsd-kind-external-module">
+						<a href="modules/_utils_.html">"utils"</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-module"><span class="tsd-kind-icon">Module</span></li>
+				<li class="tsd-kind-object-literal"><span class="tsd-kind-icon">Object literal</span></li>
+				<li class="tsd-kind-variable"><span class="tsd-kind-icon">Variable</span></li>
+				<li class="tsd-kind-function"><span class="tsd-kind-icon">Function</span></li>
+				<li class="tsd-kind-function tsd-has-type-parameter"><span class="tsd-kind-icon">Function with type parameter</span></li>
+				<li class="tsd-kind-index-signature"><span class="tsd-kind-icon">Index signature</span></li>
+				<li class="tsd-kind-type-alias"><span class="tsd-kind-icon">Type alias</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+				<li class="tsd-kind-enum-member"><span class="tsd-kind-icon">Enumeration member</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-enum"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-enum"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
+				<li class="tsd-kind-interface tsd-has-type-parameter"><span class="tsd-kind-icon">Interface with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-interface"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-interface"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
+				<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class"><span class="tsd-kind-icon">Accessor</span></li>
+				<li class="tsd-kind-index-signature tsd-parent-kind-class"><span class="tsd-kind-icon">Index signature</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-inherited"><span class="tsd-kind-icon">Inherited accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-protected"><span class="tsd-kind-icon">Protected accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
+				<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private accessor</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static property</span></li>
+				<li class="tsd-kind-call-signature tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="http://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+<script>if (location.protocol == 'file:') document.write('<script src="assets/js/search.js"><' + '/script>');</script>
+</body>
+</html>

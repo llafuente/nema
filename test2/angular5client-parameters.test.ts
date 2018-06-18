@@ -2,6 +2,7 @@ import { Api } from "../src/Api";
 import { Angular5Api } from "../src/generators/Angular5Api";
 import { ParameterType } from "../src/Parameter";
 import test from "ava";
+import * as path from "path";
 
 let api: Api;
 test.cb.serial("parse global parameters", (t) => {
@@ -26,6 +27,6 @@ test.cb.serial("parse global parameters", (t) => {
     t.is(param.type.toTypeScriptType(), "number");
   });
 
-  (new Angular5Api(`./test/angular5client-parameters/`, api)).generate(true, false);
+  (new Angular5Api(path.join(__dirname, `../test-generated/angular5client-parameters/`), api)).generate(true, false);
   t.end();
 });

@@ -1,0 +1,15 @@
+{
+  "name": "AutoHedgerApiModule",
+  "version": "1.2.0",
+  "description": "These APIs allow to handle Algo Framework",
+  "author": {
+    "name": "XXX",
+    "email": "YYY@ZZZ.com",
+    "url": "https://abc.com"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=5.2.0",
+    "typescript": "*"
+  },
+  "main": "./index.ts"
+}

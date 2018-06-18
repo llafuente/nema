@@ -6,12 +6,6 @@ docs/ # not ready yet
 # typescript generated files need to be commited
 /dist/*.js.map
 /dist/**/*.js.map
-/test/api-test-001/
-/test/angular5client-resolve/
-/test/angular5client-parameters/
-/test/pet-store-client/
-/test/pet-store-server/
-/test/responses-references-client/
-/test/responses-references-server/
+/test-generated/
 /tmp/
 $Recycle.Bin/

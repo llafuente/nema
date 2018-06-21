@@ -75,7 +75,7 @@ export function fromFile(filename: string, xml: Buffer): ${model.interfaceName}[
   }
 
   if (workbook.SheetNames.length > 1) {
-    throw new Error("Only one sheet page supportted");
+    throw new Error("Only one sheet page supported");
   }
 
   //console.log(XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]));

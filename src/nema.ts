@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { Api, parseYML } from "./Api";
+import { Api } from "./Api";
 import { Angular5Api } from "./generators/Angular5Api";
 import { Angular5FormTemplate } from "./generators/Angular5FormTemplate";
 import { MongooseApi } from "./generators/MongooseApi";
@@ -11,6 +11,7 @@ import { ExpressCSV } from "./generators/ExpressCSV";
 
 
 import * as path from "path";
+import * as fs from "fs";
 import * as program from "commander";
 const chalk = require("chalk");
 
@@ -123,7 +124,34 @@ if (dstPath && !path.isAbsolute(dstPath)) {
   dstPath = path.join(process.cwd(), dstPath);
 }
 
-program.swagger.forEach((swagger) => {
+import { parse as parseSwagger } from "swagger-parser";
+function parse(filename, cb: (openApi3) => void) {
+  parseSwagger(filename, (err, swagger) => {
+    if (err) throw err;
+
+    if (!swagger.openapi) {
+      var converter = require('swagger2openapi');
+      return converter.convertObj(swagger, {}, function(err, options){
+        if (err) throw err;
+
+        // options.openapi contains the converted definition
+        cb(options.openapi);
+      });
+    }
+
+    cb(swagger);
+  });
+}
+
+//import * as async from "async";
+
+
+program.swagger.forEach((swaggerOrOpenApiFilename) => {
+  parse(swaggerOrOpenApiFilename, (openApi3) => {
+    api = Api.parseOpenApi(swaggerOrOpenApiFilename, openApi3);
+  });
+  // TODO aggregate!
+  /*
   if (api) {
     api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
   } else {
@@ -133,44 +161,44 @@ program.swagger.forEach((swagger) => {
       dstPath = path.dirname(swagger);
     }
   }
+  */
 });
 
-//
-// add common definitions that need generator need
-// TODO: this need to dissapear asap
-//
-const mongooseSwagger = parseYML(path.join(__dirname, "..", "..", "common.yml"));
-api.parseSwaggerDefinitions(mongooseSwagger, true);
+setTimeout(function() {
+  const projectGenerators = [];
 
-const projectGenerators = [];
+  // create all projectGenerators
+  // some generator may modify api metadata
 
-// create all projectGenerators
-// some generator may modify api metadata
+  if (program.angular5Api) {
+    green("Instancing generator: angular5-api");
+    new Angular5Api(dstPath, api).generate(true, !!program.lint);
+  } else if (program.expressApi) {
+    green("Instancing generator: express");
+    new ExpressApi(dstPath, api).generate(true, !!program.lint);
+  } else if (program.expressApp) {
+    green("Instancing generator: express App");
+    new ExpressApp(dstPath, api).generate(true, !!program.lint);
+  } else if (program.mongooseApi) {
+    green("Instancing generator: mongoose");
+    new MongooseApi(dstPath, api).generate(true, !!program.lint);
+  } else if (program.mongooseApp) {
+    green("Instancing generator: mongoose App");
+    new MongooseApp(dstPath, api).generate(true, !!program.lint);
+  } else if (program.expressCsv) {
+    green("Instancing generator: express CSV");
+    new ExpressCSV(dstPath, api).generate(true, !!program.lint);
+  } else if (program.angular5FormTemplate) {
+    const t = new Angular5FormTemplate(api);
+    green("Generate Angular 5 template");
 
-if (program.angular5Api) {
-  green("Instancing generator: angular5-api");
-  new Angular5Api(dstPath, api).generate(true, !!program.lint);
-} else if (program.expressApi) {
-  green("Instancing generator: express");
-  new ExpressApi(dstPath, api).generate(true, !!program.lint);
-} else if (program.expressApp) {
-  green("Instancing generator: express App");
-  new ExpressApp(dstPath, api).generate(true, !!program.lint);
-} else if (program.mongooseApi) {
-  green("Instancing generator: mongoose");
-  new MongooseApi(dstPath, api).generate(true, !!program.lint);
-} else if (program.mongooseApp) {
-  green("Instancing generator: mongoose App");
-  new MongooseApp(dstPath, api).generate(true, !!program.lint);
-} else if (program.expressCsv) {
-  green("Instancing generator: express CSV");
-  new ExpressCSV(dstPath, api).generate(true, !!program.lint);
-} else if (program.angular5FormTemplate) {
-  const t = new Angular5FormTemplate(api);
-  green("Generate Angular 5 template");
+    t.generate(program.angular5FormTemplate, program.file);
+  } else {
+    // should be here
+    throw new Error("wtf?!");
+  }
 
-  t.generate(program.angular5FormTemplate, program.file);
-} else {
-  // should be here
-  throw new Error("wtf?!");
-}
+  fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
+
+}, 5000)
+

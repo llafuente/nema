@@ -1,5 +1,5 @@
 import * as assert from "assert";
-import { Api, parseYML } from "../Api";
+import { Api } from "../Api";
 import { Model } from "../Model";
 import { Type, Kind } from "../Type";
 import * as fs from "fs";

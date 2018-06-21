@@ -135,7 +135,7 @@ import { Component, Input } from "@angular/core";
           return r;
         }).join("\n\n");
       case Kind.REFERENCE:
-        const refModel = this.api.getReference(type.referenceModel);
+        const refModel = this.api.getReference<Model>(type.referenceModel);
         //if (refModel.type.type == Kind.ENUM) {
           //refModel.type.description = type.description;
           return this.getTemplateHTMLType(refModel.type, path, ts);

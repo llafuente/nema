@@ -18,11 +18,16 @@
   "author": "Luis Lafuente Morales",
   "license": "MIT",
   "dependencies": {
+    "@types/swagger-parser": "^4.0.2",
+    "async": "^2.6.1",
     "commander": "2.13.0",
     "ejs": "2.5.7",
     "lodash": "4.17.4",
     "mkdirp": "0.5.1",
+    "openapi3-ts": "^0.12.0",
     "pluralize": "7.0.0",
+    "swagger-parser": "^5.0.0",
+    "swagger2openapi": "^2.11.16",
     "yamljs": "0.3.0"
   },
   "devDependencies": {

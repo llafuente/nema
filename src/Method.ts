@@ -1,7 +1,10 @@
 import { Api } from "./Api";
 import { Parameter, ParameterType } from "./Parameter";
 import { Response } from "./Response";
+import { Type } from "./Type";
+import { OperationObject, ParameterObject, RequestBodyObject } from "openapi3-ts";
 import * as _ from "lodash";
+import { checkContent, Limitation, Deprecation } from "./utils";
 
 export class Method {
   api: Api = null;
@@ -12,7 +15,7 @@ export class Method {
    */
   url: string = null;
   /**
-   * Unique name for this method. Will be used as method/function name
+   * Unique name for this operation. Will be used as method/function name
    * in the generators
    */
   operationId: string = null;
@@ -27,20 +30,23 @@ export class Method {
   consumes: string[] = [];
   produces: string[] = [];
 
+  body: {
+    encoding: string,
+    type: Type
+  };
+
   resolve: {
     name: string;
     parameters: { [name: string]: string };
     errorURL: { [name: string]: string };
   } = null;
 
-  static parseSwagger(
+  static parseOpenApi(
     api: Api,
     verb: string,
     url: string,
     parameters: any[],
-    consumes: string[],
-    produces: string[],
-    method: any,
+    operation: OperationObject,
   ): Method {
     const m = new Method();
 
@@ -48,77 +54,78 @@ export class Method {
 
     m.verb = verb.toLowerCase();
     m.url = url;
-    if (!method.operationId) {
-      console.error(method);
-      throw new Error(`operationId is required at ${api.filename}`);
+    if (!operation.operationId) {
+      console.error(operation);
+      throw new Limitation(`operationId is required at ${api.filename}`);
     }
-    m.operationId = method.operationId;
-    m.filename = `/src/routes/${method.operationId}.ts`;
-    m.description = method.description;
-    m.consumes = consumes;
-    m.produces = produces;
+    m.operationId = operation.operationId;
+    m.filename = `/src/routes/${operation.operationId}.ts`;
+    m.description = operation.description;
 
-    m.parameters = parameters.map((x) => {
-      return Parameter.parseSwagger(api, x);
+    m.parameters = parameters.map((x: ParameterObject) => {
+      return Parameter.parseOpenApi(api, x);
     });
 
-    // check only one body allowed
-    let bodyCount = 0;
-    for (let param of m.parameters) {
-      if (param.in == ParameterType.BODY) {
-        ++bodyCount;
-      }
-    }
-    if (bodyCount > 1) {
-      console.error(method, bodyCount);
-      throw new Error("exceed parameters in body, only 0 or 1");
+
+    const body = operation.requestBody as RequestBodyObject;
+    if (body && body.content) {
+      checkContent(body.content, m);
+      const k = Object.keys(body.content);
+      m.body = {
+        encoding: k[0],
+        type: Type.parseSwagger(api, body.content[k[0]].schema, null, false)
+      };
+
+      console.log(m.body);
     }
 
-    // Keep compat with our legacy generator
-    // this is out of the swagger standard, sry
-    if (Array.isArray(method.responses)) {
-      const responses = {};
-      method.responses.forEach((r) => {
-        _.each(r, (response, httpCode) => {
-          responses[httpCode] = response;
-        });
-      });
-      method.responses = responses;
-    }
-
-    _.each(method.responses, (response, responseType) => {
+    _.each(operation.responses, (response, responseType) => {
       m.responses.push(Response.parseSwagger(api, responseType, response));
     });
 
     // check no multiple success responses allowed
     let oks = 0;
+    let encodings = [];
     m.responses.forEach((response) => {
       if (response.httpCode >= 200 && response.httpCode < 300) {
         ++oks;
       }
+      if (response.encoding && encodings.indexOf(response.encoding) === -1) {
+        encodings.push(response.encoding);
+      }
     });
     if (oks > 1) {
-      console.error(method);
-      throw new Error(`invalid responses, multiple success responses found at ${api.filename}`);
+      console.error(operation);
+      throw new Limitation(`invalid responses, multiple success responses found at ${api.filename}`);
     }
+    if (encodings.length > 1) {
+      console.error(m);
+      throw new Limitation(`invalid responses, multiple encodings found at ${api.filename}`);
+    }
+
     //end-check
 
     // TODO check format!
-    if (method["x-front-resolve"]) {
-      console.warn(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
+    if (operation["x-front-resolve"]) {
+      console.error(m);
+      throw new Deprecation(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
     }
 
-    m.resolve = method["x-front-resolve"] || method["x-nema-resolve"] || null;
+    m.resolve = operation["x-nema-resolve"] || null;
 
-    if (method["x-override-front"]) {
+    if (operation["x-override-front"]) {
       console.warn(`deprecated usage: x-override-front, parsing ${api.filename}`);
     }
 
     // very unsafe :)
-    const override = method["x-override-front"] || method["x-nema-override"] || {};
+    const override = operation["x-override-front"] || operation["x-nema-override"] || {};
     _.assign(m, override);
 
     return m;
+  }
+
+  hasBody(): boolean {
+     return !!this.body;
   }
 
   countParams(filter: ParameterType = null, skipAutoInjected: boolean): number {
@@ -196,15 +203,13 @@ export class Method {
   }
   /** Loop each parameter of type body resolving any references */
   eachBodyParam(cb: (p: Parameter) => void) {
-    this.parameters.forEach((p) => {
-      if (p.reference) {
-        p = this.api.getReference(p.reference) as Parameter;
-      }
-
-      if (p.in == ParameterType.BODY) {
-        cb(p);
-      }
-    });
+    if (this.body) {
+      const p = new Parameter();
+      p.in = ParameterType.BODY;
+      p.name = "$body";
+      p.type = this.body.type;
+      cb(p);
+    }
   }
   /** Loop each parameter of type file resolving any references */
   eachFileParam(cb: (p: Parameter) => void) {
@@ -219,31 +224,33 @@ export class Method {
     });
   }
 
-  /** Get accept header contents */
-  getAccept() {
-    if (this.producesJSON()) {
-      return "application/json";
-    }
-    if (this.produces.indexOf("text/plain") !== -1) {
-      return "text/plain";
-    }
-    if (this.produces.indexOf("text/html") !== -1) {
-      return "text/html";
+  getEnconding() {
+    for (let response of this.responses) {
+      if (response.encoding) {
+        return response.encoding;
+      }
     }
 
-    return this.produces[0];
+    return null;
+  }
+
+  /** Get accept header contents */
+  getAccept() {
+    return this.getEnconding();
   }
 
   producesJSON(): boolean {
-    return this.produces.indexOf("application/json") !== -1;
+    const enconding = this.getEnconding();
+    return enconding && enconding == "application/json";
   }
 
   producesText(): boolean {
-    return this.produces.indexOf("text/") !== -1;
+    const enconding = this.getEnconding();
+    return enconding && enconding.indexOf("text/") !== -1;
   }
 
   producesBlob(): boolean {
-    return this.produces.length && !this.producesJSON() && !this.producesText();
+    return this.getEnconding() != null && !this.producesJSON() && !this.producesText();
   }
   /**
    * The method require body?

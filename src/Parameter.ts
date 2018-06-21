@@ -1,6 +1,8 @@
-import { Type } from "./Type";
+import { Type, Kind } from "./Type";
 import { Api } from "./Api";
-import { camelcase } from "./utils";
+import { Model } from "./Model";
+import { camelcase, Limitation } from "./utils";
+import { ParameterObject } from "openapi3-ts";
 
 export enum ParameterType {
   PATH = "path",
@@ -43,7 +45,7 @@ export class Parameter {
   /**
    * documentation: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
    */
-  static parseSwagger(api: Api, obj: any): Parameter {
+  static parseOpenApi(api: Api, obj: ParameterObject): Parameter {
     const p = new Parameter();
 
     Object.defineProperty(p, "api", { value: api, writable: true, enumerable: false });
@@ -76,22 +78,31 @@ export class Parameter {
         p.headerName = obj["x-alias"];
       }
 
-      if (obj.in == "formData" && obj.type == "file") {
-        p.in = ParameterType.FORM_DATA_FILE;
-      } else {
-        p.in = swaggerToParameterType[obj.in];
-      }
+      p.in = swaggerToParameterType[obj.in];
 
-      if (obj.in == "body") {
-        // force schema to be used when body
-        p.type = Type.parseSwagger(api, obj.schema, null, false);
-      } else {
-        p.type = Type.parseSwagger(api, obj.schema || obj, null, false);
-      }
+      p.type = Type.parseSwagger(api, obj.schema || obj, null, false);
 
       p.description = obj.description;
       p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
     }
+
+
+    // TODO resonable?
+    // // no array / objects
+    // let t = p.type;
+    // if (p.reference) {
+    //   t = api.getReference<Model>(p.reference).type;
+    // }
+
+    // switch(t.type) {
+    //   case Kind.DATE:
+    //   case Kind.STRING:
+    //   case Kind.NUMBER:
+
+    //   default:
+    //     throw new Limitation("Headers type must be a string, number or Date");
+    // }
+
 
     return p;
   }

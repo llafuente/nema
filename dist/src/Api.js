@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const fs = require("fs");
 const _ = require("lodash");
 const path = require("path");
 const Method_1 = require("./Method");
@@ -8,30 +7,7 @@ const Model_1 = require("./Model");
 const Parameter_1 = require("./Parameter");
 const Response_1 = require("./Response");
 const utils_1 = require("./utils");
-const blacklist = [
-    "Error",
-    "CommonException",
-    "express",
-    "Request",
-    "Response",
-    "Random",
-    "Cast",
-    "Operators",
-    "Order",
-    "Where",
-    "Page",
-];
-function parseYML(filename) {
-    const contents = fs.readFileSync(filename);
-    try {
-        return require("yamljs").parse(contents.toString());
-    }
-    catch (e) {
-        console.error(e);
-        throw e;
-    }
-}
-exports.parseYML = parseYML;
+const blacklist = [];
 /**
  * Api definicion class
  */
@@ -60,7 +36,7 @@ class Api {
         // two levels when executed as JS
         this.root = path.join(__dirname, "..", "..");
     }
-    static parseSwagger(filename, swagger) {
+    static parseOpenApi(filename, swagger) {
         const api = new Api();
         api.filename = filename;
         Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
@@ -73,6 +49,7 @@ class Api {
             api.angularClientModuleName = swagger["x-generator-properties"]["module-name"];
             api.frontBasePath = swagger["x-generator-properties"]["front-basePath"];
         }
+        // TODO validate!!
         if (swagger["x-nema"]) {
             api.apiName = swagger["x-nema"].apiName;
             api.angularClientNodeModuleName = swagger["x-nema"].angularClientNodeModuleName;
@@ -91,38 +68,38 @@ class Api {
             console.warn(`angularClientModuleName not defined, using ApiModule: x-nema.angularClientModuleName at ${filename}`);
             api.angularClientModuleName = "ApiModule";
         }
-        // frontBasePath is optional
-        swagger["x-nema"] = swagger["x-nema"] || {};
-        swagger.info = swagger.info || {};
-        swagger.info.contact = swagger.info.contact || {};
         api.host = swagger.host;
         api.basePath = swagger.basePath || "/";
-        api.schemes = swagger.schemes;
-        if (!api.schemes) {
-            throw new Error(`schemes is required at ${filename}`);
+        console.log(swagger);
+        api.servers = swagger.servers;
+        if (!api.servers || !api.servers.length) {
+            throw new Error(`#/components/servers is required at ${filename}`);
         }
+        // TODO remove this and use it directly!!
         api.version = swagger.info.version || "";
         api.description = swagger.info.description || "";
         api.authorName = swagger.info.contact.name || "";
         api.authorEmail = swagger.info.contact.email || "";
         api.authorURL = swagger.info.contact.url || "";
+        api.parseSwaggerDefinitions(swagger, false);
+        _.each(swagger.components.parameters, (param, paramName) => {
+            api.parameters[paramName] = Parameter_1.Parameter.parseOpenApi(api, param);
+        });
+        _.each(swagger.components.responses, (param, paramName) => {
+            api.responses[paramName] = Response_1.Response.parseSwagger(api, null, param);
+        });
         _.each(swagger.paths, (pathItem, uri) => {
             if (["/swagger"].indexOf(uri) !== -1) {
                 throw new Error(`forbidden API uri: ${uri}`);
             }
-            ["get", "post", "patch", "put", "delete", "head"].forEach((verb) => {
+            console.log(pathItem);
+            ["get", "put", "post", "delete", "options", "head", "patch", "trace"].forEach((verb) => {
                 const method = pathItem[verb];
                 if (method) {
-                    api.addMethod(Method_1.Method.parseSwagger(api, verb, uri, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method.consumes || swagger.consumes || [], method.produces || swagger.produces || [], method), false);
+                    console.log("parsing: ", method.operationId, JSON.stringify(method, null, 2));
+                    api.addMethod(Method_1.Method.parseOpenApi(api, verb, uri, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method), false);
                 }
             });
-        });
-        api.parseSwaggerDefinitions(swagger, false);
-        _.each(swagger.parameters, (param, paramName) => {
-            api.parameters[paramName] = Parameter_1.Parameter.parseSwagger(api, param);
-        });
-        _.each(swagger.responses, (param, paramName) => {
-            api.responses[paramName] = Response_1.Response.parseSwagger(api, null, param);
         });
         return api;
     }
@@ -130,7 +107,7 @@ class Api {
      * @internal used to declare blacklisted models
      */
     parseSwaggerDefinitions(swagger, internal) {
-        _.each(swagger.definitions, (model, name) => {
+        _.each((swagger.components || {}).schemas, (model, name) => {
             const mdl = Model_1.Model.parseSwagger(this, name, model);
             mdl.internal = internal;
             if (mdl.isEnum()) {
@@ -141,21 +118,8 @@ class Api {
             }
         });
         _.each(swagger.parameters, (param, paramName) => {
-            this.parameters[paramName] = Parameter_1.Parameter.parseSwagger(this, param);
+            this.parameters[paramName] = Parameter_1.Parameter.parseOpenApi(this, param);
         });
-    }
-    static parseSwaggerFile(filename) {
-        let swaggerJSON;
-        switch (path.extname(filename)) {
-            case ".json":
-                swaggerJSON = require(filename);
-                break;
-            case ".yml":
-            case ".yaml":
-                swaggerJSON = parseYML(filename);
-                break;
-        }
-        return Api.parseSwagger(filename, swaggerJSON);
     }
     /**
      * @internal used to declare blacklisted models
@@ -189,8 +153,15 @@ class Api {
         }
         this.methods[method.operationId] = method;
     }
+    /**
+     * Only loop objects
+     */
     eachModel(cb) {
-        _.each(this.models, cb);
+        _.each(this.models, (m, modelName) => {
+            if (m.type.type == "object") {
+                cb(m, modelName);
+            }
+        });
     }
     eachEnum(cb) {
         _.each(this.enums, cb);
@@ -219,27 +190,29 @@ class Api {
         this.enums = utils_1.ksort(this.enums);
     }
     getReference(ref) {
-        //console.log(`getReference(${ref})`);
-        ref = ref.substr(2);
+        if (ref.indexOf("#/components/") !== 0) {
+            throw new Error(`Cannot resolve: ${ref}`);
+        }
+        ref = ref.substr("#/components/".length);
         const c = ref.indexOf("/");
         const where = ref.substr(0, c);
         const target = ref.substr(c + 1);
         switch (where) {
-            case "definitions":
+            case "schemas":
                 if (!this.models[target] && !this.enums[target]) {
                     throw new Error(`getReference: can't find definition: ${target} at ${this.filename}`);
                 }
-                return this.models[target] || this.enums[target];
+                return (this.models[target] || this.enums[target]);
             case "parameters":
                 if (!this.parameters[target]) {
                     throw new Error(`getReference: can't find parameter: ${target} at ${this.filename}`);
                 }
-                return this.parameters[target];
+                return (this.parameters[target]);
             case "responses":
                 if (!this.responses[target]) {
                     throw new Error(`getReference: can't find responses: ${target} at ${this.filename}`);
                 }
-                return this.responses[target];
+                return (this.responses[target]);
             default:
                 throw new Error(`getReference: target[${ref}] not handled`);
         }

@@ -11,7 +11,7 @@ function validateTypes(api, t) {
 }
 exports.validateTypes = validateTypes;
 function parse(filename, sort = true) {
-    const api = Api_1.Api.parseSwaggerFile(path.join(__dirname, "..", "..", "test", filename));
+    const api = Api_1.Api.parseOpenApiFile(path.join(__dirname, "..", "..", "test", filename));
     if (sort) {
         api.sort();
     }

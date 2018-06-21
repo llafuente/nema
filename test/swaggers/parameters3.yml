@@ -1,0 +1,200 @@
+openapi: '3.0.1'
+info:
+  title: RestManagementAPI
+  description: These APIs allow to handle Algo Framework
+  version: 1.2.0
+  contact:
+    name: XXX
+    email: YYY@ZZZ.com
+    url: https://abc.com
+
+servers:
+  - url: http://localhost:8080/
+  - url: https://localhost:8080/
+
+x-nema:
+  moduleName: AutoHedgerApiModule
+  className: RestApi
+
+# basePath: /api/v1
+
+
+components:
+  parameters:
+    stringQ:
+      name: stringQuery
+      in: query
+      description: This is a string query
+      required: true
+      schema:
+        type: string
+    dateQ:
+      name: dateQuery
+      in: query
+      description: This is a date query
+      required: true
+      schema:
+        type: string
+        format: date
+    arrayQ:
+      name: arrayQuery
+      in: query
+      description: This is a array of strings query
+      required: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/string"
+
+    numberQ:
+      name: numberQuery
+      in: query
+      description: This is a number query
+      required: true
+      schema:
+        type: number
+        format: int32
+    stringH:
+      name: stringHeader
+      in: header
+      description: This is a string Header
+      required: true
+      schema:
+        type: string
+    dateH:
+      name: dateHeader
+      in: header
+      description: This is a date Header
+      required: true
+      schema:
+        type: string
+        format: date
+    arrayH:
+      name: arrayHeader
+      in: header
+      description: This is a array of strings Header
+      required: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/string"
+    numberH:
+      name: numberHeader
+      in: header
+      description: This is a number Header
+      required: true
+      schema:
+        type: number
+        format: int32
+
+    userId:
+      name: userId
+      in: path
+      description: This is a number Path
+      required: true
+      schema:
+        type: number
+        format: int32
+
+  schemas:
+    ApiError:
+      description: Api error
+      type: object
+      properties:
+        message:
+          type: string
+
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: number
+        name:
+          type: string
+
+    string:
+      type: string
+
+    stringB:
+      description: This is a string Body
+      type: string
+
+    dateB:
+      description: This is a date Body
+      type: string
+      format: date
+    arrayB:
+      description: This is a array of strings Body
+      type: array
+      items:
+        type: string
+    numberB:
+      description: This is a number Body
+      type: number
+      format: int32
+
+  responses:
+    ErrorResponse:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+
+
+  requestBodies:
+    UserBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserDto'
+
+paths:
+  /user/{userId}:
+    parameters:
+      - $ref: "#/components/parameters/userId"
+    get:
+      operationId: getUserById
+      description: get User
+      parameters:
+
+        - $ref: "#/components/parameters/stringQ"
+        - $ref: "#/components/parameters/dateQ"
+        - $ref: "#/components/parameters/arrayQ"
+        - $ref: "#/components/parameters/numberQ"
+        - $ref: "#/components/parameters/stringH"
+        - $ref: "#/components/parameters/dateH"
+        - $ref: "#/components/parameters/arrayH"
+        - $ref: "#/components/parameters/numberH"
+
+      responses:
+        200:
+          description: user data
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        500:
+          $ref: '#/components/responses/ErrorResponse'
+    post:
+      operationId: updateUserById
+      description: upate User
+      requestBody:
+        description: user to update
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/UserDto'
+
+
+      responses:
+        200:
+          description: The identifier of the created strategy
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        500:
+          $ref: '#/components/responses/ErrorResponse'

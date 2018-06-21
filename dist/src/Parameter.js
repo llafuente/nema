@@ -38,7 +38,7 @@ class Parameter {
     /**
      * documentation: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
      */
-    static parseSwagger(api, obj) {
+    static parseOpenApi(api, obj) {
         const p = new Parameter();
         Object.defineProperty(p, "api", { value: api, writable: true, enumerable: false });
         p.required = !!obj.required;
@@ -63,22 +63,24 @@ class Parameter {
                 p.name = obj.name; // name must be valid in this case!
                 p.headerName = obj["x-alias"];
             }
-            if (obj.in == "formData" && obj.type == "file") {
-                p.in = ParameterType.FORM_DATA_FILE;
-            }
-            else {
-                p.in = swaggerToParameterType[obj.in];
-            }
-            if (obj.in == "body") {
-                // force schema to be used when body
-                p.type = Type_1.Type.parseSwagger(api, obj.schema, null, false);
-            }
-            else {
-                p.type = Type_1.Type.parseSwagger(api, obj.schema || obj, null, false);
-            }
+            p.in = swaggerToParameterType[obj.in];
+            p.type = Type_1.Type.parseSwagger(api, obj.schema || obj, null, false);
             p.description = obj.description;
             p.autoInjected = !!obj["x-auto-injected"] || !!obj["x-front-auto-injected"] || !!obj["x-nema-auto-injected"];
         }
+        // TODO resonable?
+        // // no array / objects
+        // let t = p.type;
+        // if (p.reference) {
+        //   t = api.getReference<Model>(p.reference).type;
+        // }
+        // switch(t.type) {
+        //   case Kind.DATE:
+        //   case Kind.STRING:
+        //   case Kind.NUMBER:
+        //   default:
+        //     throw new Limitation("Headers type must be a string, number or Date");
+        // }
         return p;
     }
 }

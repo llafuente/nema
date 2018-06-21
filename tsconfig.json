@@ -14,7 +14,8 @@
     ],
     "types": [
       "node",
-      "lodash"
+      "lodash",
+      "swagger-parser"
     ],
     "baseUrl": ".",
     "sourceMap": true

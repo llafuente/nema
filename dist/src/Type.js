@@ -44,6 +44,11 @@ class Type {
      * Parse type from swagger
      * https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
      */
+    static void() {
+        const t = new Type();
+        t.type = Kind.VOID;
+        return t;
+    }
     static parseSwagger(api, obj, modelName, isDefinition) {
         const t = new Type();
         Object.defineProperty(t, "api", { value: api, writable: true, enumerable: false });
@@ -177,7 +182,7 @@ class Type {
                 return this.items.toBaseType();
         }
         if (this.referenceModel) {
-            return this.api.getReference(this.referenceModel).name;
+            return (this.api.getReference(this.referenceModel)).name;
         }
         console.error(this);
         throw new Error("???");
@@ -188,7 +193,7 @@ class Type {
     toTypeScriptType() {
         // defer to subschema
         if (this.referenceModel) {
-            return this.api.getReference(this.referenceModel).name;
+            return (this.api.getReference(this.referenceModel)).name;
         }
         if (this.isDefinition) {
             return this.name;

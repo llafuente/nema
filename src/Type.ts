@@ -49,6 +49,13 @@ export class Type {
    * Parse type from swagger
    * https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
    */
+  static void(): Type {
+    const t = new Type();
+    t.type = Kind.VOID;
+
+    return t;
+  }
+
   static parseSwagger(api: Api, obj, modelName: string, isDefinition: boolean): Type {
     const t = new Type();
 
@@ -200,7 +207,7 @@ export class Type {
     }
 
     if (this.referenceModel) {
-      return (this.api.getReference(this.referenceModel) as Model).name;
+      return (this.api.getReference<Model>(this.referenceModel)).name;
     }
     console.error(this);
     throw new Error("???");
@@ -212,7 +219,7 @@ export class Type {
   toTypeScriptType(): string {
     // defer to subschema
     if (this.referenceModel) {
-      return (this.api.getReference(this.referenceModel) as Model).name;
+      return (this.api.getReference<Model>(this.referenceModel)).name;
     }
 
     if (this.isDefinition) {
@@ -307,7 +314,7 @@ export class Type {
         if (this.foreignKey) {
           d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKeyModel)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
         } else {
-          const m = this.api.getReference(this.referenceModel);
+          const m = this.api.getReference<Model>(this.referenceModel);
           return m.type.toMongooseType();
         }
         break;
@@ -366,7 +373,7 @@ export class Type {
   getRandom(ts: TypescriptFile) {
     switch (this.type) {
       case Kind.REFERENCE:
-        return this.api.getReference(this.referenceModel).type.getRandom(ts);
+        return this.api.getReference<Model>(this.referenceModel).type.getRandom(ts);
       case Kind.ENUM:
         ts.addImport(this.name, `/src/models/${this.name}.ts`);
         return `${this.name}.${this.choices[0].toUpperCase()}`;
@@ -417,7 +424,7 @@ export class Type {
         ts.addImport("Cast", `/src/Cast.ts`);
         return `Cast.date(${src})`;
       case Kind.REFERENCE:
-        return this.api.getReference(this.referenceModel).type.getParser(src, ts);
+        return this.api.getReference<Model>(this.referenceModel).type.getParser(src, ts);
       case Kind.VOID:
         return "void(0)";
       case Kind.FILE:
@@ -466,7 +473,7 @@ export class Type {
    */
   getEmptyValue(): string {
     if (this.referenceModel) {
-      return this.api.getReference(this.referenceModel).type.getEmptyValue();
+      return this.api.getReference<Model>(this.referenceModel).type.getEmptyValue();
     }
 
     if (this.isDefinition) {

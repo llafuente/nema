@@ -304,7 +304,6 @@ function qsStringify(a) {
 
 @Injectable()
 export class ${this.api.apiName} {
-  scheme: string = ${JSON.stringify(this.api.schemes[0])};
   debug: boolean = false;
   host: string = ${JSON.stringify(this.api.host)};
   onError: Subject<CommonException> = new Subject<CommonException>();
@@ -313,18 +312,9 @@ export class ${this.api.apiName} {
     public http: HttpClient,
   ) {}
 
-  validSchemes: string[] = ${JSON.stringify(this.api.schemes)};
-
 
   setDebug(d: boolean) {
     this.debug = d;
-  }
-
-  setScheme(scheme: string) {
-    if (this.validSchemes.indexOf(scheme) === -1) {
-      throw new Error(\`Invalid scheme[\${scheme}] must be one of: \${this.validSchemes.join(", ")}\`);
-    }
-    this.scheme = scheme;
   }
 
   setHost(host) {
@@ -332,7 +322,7 @@ export class ${this.api.apiName} {
   }
 
   getFullURL(uri: string) : string {
-    return \`\${this.scheme}://\` + \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
+    return \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
   }
 
 `,
@@ -482,14 +472,7 @@ found: "${method.produces}" at ${method.api.filename}/${method.operationId}`,
       const httpParams = ["$url"];
       /* undefined as second paramater if no body parameter found! */
       if (method.requireBody()) {
-        if (method.countParams(ParameterType.BODY, true) == 0) {
-          httpParams.push("undefined");
-        } else {
-          // TODO REVIEW This should be just one!!!
-          method.eachBodyParam((p) => {
-            httpParams.push(p.name);
-          });
-        }
+        httpParams.push(method.hasBody() ? "$body" : "undefined");
       }
       httpParams.push("$options");
 

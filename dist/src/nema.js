@@ -10,6 +10,7 @@ const ExpressApi_1 = require("./generators/ExpressApi");
 const ExpressApp_1 = require("./generators/ExpressApp");
 const ExpressCSV_1 = require("./generators/ExpressCSV");
 const path = require("path");
+const fs = require("fs");
 const program = require("commander");
 const chalk = require("chalk");
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
@@ -98,57 +99,78 @@ let dstPath = program.dst;
 if (dstPath && !path.isAbsolute(dstPath)) {
     dstPath = path.join(process.cwd(), dstPath);
 }
-program.swagger.forEach((swagger) => {
+const swagger_parser_1 = require("swagger-parser");
+function parse(filename, cb) {
+    swagger_parser_1.parse(filename, (err, swagger) => {
+        if (err)
+            throw err;
+        if (!swagger.openapi) {
+            var converter = require('swagger2openapi');
+            return converter.convertObj(swagger, {}, function (err, options) {
+                if (err)
+                    throw err;
+                // options.openapi contains the converted definition
+                cb(options.openapi);
+            });
+        }
+        cb(swagger);
+    });
+}
+//import * as async from "async";
+program.swagger.forEach((swaggerOrOpenApiFilename) => {
+    parse(swaggerOrOpenApiFilename, (openApi3) => {
+        api = Api_1.Api.parseOpenApi(swaggerOrOpenApiFilename, openApi3);
+    });
+    // TODO aggregate!
+    /*
     if (api) {
-        api.aggregate(Api_1.Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
+      api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
+    } else {
+      api = Api.parseSwaggerFile(swagger);
+  
+      if (!dstPath) {
+        dstPath = path.dirname(swagger);
+      }
+    }
+    */
+});
+setTimeout(function () {
+    const projectGenerators = [];
+    // create all projectGenerators
+    // some generator may modify api metadata
+    if (program.angular5Api) {
+        green("Instancing generator: angular5-api");
+        new Angular5Api_1.Angular5Api(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.expressApi) {
+        green("Instancing generator: express");
+        new ExpressApi_1.ExpressApi(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.expressApp) {
+        green("Instancing generator: express App");
+        new ExpressApp_1.ExpressApp(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.mongooseApi) {
+        green("Instancing generator: mongoose");
+        new MongooseApi_1.MongooseApi(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.mongooseApp) {
+        green("Instancing generator: mongoose App");
+        new MongooseApp_1.MongooseApp(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.expressCsv) {
+        green("Instancing generator: express CSV");
+        new ExpressCSV_1.ExpressCSV(dstPath, api).generate(true, !!program.lint);
+    }
+    else if (program.angular5FormTemplate) {
+        const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);
+        green("Generate Angular 5 template");
+        t.generate(program.angular5FormTemplate, program.file);
     }
     else {
-        api = Api_1.Api.parseSwaggerFile(swagger);
-        if (!dstPath) {
-            dstPath = path.dirname(swagger);
-        }
+        // should be here
+        throw new Error("wtf?!");
     }
-});
-//
-// add common definitions that need generator need
-// TODO: this need to dissapear asap
-//
-const mongooseSwagger = Api_1.parseYML(path.join(__dirname, "..", "..", "common.yml"));
-api.parseSwaggerDefinitions(mongooseSwagger, true);
-const projectGenerators = [];
-// create all projectGenerators
-// some generator may modify api metadata
-if (program.angular5Api) {
-    green("Instancing generator: angular5-api");
-    new Angular5Api_1.Angular5Api(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.expressApi) {
-    green("Instancing generator: express");
-    new ExpressApi_1.ExpressApi(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.expressApp) {
-    green("Instancing generator: express App");
-    new ExpressApp_1.ExpressApp(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.mongooseApi) {
-    green("Instancing generator: mongoose");
-    new MongooseApi_1.MongooseApi(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.mongooseApp) {
-    green("Instancing generator: mongoose App");
-    new MongooseApp_1.MongooseApp(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.expressCsv) {
-    green("Instancing generator: express CSV");
-    new ExpressCSV_1.ExpressCSV(dstPath, api).generate(true, !!program.lint);
-}
-else if (program.angular5FormTemplate) {
-    const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);
-    green("Generate Angular 5 template");
-    t.generate(program.angular5FormTemplate, program.file);
-}
-else {
-    // should be here
-    throw new Error("wtf?!");
-}
+    fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
+}, 5000);
 //# sourceMappingURL=nema.js.map

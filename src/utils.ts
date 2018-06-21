@@ -1,3 +1,10 @@
+import { OpenAPIObject, PathItemObject, SchemaObject, MediaTypeObject } from "openapi3-ts";
+import * as _ from "lodash";
+
+
+export class Limitation extends Error {};
+export class Deprecation extends Error {};
+
 export function camelcase(str) {
   return str
     .replace(/\[.*\]/g, "")
@@ -19,5 +26,85 @@ export function ksort(obj) {
 export function uniquePush(arr: any[], str: any) {
   if (arr.indexOf(str) === -1) {
     arr.push(str);
+  }
+}
+
+export function eachMethod(openApi3: OpenAPIObject, cb: (m: PathItemObject, modelName: string) => void) {
+  _.each(openApi3.paths, cb);
+}
+
+export function eachModel(openApi3: OpenAPIObject, cb: (m: SchemaObject, modelName: string) => void) {
+  _.each(openApi3.components.schemas, (model: SchemaObject, modelName: string) => {
+    if (model.type == "object") {
+      cb(model, modelName);
+    }
+  });
+}
+
+export function eachEnum(openApi3: OpenAPIObject, cb: (m: SchemaObject, modelName: string) => void) {
+  _.each(openApi3.components.schemas, (model: SchemaObject, modelName: string) => {
+    if (model.type == "enum") {
+      cb(model, modelName);
+    }
+  });
+}
+
+export function eachResolve(openApi3: OpenAPIObject, cb: (m: SchemaObject, modelName: string) => void) {
+  eachMethod(openApi3, (method, operationId) => {
+    if (method["x-resolve"]) {
+      cb(method, operationId);
+    }
+  });
+}
+
+
+export function schemaObjectTS(schema: SchemaObject): string {
+    // defer to subschema
+    // if (schema.referenceModel) {
+    //   return (this.api.getReference(this.referenceModel) as Model).name;
+    // }
+
+    // if (this.isDefinition) {
+    //   return this.name;
+    // }
+
+    switch (schema.type) {
+      case "reference":
+      case "enum":
+        throw new Error("should not happen");
+      case "file":
+        return "Blob";
+     case "boolean":
+       return "boolean";
+     case "date":
+        return "Date";
+      case "string":
+        return "string";
+      case "array":
+        return `${schemaObjectTS(schema.items)}[]`;
+      case "number":
+        return "number";
+      case "object":
+        return "any";
+      case "void":
+        return "void";
+      default:
+        throw new Error("unhandled type");
+    }
+
+}
+
+
+export function checkContent(content, context = undefined) {
+  const k = Object.keys(content);
+
+  if (k.length > 1) {
+    console.error(context);
+    throw new Error("Only a single content encoding is allowed");
+  }
+  // TODO add multipart/binary, maybe even romeve it!
+  if (k[0] != "application/json") {
+    console.error(context);
+    throw new Error(`Unsupported content type: ${k[0]}`)
   }
 }

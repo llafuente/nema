@@ -9,6 +9,10 @@ class Deprecation extends Error {
 }
 exports.Deprecation = Deprecation;
 ;
+class Requirement extends Error {
+}
+exports.Requirement = Requirement;
+;
 function camelcase(str) {
     return str
         .replace(/\[.*\]/g, "")
@@ -96,12 +100,11 @@ exports.schemaObjectTS = schemaObjectTS;
 function checkContent(content, context = undefined) {
     const k = Object.keys(content);
     if (k.length > 1) {
-        console.error(context);
+        console.error(content, context);
         throw new Error("Only a single content encoding is allowed");
     }
-    // TODO add multipart/binary, maybe even romeve it!
-    if (k[0] != "application/json") {
-        console.error(context);
+    if (["application/json", "multipart/form-data"].indexOf(k[0]) === -1) {
+        console.error(content, context);
         throw new Error(`Unsupported content type: ${k[0]}`);
     }
 }

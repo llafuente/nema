@@ -7,29 +7,27 @@ import { Model } from "./Model";
 import { Parameter } from "./Parameter";
 import { Response } from "./Response";
 
-import { ksort } from "./utils";
+import { ksort, Requirement, Limitation } from "./utils";
 
 import { OpenAPIObject, PathItemObject, ResponseObject, ParameterObject, OperationObject } from "openapi3-ts";
 
-const blacklist = [];
-
-export interface LicenseObject {
+export interface License {
   name: string;
   url?: string;
 }
 
-export interface ContactObject {
+export interface Contact {
   name: string;
   url: string;
   email: string;
 }
 
-export interface InfoObject {
+export interface Info {
   title: string;
   description?: string;
   termsOfService?: string;
-  contact?: ContactObject;
-  license?: LicenseObject;
+  contact?: Contact;
+  license?: License;
   version: string;
 }
 
@@ -42,7 +40,7 @@ export class Api {
   /** Swagger contents atm */
   originalSource: any;
 
-  info: InfoObject;
+  info: Info;
 
   /** Angular ngModule name */
   angularClientModuleName: string;
@@ -56,15 +54,13 @@ export class Api {
   description: string;
   /** Scheme list */
   servers: {url: string}[];
-  /** Application base path */
-  basePath: string;
-  /** Host */
-  host: string;
+  /** Hosts */
+  serves: {url: string};
   /**
    * Path for front applications, may not be the same because reverse-proxies could be
    * in the middle
    */
-  frontBasePath: string;
+  frontBasePath: string = "/";
 
   authorName: string;
   authorEmail: string;
@@ -140,22 +136,31 @@ export class Api {
       api.angularClientModuleName = "ApiModule";
     }
 
-    api.host = swagger.host;
-    api.basePath = swagger.basePath || "/";
-
-    console.log(swagger);
+    api.servers = swagger.servers;
+    // for (let server of swagger.servers) {
+    //   if (server.url[0] == "/") {
+    //     console.info(`using: ${server.url} as basePath`);
+    //     api.basePath = server.url
+    //   }
+    // }
 
     api.servers = swagger.servers;
     if (!api.servers || !api.servers.length) {
-      throw new Error(`#/components/servers is required at ${filename}`);
+      throw new Requirement(
+        `Swagger: host, basePath and schemes is required at ${filename}\n` +
+        `OpenApi: #/components/servers is required at ${filename}`
+      );
     }
 
     // TODO remove this and use it directly!!
-    api.version = swagger.info.version || "";
-    api.description = swagger.info.description || "";
-    api.authorName = swagger.info.contact.name || "";
-    api.authorEmail = swagger.info.contact.email || "";
-    api.authorURL = swagger.info.contact.url || "";
+    const info: Info = swagger.info || ({} as any);
+    const contact: Contact = info.contact || ({} as any);
+
+    api.version = info.version || "";
+    api.description = info.description || "";
+    api.authorName = contact.name || "";
+    api.authorEmail = contact.email || "";
+    api.authorURL = contact.url || "";
 
     api.parseSwaggerDefinitions(swagger, false);
 
@@ -169,16 +174,14 @@ export class Api {
 
     _.each(swagger.paths, (pathItem: PathItemObject, uri) => {
       if (["/swagger"].indexOf(uri) !== -1) {
-        throw new Error(`forbidden API uri: ${uri}`);
+        throw new Limitation(`forbidden API uri: ${uri}`);
       }
-
-      console.log(pathItem);
 
       ["get", "put", "post", "delete", "options", "head", "patch", "trace"].forEach((verb) => {
         const method: OperationObject = pathItem[verb];
 
         if (method) {
-          console.log("parsing: ", method.operationId, JSON.stringify(method, null, 2));
+          // console.log("parsing: ", method.operationId, JSON.stringify(method, null, 2));
           api.addMethod(
             Method.parseOpenApi(
               api,
@@ -221,9 +224,6 @@ export class Api {
    */
   addModel(model: Model, override: boolean) {
     if (!model.internal) {
-      if (blacklist.indexOf(model.name) !== -1) {
-        throw new Error(`Invalid model name: ${model.name}, it's blacklisted from ${model.api.filename}`);
-      }
 
       //console.log(`addModel: ${model.name}`);
       if (!override && this.models[model.name] !== undefined) {
@@ -240,9 +240,6 @@ export class Api {
 
   addEnum(enumModel: Model, override: boolean) {
     if (!enumModel.internal) {
-      if (blacklist.indexOf(enumModel.name) !== -1) {
-        throw new Error(`Invalid enum name: ${enumModel.name}, it's blacklisted from ${enumModel.api.filename}`);
-      }
 
       if (!override && this.enums[enumModel.name] !== undefined) {
         throw new Error(

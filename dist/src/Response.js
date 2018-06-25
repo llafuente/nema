@@ -4,7 +4,6 @@ const Type_1 = require("./Type");
 const utils_1 = require("./utils");
 class Response {
     static parseSwagger(api, httpCode, obj) {
-        console.log(obj);
         const r = new Response();
         r.httpCode = httpCode == "default" ? 0 : parseInt(httpCode, 10);
         if (obj.$ref) {

@@ -14,8 +14,6 @@ export class Response {
   encoding: string;
 
   static parseSwagger(api: Api, httpCode, obj): Response {
-    console.log(obj);
-
     const r = new Response();
 
     r.httpCode = httpCode == "default" ? 0 : parseInt(httpCode, 10);

@@ -7,12 +7,16 @@ const Model_1 = require("./Model");
 const Parameter_1 = require("./Parameter");
 const Response_1 = require("./Response");
 const utils_1 = require("./utils");
-const blacklist = [];
 /**
  * Api definicion class
  */
 class Api {
     constructor() {
+        /**
+         * Path for front applications, may not be the same because reverse-proxies could be
+         * in the middle
+         */
+        this.frontBasePath = "/";
         this.methods = {};
         /**
          * references: #/definitions/XXXX
@@ -68,19 +72,26 @@ class Api {
             console.warn(`angularClientModuleName not defined, using ApiModule: x-nema.angularClientModuleName at ${filename}`);
             api.angularClientModuleName = "ApiModule";
         }
-        api.host = swagger.host;
-        api.basePath = swagger.basePath || "/";
-        console.log(swagger);
+        api.servers = swagger.servers;
+        // for (let server of swagger.servers) {
+        //   if (server.url[0] == "/") {
+        //     console.info(`using: ${server.url} as basePath`);
+        //     api.basePath = server.url
+        //   }
+        // }
         api.servers = swagger.servers;
         if (!api.servers || !api.servers.length) {
-            throw new Error(`#/components/servers is required at ${filename}`);
+            throw new utils_1.Requirement(`Swagger: host, basePath and schemes is required at ${filename}\n` +
+                `OpenApi: #/components/servers is required at ${filename}`);
         }
         // TODO remove this and use it directly!!
-        api.version = swagger.info.version || "";
-        api.description = swagger.info.description || "";
-        api.authorName = swagger.info.contact.name || "";
-        api.authorEmail = swagger.info.contact.email || "";
-        api.authorURL = swagger.info.contact.url || "";
+        const info = swagger.info || {};
+        const contact = info.contact || {};
+        api.version = info.version || "";
+        api.description = info.description || "";
+        api.authorName = contact.name || "";
+        api.authorEmail = contact.email || "";
+        api.authorURL = contact.url || "";
         api.parseSwaggerDefinitions(swagger, false);
         _.each(swagger.components.parameters, (param, paramName) => {
             api.parameters[paramName] = Parameter_1.Parameter.parseOpenApi(api, param);
@@ -90,13 +101,12 @@ class Api {
         });
         _.each(swagger.paths, (pathItem, uri) => {
             if (["/swagger"].indexOf(uri) !== -1) {
-                throw new Error(`forbidden API uri: ${uri}`);
+                throw new utils_1.Limitation(`forbidden API uri: ${uri}`);
             }
-            console.log(pathItem);
             ["get", "put", "post", "delete", "options", "head", "patch", "trace"].forEach((verb) => {
                 const method = pathItem[verb];
                 if (method) {
-                    console.log("parsing: ", method.operationId, JSON.stringify(method, null, 2));
+                    // console.log("parsing: ", method.operationId, JSON.stringify(method, null, 2));
                     api.addMethod(Method_1.Method.parseOpenApi(api, verb, uri, (method.parameters || []).concat(pathItem.parameters).filter((x) => x != null), method), false);
                 }
             });
@@ -126,9 +136,6 @@ class Api {
      */
     addModel(model, override) {
         if (!model.internal) {
-            if (blacklist.indexOf(model.name) !== -1) {
-                throw new Error(`Invalid model name: ${model.name}, it's blacklisted from ${model.api.filename}`);
-            }
             //console.log(`addModel: ${model.name}`);
             if (!override && this.models[model.name] !== undefined) {
                 throw new Error(`try to override an already defined model: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
@@ -138,9 +145,6 @@ class Api {
     }
     addEnum(enumModel, override) {
         if (!enumModel.internal) {
-            if (blacklist.indexOf(enumModel.name) !== -1) {
-                throw new Error(`Invalid enum name: ${enumModel.name}, it's blacklisted from ${enumModel.api.filename}`);
-            }
             if (!override && this.enums[enumModel.name] !== undefined) {
                 throw new Error(`try to override an already defined enum: ${enumModel.name} from ${this.models[enumModel.name].api.filename} to ${enumModel.api.filename}`);
             }

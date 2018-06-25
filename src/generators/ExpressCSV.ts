@@ -28,11 +28,11 @@ export class ExpressCSV {
       try {
         fs.writeFileSync(packageJSONFile, JSON.stringify(packageJSON, null, 2));
       } catch (e) {
-        console.log(`cannot write: ${packageJSONFile}`);
+        console.error(`cannot write: ${packageJSONFile}`);
       }
 
     } catch(e) {
-      console.log(`cannot read: ${packageJSONFile}`);
+      console.error(`cannot read: ${packageJSONFile}`);
     }
 
 

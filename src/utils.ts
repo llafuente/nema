@@ -4,6 +4,7 @@ import * as _ from "lodash";
 
 export class Limitation extends Error {};
 export class Deprecation extends Error {};
+export class Requirement extends Error {};
 
 export function camelcase(str) {
   return str
@@ -99,12 +100,12 @@ export function checkContent(content, context = undefined) {
   const k = Object.keys(content);
 
   if (k.length > 1) {
-    console.error(context);
+    console.error(content, context);
     throw new Error("Only a single content encoding is allowed");
   }
-  // TODO add multipart/binary, maybe even romeve it!
-  if (k[0] != "application/json") {
-    console.error(context);
+
+  if (["application/json", "multipart/form-data"].indexOf(k[0]) === -1) {
+    console.error(content, context);
     throw new Error(`Unsupported content type: ${k[0]}`)
   }
 }

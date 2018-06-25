@@ -1,11 +1,13 @@
 import { Api } from "../Api";
 import { Method } from "../Method";
+import { Kind } from "../Type";
 import { ParameterType } from "../Parameter";
 import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
 import { ModificableTemplate } from "./CommonGenerator";
 import { TypescriptFile } from "../TypescriptFile";
+import { Limitation } from "../utils";
 
 const mkdirp = require("mkdirp").sync;
 
@@ -36,7 +38,7 @@ export class ExpressApi {
 
     this.expressAppRoot = ExpressApi.getExpressAppRoot(this.dstPath);
 
-    console.log(`Located package.json at: ${this.expressAppRoot}`);
+    console.info(`Located package.json at: ${this.expressAppRoot}`);
 
     // create generation paths
     mkdirp(path.join(this.dstPath, "src/models"));
@@ -83,7 +85,7 @@ export class ExpressApi {
 
   routeTestFile(method: Method, filename: string) {
     if (fs.existsSync(path.join(this.dstPath, `.${filename}`))) {
-      console.log(`file exist: ${filename}, skip creation`);
+      console.info(`file exist: ${filename}, skip creation`);
     } else {
       fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.routeTest(method, filename));
     }
@@ -112,7 +114,7 @@ const swaggerUi = require('swagger-ui-express');`;
       `
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
-  app.use(${JSON.stringify(this.api.basePath)}, r);
+  app.use(r);
 
   var options = {
     //<swagger-ui-options>
@@ -148,13 +150,17 @@ import { Request, Response, Upload } from "${relPath}/";
 
     let firstFile = true;
     const getParams = ["req", "res", "next"];
+    const implParams = [
+      "req: Request",
+      "res: Response",
+      "next: express.NextFunction",
+    ];
     const paramValidations = [];
-    const params = [];
     const middleware = [];
     method.eachParam((p) => {
       //??p.type.getName()
 
-      params.push(`${p.name}: ${p.type.toTypeScriptType()}`);
+      implParams.push(`${p.name}: ${p.type.toTypeScriptType()}`);
 
       // TODO what type of Error should the API return ?! ApiError? CommonException?
 
@@ -175,34 +181,6 @@ import { Request, Response, Upload } from "${relPath}/";
         case ParameterType.QUERY:
           src = `req.query.${p.name}`;
           break;
-        case ParameterType.FORM_DATA_FILE:
-          //getParams.push(`req.files.${p.name} || null`);
-          getParams.push(`_.find(req.files, { fieldname: '${p.name}'}) || null`);
-          ts.addImport("* as _", "lodash");
-
-          // if required
-          //  if (!req.file) {
-          //    return next(new HttpError(422, "Excepted an attachment"));
-          //  }
-
-          params.pop(); // remove last because it's a Blob, invalid at server
-          params.push(`${p.name}: Upload`);
-
-          if (firstFile) {
-            // upload.any() is the easy way, because it works like body/query
-            // REVIEW it's the best?!
-            firstFile = false;
-            ts.push(`
-let multer = require("multer");
-let upload = multer({
-  // dest: 'uploads/' }
-  storage: multer.memoryStorage(),
-});
-`);
-            middleware.push(`upload.any()`);
-          }
-
-          break;
         default:
           throw new Error("unexpeted parameter type");
       }
@@ -216,6 +194,64 @@ let upload = multer({
         }
       }
     });
+
+    if (method.hasBody()) {
+      switch(method.body.encoding) {
+        case "multipart/form-data":
+          ts.addImport("* as _", "lodash");
+
+
+            ts.push(`
+let multer = require("multer");
+let upload = multer({
+  // dest: 'uploads/' }
+  storage: multer.memoryStorage(),
+});
+`);
+
+          // upload.any() is the easy way, because it works like body/query
+          // REVIEW it's the best?!
+            middleware.push(`upload.any()`);
+
+          const type = method.body.type.derefence();
+
+          if (type.type != Kind.OBJECT) {
+            throw new Limitation("multipart/form-data type must be an object");
+          }
+
+          for (let propertyName in type.properties) {
+            const subt = type.properties[propertyName]
+            if (subt.type == Kind.FILE) {
+              getParams.push(`_.find(req.files, { fieldname: '${propertyName}'}) || null`);
+
+              implParams.push(`${propertyName}: Upload`);
+            }
+          }
+
+
+
+          // if required
+          //  if (!req.file) {
+          //    return next(new HttpError(422, "Excepted an attachment"));
+          //  }
+
+
+
+          break;
+        default:
+          getParams.push(`req.body == null ? null : ${method.body.type.getParser('req.body', ts)}`);
+          implParams.push(`$body: ${method.body.type.toTypeScriptType()}`);
+      }
+
+
+      if (method.body.required) {
+        paramValidations.push(`if (!req.body) {
+          return res.status(400).json({message: "body of type: ${method.body.type.toTypeScriptType()} is required"})
+        }`);
+      }
+    }
+
+
 
     const responses = [];
     method.eachResponse((response) => {
@@ -253,7 +289,7 @@ export const ${method.operationId}Route = [
   //<post-middleware>
   //</post-middleware>
 ];
-export function ${method.operationId}(req: Request, res: Response, next: express.NextFunction, ${params.join(", ")}) {
+export function ${method.operationId}(${implParams.join(", ")}) {
 //<method-body>
 ${defaultMethodBody}
 //</method-body>
@@ -288,7 +324,7 @@ test.cb.serial("${method.operationId}", (t) => {
 
   supertest(app)
   .${method.verb}(${JSON.stringify(
-      path.posix.join(method.api.basePath, method.url),
+      method.url,
     )} + "?" + qs.stringify({${query.join(",\n")}}))
 `);
 
@@ -296,9 +332,9 @@ test.cb.serial("${method.operationId}", (t) => {
       ts.push(`.set(${JSON.stringify(p.headerName)}, "xxx")`);
     }, false);
 
-    method.eachBodyParam((p) => {
-      ts.push(`.send(${p.type.getRandom(ts)})`);
-    });
+    if (method.hasBody()) {
+      ts.push(`.send(${method.body.type.getRandom(ts)})`);
+    }
 
     if (method.consumes.length) {
       ts.push(`.set("Content-Type", ${JSON.stringify(method.consumes.join(", "))})`);

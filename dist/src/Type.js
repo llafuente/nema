@@ -26,8 +26,6 @@ class Type {
         this.isDefinition = undefined;
         /** is a foreign key?  */
         this.foreignKey = undefined;
-        /** Referenced model name  */
-        this.foreignKeyModel = undefined;
         /** Object properties */
         this.properties = undefined;
         /** Array sub type */
@@ -84,9 +82,6 @@ class Type {
             case "void":
                 t.type = Kind.VOID;
                 break;
-            case "file":
-                t.type = Kind.FILE;
-                break;
             case "object":
                 t.type = Kind.OBJECT;
                 t.properties = _.mapValues(obj.properties, (x) => {
@@ -117,6 +112,9 @@ class Type {
                 if (obj.format == "date" || obj.format == "date-time") {
                     t.type = Kind.DATE;
                 }
+                if (obj.format == "binary") {
+                    t.type = Kind.FILE;
+                }
                 break;
             default:
                 // maybe void?
@@ -136,11 +134,6 @@ class Type {
         }
         t.foreignKey = obj["x-nema-fk"] || null;
         if (t.foreignKey && !obj.$ref) {
-            const ref = t.foreignKey.substr(2);
-            const c = ref.indexOf("/");
-            const where = ref.substr(0, c);
-            const target = ref.substr(c + 1);
-            t.foreignKeyModel = target;
             t.type = Kind.ID;
         }
         t.readOnly = obj["x-nema-readonly"] || false;
@@ -276,15 +269,17 @@ class Type {
                 break;
             case Kind.REFERENCE:
                 if (this.foreignKey) {
-                    d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKeyModel)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
+                    const mdl = this.api.getReference(this.foreignKey);
+                    d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(mdl.name)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
                 }
                 else {
-                    const m = this.api.getReference(this.referenceModel);
-                    return m.type.toMongooseType();
+                    const mdl = this.api.getReference(this.referenceModel);
+                    return mdl.type.toMongooseType();
                 }
                 break;
             case Kind.ID:
-                d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(this.foreignKeyModel)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
+                const mdl = this.api.getReference(this.foreignKey);
+                d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(mdl.name)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
                 break;
             default:
                 d.push(`type: ${this.type}`);
@@ -355,7 +350,7 @@ class Type {
                 }
                 return `[${this.items.getRandom(ts)}, ${this.items.getRandom(ts)}]`;
             case Kind.ID:
-                return `Random.string(24)`;
+                return `Random.ObjectId()`;
         }
         if (this.isPrimitive()) {
             // primitive simple casting with null
@@ -443,6 +438,12 @@ class Type {
         }
         // return `${this.toTypeScriptType()}.emptyInstance()`;
         return "{}";
+    }
+    derefence() {
+        if (this.type == Kind.REFERENCE) {
+            return this.api.getReference(this.referenceModel).type;
+        }
+        return this;
     }
 }
 exports.Type = Type;

@@ -28,10 +28,12 @@ class Method {
         this.responses = [];
         this.consumes = [];
         this.produces = [];
+        this.body = null;
         this.resolve = null;
     }
     static parseOpenApi(api, verb, url, parameters, operation) {
         const m = new Method();
+        console.info("parsing operation:", verb, ":", url);
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         m.verb = verb.toLowerCase();
         m.url = url;
@@ -51,9 +53,9 @@ class Method {
             const k = Object.keys(body.content);
             m.body = {
                 encoding: k[0],
+                required: !!body.required,
                 type: Type_1.Type.parseSwagger(api, body.content[k[0]].schema, null, false)
             };
-            console.log(m.body);
         }
         _.each(operation.responses, (response, responseType) => {
             m.responses.push(Response_1.Response.parseSwagger(api, responseType, response));
@@ -93,7 +95,7 @@ class Method {
         return m;
     }
     hasBody() {
-        return !!this.body;
+        return this.body !== null;
     }
     countParams(filter = null, skipAutoInjected) {
         let count = 0;
@@ -115,8 +117,6 @@ class Method {
         this.eachPathParam(cb);
         this.eachHeaderParam(cb, true);
         this.eachQueryParam(cb);
-        this.eachBodyParam(cb);
-        this.eachFileParam(cb);
     }
     /** Loop each parameter of query path resolving any references */
     eachPathParam(cb) {
@@ -162,27 +162,6 @@ class Method {
             }
         });
     }
-    /** Loop each parameter of type body resolving any references */
-    eachBodyParam(cb) {
-        if (this.body) {
-            const p = new Parameter_1.Parameter();
-            p.in = Parameter_1.ParameterType.BODY;
-            p.name = "$body";
-            p.type = this.body.type;
-            cb(p);
-        }
-    }
-    /** Loop each parameter of type file resolving any references */
-    eachFileParam(cb) {
-        this.parameters.forEach((p) => {
-            if (p.reference) {
-                p = this.api.getReference(p.reference);
-            }
-            if (p.in == Parameter_1.ParameterType.FORM_DATA_FILE) {
-                cb(p);
-            }
-        });
-    }
     getEnconding() {
         for (let response of this.responses) {
             if (response.encoding) {
@@ -193,7 +172,7 @@ class Method {
     }
     /** Get accept header contents */
     getAccept() {
-        return this.getEnconding();
+        return [this.getEnconding()];
     }
     producesJSON() {
         const enconding = this.getEnconding();
@@ -205,12 +184,6 @@ class Method {
     }
     producesBlob() {
         return this.getEnconding() != null && !this.producesJSON() && !this.producesText();
-    }
-    /**
-     * The method require body?
-     */
-    requireBody() {
-        return ["post", "patch", "put"].indexOf(this.verb) !== -1;
     }
     /**
      * returns a response between [200, 300)

@@ -32,8 +32,9 @@ export class Method {
 
   body: {
     encoding: string,
+    required: boolean,
     type: Type
-  };
+  } = null;
 
   resolve: {
     name: string;
@@ -49,6 +50,8 @@ export class Method {
     operation: OperationObject,
   ): Method {
     const m = new Method();
+
+    console.info("parsing operation:", verb + ":" + url);
 
     Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
 
@@ -73,10 +76,9 @@ export class Method {
       const k = Object.keys(body.content);
       m.body = {
         encoding: k[0],
+        required: !!body.required,
         type: Type.parseSwagger(api, body.content[k[0]].schema, null, false)
       };
-
-      console.log(m.body);
     }
 
     _.each(operation.responses, (response, responseType) => {
@@ -111,21 +113,22 @@ export class Method {
       throw new Deprecation(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
     }
 
+    // TODO check format!
     m.resolve = operation["x-nema-resolve"] || null;
 
     if (operation["x-override-front"]) {
-      console.warn(`deprecated usage: x-override-front, parsing ${api.filename}`);
+      console.error(m);
+      throw new Deprecation(`deprecated usage: x-override-front, parsing ${api.filename}`);
     }
 
-    // very unsafe :)
-    const override = operation["x-override-front"] || operation["x-nema-override"] || {};
-    _.assign(m, override);
+    // very unsafe :) and powerfull ^.^
+    _.assign(m, operation["x-nema-override"] || {});
 
     return m;
   }
 
   hasBody(): boolean {
-     return !!this.body;
+     return this.body !== null;
   }
 
   countParams(filter: ParameterType = null, skipAutoInjected: boolean): number {
@@ -150,8 +153,6 @@ export class Method {
     this.eachPathParam(cb);
     this.eachHeaderParam(cb, true);
     this.eachQueryParam(cb);
-    this.eachBodyParam(cb);
-    this.eachFileParam(cb);
   }
   /** Loop each parameter of query path resolving any references */
   eachPathParam(cb: (p: Parameter) => void) {
@@ -201,28 +202,6 @@ export class Method {
       }
     });
   }
-  /** Loop each parameter of type body resolving any references */
-  eachBodyParam(cb: (p: Parameter) => void) {
-    if (this.body) {
-      const p = new Parameter();
-      p.in = ParameterType.BODY;
-      p.name = "$body";
-      p.type = this.body.type;
-      cb(p);
-    }
-  }
-  /** Loop each parameter of type file resolving any references */
-  eachFileParam(cb: (p: Parameter) => void) {
-    this.parameters.forEach((p) => {
-      if (p.reference) {
-        p = this.api.getReference(p.reference) as Parameter;
-      }
-
-      if (p.in == ParameterType.FORM_DATA_FILE) {
-        cb(p);
-      }
-    });
-  }
 
   getEnconding() {
     for (let response of this.responses) {
@@ -235,8 +214,8 @@ export class Method {
   }
 
   /** Get accept header contents */
-  getAccept() {
-    return this.getEnconding();
+  getAccept(): string[] {
+    return [this.getEnconding()];
   }
 
   producesJSON(): boolean {
@@ -251,12 +230,6 @@ export class Method {
 
   producesBlob(): boolean {
     return this.getEnconding() != null && !this.producesJSON() && !this.producesText();
-  }
-  /**
-   * The method require body?
-   */
-  requireBody(): boolean {
-    return ["post", "patch", "put"].indexOf(this.verb) !== -1;
   }
 
   /**

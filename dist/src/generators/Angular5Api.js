@@ -1,6 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Parameter_1 = require("../Parameter");
 const fs = require("fs");
 const path = require("path");
 const CommonGenerator = require("./CommonGenerator");
@@ -110,7 +109,9 @@ export class ${this.api.angularClientModuleName} {}
         method.eachPathParam(addParam);
         method.eachHeaderParam(addParam, true);
         method.eachQueryParam(addParam);
-        method.eachBodyParam(addParam);
+        if (method.hasBody()) {
+            apiParameters.push(`this.getParameterOrData(route, "body")`);
+        }
         return `${header}
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
@@ -266,7 +267,7 @@ function qsStringify(a) {
 @Injectable()
 export class ${this.api.apiName} {
   debug: boolean = false;
-  host: string = ${JSON.stringify(this.api.host)};
+  host: string = ${JSON.stringify(this.api.servers[0].url)};
   onError: Subject<CommonException> = new Subject<CommonException>();
 
   constructor(
@@ -283,7 +284,8 @@ export class ${this.api.apiName} {
   }
 
   getFullURL(uri: string) : string {
-    return \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
+    return this.host + \`/\${uri}\`.replace(${"/\\/\\//g"}, "/");
+
   }
 
 `);
@@ -291,7 +293,7 @@ export class ${this.api.apiName} {
             // CONSTANTS
             ts.push(`// source: ${path.basename(method.api.filename)}`);
             ts.push(`${method.operationId}Verb: string  = ${JSON.stringify(method.verb.toUpperCase())};`);
-            ts.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath || method.api.basePath, method.url))};`);
+            ts.push(`${method.operationId}URI: string  = ${JSON.stringify(path.posix.join(method.api.frontBasePath, method.url))};`);
             const pathParams = [];
             const pathParamsNames = [];
             const queryParamsCheck = [];
@@ -313,9 +315,9 @@ export class ${this.api.apiName} {
             method.eachHeaderParam((p) => {
                 headerParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
             }, true);
-            method.eachBodyParam((p) => {
-                bodyParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
-            });
+            if (method.hasBody()) {
+                bodyParams.push(`$body: ${method.body.type.toTypeScriptType()},`);
+            }
             // .replace(/\+/g, '%2B'); fix: + handling that it's bugged in Angular 5
             // keep an eye in the thread to see if fix is merged, may collide with the
             // workaround
@@ -353,21 +355,19 @@ export class ${this.api.apiName} {
       ): Subject<${responseTypeTS}> {
         $reqOptions = $reqOptions || { emitError: true };
 `);
-            const hasHeaders = method.consumes.length || method.countParams(Parameter_1.ParameterType.HEADER, true);
-            if (hasHeaders) {
-                ts.push(`let $headers = new HttpHeaders();`);
-                // TODO this need to be reviewed, to choose one, our APIs just have one and this works...
-                if (method.consumes.length) {
-                    ts.push(`$headers = $headers.append("Content-Type", ${JSON.stringify(method.consumes)});`);
-                }
-                method.eachHeaderParam((param) => {
-                    ts.push(`
-            if (${param.name} != null) {
-              $headers = $headers.append("${param.headerName || param.name}", ${param.name});
+            ts.push(`let $headers = new HttpHeaders();`);
+            ts.push(`$headers = $headers.append("Accept", ${JSON.stringify(method.getAccept())});`);
+            // TODO this need to be reviewed, to choose one, our APIs just have one and this works...
+            if (method.hasBody()) {
+                ts.push(`$headers = $headers.append("Content-Type", ${JSON.stringify(method.body.encoding)});`);
             }
-          `);
-                }, true);
-            }
+            method.eachHeaderParam((param) => {
+                ts.push(`
+          if (${param.name} != null) {
+            $headers = $headers.append("${param.headerName || param.name}", ${param.name});
+          }
+        `);
+            }, true);
             ts.push(`const $url: string = this.${method.operationId}URL(${pathParamsNames.concat(queryParamsNames).join(",")});`);
             /*
              * Nasty things below...
@@ -383,9 +383,7 @@ export class ${this.api.apiName} {
              * that why there is a try/catch and console.error to display proper error
              */
             ts.push(`const $options = {`);
-            if (hasHeaders) {
-                ts.push(`headers: $headers,`);
-            }
+            ts.push(`headers: $headers,`);
             if (method.producesJSON()) {
                 ts.push(`responseType: "json" as "json",`);
             }
@@ -397,18 +395,42 @@ export class ${this.api.apiName} {
             }
             else if (responseTypeTS != "void") {
                 console.error(method, responseTypeTS);
-                throw new Error(`invalid produces, only
+                throw new Error(`Cannot determine response type
 * application/json treated as json
 * text/plain, text/html treated as text
 * the rest as blob
 found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
             }
-            ts.push(`withCredentials: true // enable CORS
-      }`);
+            ts.push(`withCredentials: true // enable CORS`);
+            ts.push(`}`);
             const httpParams = ["$url"];
             /* undefined as second paramater if no body parameter found! */
-            if (method.requireBody()) {
-                httpParams.push(method.hasBody() ? "$body" : "undefined");
+            if (["post", "patch", "put"].indexOf(method.verb) !== -1) {
+                if (method.hasBody()) {
+                    switch (method.body.encoding) {
+                        case "multipart/form-data":
+                            ts.push(`
+              // transform ${method.body.type.toTypeScriptType()} to FormData
+              const formData: FormData = new FormData();
+
+              for (let i in $body) {
+                if ($body[i] instanceof Blob) {
+                  formData.append(i, $body[i], $body[i].name);
+                } else {
+                  formData.append(i, $body[i]);
+                }
+              }
+`);
+                            httpParams.push("formData");
+                            break;
+                        default:
+                            httpParams.push("$body");
+                    }
+                }
+                else {
+                    // just send an undefined
+                    httpParams.push("undefined");
+                }
             }
             httpParams.push("$options");
             if (method.producesJSON()) {

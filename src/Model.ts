@@ -41,6 +41,8 @@ export class Model {
       obj = obj.allOf[1];
     }
 
+    console.info("parsing model:", name);
+
     m.name = name;
     m.namePlural = obj["x-nema-plural"] || pluralize.plural(name.toLowerCase());
     m.filename = `/src/models/${name}.ts`;

@@ -24,11 +24,11 @@ class ExpressCSV {
                 fs.writeFileSync(packageJSONFile, JSON.stringify(packageJSON, null, 2));
             }
             catch (e) {
-                console.log(`cannot write: ${packageJSONFile}`);
+                console.error(`cannot write: ${packageJSONFile}`);
             }
         }
         catch (e) {
-            console.log(`cannot read: ${packageJSONFile}`);
+            console.error(`cannot read: ${packageJSONFile}`);
         }
         this.api.eachModel((mdl, modelName) => {
             const dst = `/src/csv/${mdl.name}.ts`;

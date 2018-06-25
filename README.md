@@ -3,7 +3,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/llafuente/nema/master/LICENSE)
 
 `nema` is a command line generator that target full stack:
-It generates API/Templates from Swagger 2.0 YAMLS.
+It generates API/Templates from Swagger 2 and OpenApi 3 YAMLS.
 
 Frontend
 * Angular 5 api-client using HttpClient
@@ -69,24 +69,20 @@ nema --swagger=./base-api.yml --swagger=./products-api.yml --angular5-api
 
 ## Limitations / Changes / Caveats
 
-`nema` has to do some triage, we cannot support all SWAGGER features and also
+`nema` has to do some triage, we cannot support all Swagger/OpenApi features and also
 can't do everything 100% `standard`.
 
-* Every `type` with `type:object` must be declared at definitions (first level).
-  everything in `nema` need a name
+* Every `type` with `type:object` must be declared at definitions/schemas (first level).
 
-* Operation Object: `operationId` is required
+  Everything in `nema` need a name so you can instance them by name.
 
-* `schemes` is required
+* *Operation Object*: `operationId` is required
 
-* Do not support `$ref` to external source files
+* A sucess Response (2xx) must be defined and **only one**.
 
-* `/swagger` path is forbidden it's used by swagger-ui
+  `default` response is considered as 200.
 
-* A sucess Response (2xx) must be defined and only one
-`default` response is considered as 200
-
-* No recursive types
+* No recursive types.
 
   It will give you compile errors on generated code:
   ```
@@ -100,11 +96,14 @@ Javascript Date
 * `type:number` with `format: int32|int64|float|double` are the same:
 Javascript Number (double)
 
-Things that may change in the future:
+* `type:number` with `format: binary` are treated as Blob
 
-* Only one body parameter is allowed. This is by design to keep compatibility
-with an older generator.
+* `/swagger` path is forbidden it's used by swagger-ui
 
+Not supported:
+
+* Overriding Global Servers
+* Server Templating
 
 ## Zoned templates
 
@@ -294,6 +293,8 @@ definitions:
 
 `params` has higher priority than `data`.
 
+If the method require a body
+
 ### Resolve example
 
 Angular route configuration:
@@ -319,7 +320,8 @@ paths:
         in: path
         description: Strategy identifier
         required: true
-        type: string
+        schema:
+          type: string
     get:
       name: getStrategy
       description: Get a single strategy by Id
@@ -328,6 +330,37 @@ paths:
         errorURL: /error
         parameters: # map route.snapshot.params with the method parameter name
           strategyId: strategyId
+
+```
+
+
+Example for POST with a body.
+```
+paths:
+  /strategy/{strategyId}
+    parameters:
+      - name: strategyId
+        in: path
+        description: Strategy identifier
+        required: true
+        schema:
+          type: string
+    post:
+      name: getFilteredStrategy
+      description: Get a strategy filtered by Id
+      requestBody:
+        description: Query data
+        required: true
+        content:
+          'application/json':
+            schema:
+              $ref: "#/components/schemas/Query"
+      x-nema-resolve:
+        name: StrategyResolve
+        errorURL: /error
+        parameters: # map route.snapshot.params with the method parameter name
+          strategyId: strategyId
+          body: filters
 
 ```
 

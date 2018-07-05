@@ -293,7 +293,7 @@ export class ${this.api.apiName} {
   }
 
   getFullURL(uri: string) : string {
-    return \`\${this.scheme}://\` + \`\${this.host}/\${uri}\`.replace(${"/\\/\\//g"}, "/");
+    return \`\${this.scheme}://\` + this.host + ("/" + uri).replace(${"/\\/\\//g"}, "/");
   }
 
 `);

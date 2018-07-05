@@ -456,7 +456,7 @@ class TestComponent implements OnDestroy {
     public restApi: RestApi,
   ) {
 
-      this.subscription = this.restApi.onError.subscribe((err: CommonException) => {
+      this.subscription = this.restApi.onError.subscribe((err: Error) => {
         // guard: only once!
         // this may not be needed... if you have a global component
         if ((err as any).handled !== true) {
@@ -498,12 +498,97 @@ class TestComponent implements OnDestroy {
 
     x.subscribe((response) => {
       // sucess
-    }, (err: api.CommonException) => {
+    }, (err: Error /* or your custom type */) => {
       // error
     });
   }
 }
 ```
+
+
+# Mongoose Api
+
+## Filtering colleccions
+
+To easily filter collection you must match the backend types to the APIs
+types. That can be easily done adding this definitions to your API definition
+file:
+
+Example using OpenApi 3 (only the fun parts):
+
+```
+components:
+  schemas:
+    Operators:
+      type: string
+      enum:
+        - LIKE
+        - EQUALS
+        - IN
+        - RAW
+
+    Where:
+      type: object
+      properties:
+        value:
+          type: object # means any, but can be more specific if you want
+        operator:
+          $ref: "#/components/schemas/Operators"
+
+    # Where depends on your models, so it's the one thing you need
+    # to define
+    WhereUser:
+      type: object
+      properties:
+        _id:
+          $ref: "#/components/schemas/Where"
+        userlogin:
+          $ref: "#/components/schemas/Where"
+
+  parameters:
+    QueryLimit:
+      name: limit
+      in: query
+      description: Query limit
+      schema:
+        type: number
+    QueryOffset:
+      name: offset
+      in: query
+      description: Query offset
+      schema:
+        type: number
+    QueryPopulate:
+      name: populate
+      in: query
+      description: List of fields to be populated
+      schema:
+        type: array
+        items:
+          type: string
+    QueryFields:
+      name: fields
+      in: query
+      description: List of fields to be fetch
+      schema:
+        type: array
+        items:
+          type: string
+
+paths:
+  /users:
+    get:
+      description: Get users list
+      operationId: getUsers
+      parameters:
+        - $ref: "#/components/parameters/QueryLimit"
+        - $ref: "#/components/parameters/QueryOffset"
+        - $ref: "#/components/parameters/QueryPopulate"
+        - $ref: "#/components/parameters/QueryFields"
+        - $ref: "#/components/parameters/WhereUser"
+
+```
+
 
 # Develop notes
 

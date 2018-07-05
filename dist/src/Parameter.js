@@ -58,6 +58,7 @@ class Parameter {
             if (p.name != p.headerName) {
                 p.name = utils_1.camelcase(p.name);
             }
+            // TODO REVIEW
             // NOTE: x-nema-header was removed only legacy behaviour
             if (obj["x-alias"]) {
                 p.name = obj.name; // name must be valid in this case!

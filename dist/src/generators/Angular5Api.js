@@ -53,7 +53,6 @@ class Angular5Api {
             header,
             `import { NgModule, InjectionToken } from "@angular/core";
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";
-export { CommonException } from "./src/CommonException";
 import { ${this.api.apiName} } from "./src/${this.api.apiName}";
 export { ${this.api.apiName} } from "./src/${this.api.apiName}";
 `,
@@ -178,7 +177,6 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
         ts.push(`import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";`);
-        ts.addImport("CommonException", "/src/CommonException.ts");
         ts.addImport("RequestOptions", "/src/RequestOptions.ts");
         // import all models
         this.api.eachModel((model, modelName) => {
@@ -263,12 +261,11 @@ function qsStringify(a) {
 };
 
 
-
 @Injectable()
 export class ${this.api.apiName} {
   debug: boolean = false;
   host: string = ${JSON.stringify(this.api.servers[0].url)};
-  onError: Subject<CommonException> = new Subject<CommonException>();
+  onError: Subject<Error> = new Subject<Error>();
 
   constructor(
     public http: HttpClient,
@@ -448,11 +445,32 @@ found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
           ret.complete();
         }, (response: HttpErrorResponse) => {
           console.error(\`${method.verb.toUpperCase()}:\${$url}\`, response, $reqOptions);
-          response.error.status = response.error.status || response.status;
-          const error = CommonException.parse(response.error);
+          let error;
 
-          ret.error(error);
-          ret.complete();
+          switch("" + response.status) {
+            `);
+            method.eachResponse((response) => {
+                // ignore 2xx
+                if (response.httpCode < 300)
+                    return;
+                response.type.getRandom(ts);
+                // if it's a JSON cast it
+                // the rest, use it RAW
+                if (method.producesJSON()) {
+                    ts.push(`
+            case "${response.httpCode || 200}":
+            error = ${response.type.toTypeScriptType()}.parse(response.error);
+            break;
+          `);
+                }
+            });
+            ts.push(`
+            default:
+              error = response.error;
+          }
+
+              ret.error(error);
+              ret.complete();
 
           // notify global error handler
           if ($reqOptions.emitError) {

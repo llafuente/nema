@@ -194,6 +194,11 @@ export function query(
     _.each(where, (w: Where, path: string) => {
       // console.log("-- where", path, w);
 
+      // empty string? just ignore
+      if (w.value === "") {
+        return;
+      }
+
       switch (w.operator) {
         // guard: avoid emptyInstance() to enter here
         case null:

@@ -33,7 +33,7 @@ class Method {
     }
     static parseOpenApi(api, verb, url, parameters, operation) {
         const m = new Method();
-        console.info("parsing operation:", verb, ":", url);
+        console.info("parsing operation:", verb + ":" + url);
         Object.defineProperty(m, "api", { value: api, writable: true, enumerable: false });
         m.verb = verb.toLowerCase();
         m.url = url;
@@ -85,13 +85,14 @@ class Method {
             console.error(m);
             throw new utils_1.Deprecation(`deprecated usage: x-front-resolve, parsing ${api.filename}`);
         }
+        // TODO check format!
         m.resolve = operation["x-nema-resolve"] || null;
         if (operation["x-override-front"]) {
-            console.warn(`deprecated usage: x-override-front, parsing ${api.filename}`);
+            console.error(m);
+            throw new utils_1.Deprecation(`deprecated usage: x-override-front, parsing ${api.filename}`);
         }
-        // very unsafe :)
-        const override = operation["x-override-front"] || operation["x-nema-override"] || {};
-        _.assign(m, override);
+        // very unsafe :) and powerfull ^.^
+        _.assign(m, operation["x-nema-override"] || {});
         return m;
     }
     hasBody() {

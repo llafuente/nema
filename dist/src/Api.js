@@ -44,21 +44,11 @@ class Api {
         const api = new Api();
         api.filename = filename;
         Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
-        // TODO is generating front ? -> override basePath
-        // keep compat with old generator, sry
-        if (swagger["x-generator-properties"]) {
-            console.warn(`deprecated x-generator-properties at ${filename}`);
-            api.apiName = swagger["x-generator-properties"]["api-name"];
-            api.angularClientNodeModuleName = swagger["x-generator-properties"]["module-name"];
-            api.angularClientModuleName = swagger["x-generator-properties"]["module-name"];
-            api.frontBasePath = swagger["x-generator-properties"]["front-basePath"];
-        }
-        // TODO validate!!
         if (swagger["x-nema"]) {
-            api.apiName = swagger["x-nema"].apiName;
-            api.angularClientNodeModuleName = swagger["x-nema"].angularClientNodeModuleName;
-            api.angularClientModuleName = swagger["x-nema"].angularClientModuleName;
-            api.frontBasePath = swagger["x-nema"].frontBasePath;
+            api.apiName = "" + swagger["x-nema"].apiName;
+            api.angularClientNodeModuleName = "" + swagger["x-nema"].angularClientNodeModuleName;
+            api.angularClientModuleName = "" + swagger["x-nema"].angularClientModuleName;
+            api.frontBasePath = "" + (swagger["x-nema"].frontBasePath || "/");
         }
         if (!api.apiName) {
             console.warn(`apiName not defined, using Api: x-nema.apiName at ${filename}`);

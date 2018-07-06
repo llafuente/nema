@@ -95,7 +95,7 @@ if (targets == 2) {
 }
 // parse and aggregate definitions files
 let api;
-let dstPath = program.dst;
+let dstPath = program.dst || null;
 if (dstPath && !path.isAbsolute(dstPath)) {
     dstPath = path.join(process.cwd(), dstPath);
 }
@@ -119,7 +119,10 @@ function parse(filename, cb) {
 //import * as async from "async";
 program.swagger.forEach((swaggerOrOpenApiFilename) => {
     parse(swaggerOrOpenApiFilename, (openApi3) => {
-        api = Api_1.Api.parseOpenApi(swaggerOrOpenApiFilename, openApi3);
+        if (!dstPath) {
+            dstPath = path.dirname(swaggerOrOpenApiFilename);
+        }
+        api = Api_1.Api.parseOpenApi(swaggerOrOpenApiFilename, dstPath, openApi3);
     });
     // TODO aggregate!
     /*
@@ -128,13 +131,11 @@ program.swagger.forEach((swaggerOrOpenApiFilename) => {
     } else {
       api = Api.parseSwaggerFile(swagger);
   
-      if (!dstPath) {
-        dstPath = path.dirname(swagger);
-      }
     }
     */
 });
 setTimeout(function () {
+    console.info(`Destination path: ${dstPath}`);
     const projectGenerators = [];
     // create all projectGenerators
     // some generator may modify api metadata

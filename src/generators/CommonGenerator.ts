@@ -144,11 +144,11 @@ export function copyCommonTemplates(api: Api, dstPath: string) {
 
 export function models(api: Api, dstPath: string) {
   api.eachModel((mdl, modelName) => {
-    fs.writeFileSync(path.join(dstPath, "." + mdl.filename), generateModel(api, mdl, mdl.filename));
+    fs.writeFileSync(mdl.filename, generateModel(api, mdl, mdl.filename));
   });
 
   api.eachEnum((mdl, modelName) => {
-    fs.writeFileSync(path.join(dstPath, "." + mdl.filename), generateEnum(api, mdl));
+    fs.writeFileSync(mdl.filename, generateEnum(api, mdl));
   });
 }
 
@@ -158,8 +158,8 @@ export function generateModel(api: Api, model: Model, filename: string): string 
 
   //import extended model if needed
   if (model.extends) {
-    const ex = model.api.getReference(model.extends) as Model;
-    ts.addImport(ex.name, ex.filename);
+    const mdl = model.api.getReference(model.extends) as Model;
+    ts.addAbsoluteImport(mdl.name, mdl.filename);
   }
 
   ts.push(modelInterface(api, model, ts));

@@ -216,11 +216,11 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
 import { Injectable } from "@angular/core";
 import { Subject, Observable } from "rxjs";`);
 
-    ts.addImport("RequestOptions", "/src/RequestOptions.ts");
+    ts.addAbsoluteImport("RequestOptions", path.join(this.api.destinationPath, "src/RequestOptions.ts"));
 
     // import all models
     this.api.eachModel((model, modelName) => {
-      ts.addImport(model.name, model.filename);
+      ts.addAbsoluteImport(model.name, model.filename);
     });
 
     // Api class

@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Type_1 = require("./Type");
 const _ = require("lodash");
 const pluralize = require("pluralize");
+const path = require("path");
 class Model {
     constructor() {
         this.api = null;
@@ -21,7 +22,7 @@ class Model {
         console.info("parsing model:", name);
         m.name = name;
         m.namePlural = obj["x-nema-plural"] || pluralize.plural(name.toLowerCase());
-        m.filename = `/src/models/${name}.ts`;
+        m.filename = path.join(api.destinationPath, `src/models/${name}.ts`);
         m.isDb = !!obj["x-nema-db"];
         // force: naming convention
         // this need review, i'm +1 , but also see unforseen consecuences

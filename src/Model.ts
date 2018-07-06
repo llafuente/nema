@@ -2,6 +2,7 @@ import { Api } from "./Api";
 import { Type, Kind } from "./Type";
 import * as _ from "lodash";
 import * as pluralize from "pluralize";
+import * as path from "path";
 
 export class Model {
   api: Api = null;
@@ -45,7 +46,7 @@ export class Model {
 
     m.name = name;
     m.namePlural = obj["x-nema-plural"] || pluralize.plural(name.toLowerCase());
-    m.filename = `/src/models/${name}.ts`;
+    m.filename = path.join(api.destinationPath, `src/models/${name}.ts`);
 
     m.isDb = !!obj["x-nema-db"];
 

@@ -44,7 +44,7 @@ class ExpressCSV {
     }
     csv(api, model, filename) {
         const ts = new TypescriptFile_1.TypescriptFile();
-        ts.addImport(model.interfaceName, model.filename);
+        ts.addAbsoluteImport(model.interfaceName, model.filename);
         ts.rawImports = `
 import { read, utils } from "xlsx";
 import * as path from "path";

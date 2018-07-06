@@ -1,21 +1,50 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const path = require("path");
+function filePathCleanUp(filepath) {
+    // it's a TS file?, remove extension and add ./
+    if (path.extname(filepath) == ".ts") {
+        return `./${filepath.substr(0, filepath.length - 3)}`;
+    }
+    return filepath;
+}
 class TypescriptFile {
     constructor() {
         this.header = "";
         this.rawImports = "";
         this.imports = [];
+        this.absoluteImports = [];
+        this.absoluteExports = [];
         this.body = [];
         this.klass = null;
     }
     push(s) {
         this.body.push(s);
     }
+    addAbsoluteImport(toImport, filePath) {
+        this.absoluteImports.push({
+            list: [toImport],
+            file: filePath,
+        });
+    }
+    addAbsoluteExport(toImport, filePath) {
+        this.absoluteExports.push({
+            list: [toImport],
+            file: filePath,
+        });
+    }
     addImport(toImport, fromFile) {
         this.imports.push({
             list: [toImport],
             file: fromFile,
+        });
+    }
+    uniquePush(s, arr) {
+        arr.filter((value, index, self) => {
+            return self.indexOf(value) === index;
+        })
+            .forEach((i) => {
+            s.push(i);
         });
     }
     toString(filename) {
@@ -26,38 +55,31 @@ class TypescriptFile {
         if (this.rawImports) {
             s.push(this.rawImports);
         }
-        if (this.imports.length) {
-            this.imports
-                .map((imp) => {
-                let filepath;
-                if (imp.file.indexOf(".") !== -1 /* || imp.file.indexOf("/") !== -1*/) {
-                    filepath = path.posix.relative(path.dirname(filename), imp.file);
-                }
-                else {
-                    filepath = imp.file;
-                }
-                // it's a TS file?, remove extension and add ./
-                if (path.extname(filepath) == ".ts") {
-                    if (filepath[0] == ".") {
-                        filepath = `${filepath.substr(0, filepath.length - 3)}`;
-                    }
-                    else {
-                        filepath = `./${filepath.substr(0, filepath.length - 3)}`;
-                    }
-                }
-                // case: * as xxx
-                if (imp.list[0][0] == "*") {
-                    return `import ${imp.list[0]} from ${JSON.stringify(filepath)}`;
-                }
-                return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)}`;
-            })
-                .filter((value, index, self) => {
-                return self.indexOf(value) === index;
-            })
-                .forEach((i) => {
-                s.push(i);
-            });
-        }
+        this.uniquePush(s, this.absoluteImports
+            .map((imp) => {
+            const rel = filePathCleanUp(path.relative(path.dirname(filename), imp.file).replace(/\\/g, "/"));
+            if (imp.list[0][0] == "*") {
+                return `import ${imp.list[0]} from ${JSON.stringify(rel)};`;
+            }
+            return `import { ${imp.list.join(", ")} } from ${JSON.stringify(rel)};`;
+        }));
+        this.uniquePush(s, this.imports
+            .map((imp) => {
+            const filepath = filePathCleanUp(imp.file);
+            // case: * as xxx
+            if (imp.list[0][0] == "*") {
+                return `import ${imp.list[0]} from ${JSON.stringify(filepath)};`;
+            }
+            return `import { ${imp.list.join(", ")} } from ${JSON.stringify(filepath)};`;
+        }));
+        this.uniquePush(s, this.absoluteExports
+            .map((imp) => {
+            const rel = filePathCleanUp(path.relative(path.dirname(filename), imp.file).replace(/\\/g, "/"));
+            if (imp.list[0][0] == "*") {
+                return `export ${imp.list[0]} from ${JSON.stringify(rel)};`;
+            }
+            return `export { ${imp.list.join(", ")} } from ${JSON.stringify(rel)};`;
+        }));
         if (this.body.length) {
             this.body.forEach((body) => {
                 s.push(body);

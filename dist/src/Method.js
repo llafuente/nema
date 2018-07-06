@@ -5,6 +5,7 @@ const Response_1 = require("./Response");
 const Type_1 = require("./Type");
 const _ = require("lodash");
 const utils_1 = require("./utils");
+const path = require("path");
 class Method {
     constructor() {
         this.api = null;
@@ -42,7 +43,7 @@ class Method {
             throw new utils_1.Limitation(`operationId is required at ${api.filename}`);
         }
         m.operationId = operation.operationId;
-        m.filename = `/src/routes/${operation.operationId}.ts`;
+        m.filename = path.join(api.destinationPath, `src/routes/${operation.operationId}.ts`);
         m.description = operation.description;
         m.parameters = parameters.map((x) => {
             return Parameter_1.Parameter.parseOpenApi(api, x);

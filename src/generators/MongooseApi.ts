@@ -117,7 +117,7 @@ export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>
 
   mongooseRepository(model: Model): string {
     // NOTE cannot resolve as linux directly
-    const targetDir = path.join(this.dstPath, path.dirname(model.filename));
+    const targetDir = path.dirname(model.filename);
     const relPath = path.relative(targetDir, path.join(this.expressAppRoot, "src")).replace(/\\/g, "/");
 
     const s = [];

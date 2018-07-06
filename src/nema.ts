@@ -118,7 +118,7 @@ if (targets == 2) {
 // parse and aggregate definitions files
 
 let api: Api;
-let dstPath = program.dst;
+let dstPath = program.dst || null;
 
 if (dstPath && !path.isAbsolute(dstPath)) {
   dstPath = path.join(process.cwd(), dstPath);
@@ -148,7 +148,12 @@ function parse(filename, cb: (openApi3) => void) {
 
 program.swagger.forEach((swaggerOrOpenApiFilename) => {
   parse(swaggerOrOpenApiFilename, (openApi3) => {
-    api = Api.parseOpenApi(swaggerOrOpenApiFilename, openApi3);
+    if (!dstPath) {
+      dstPath = path.dirname(swaggerOrOpenApiFilename);
+    }
+
+    api = Api.parseOpenApi(swaggerOrOpenApiFilename, dstPath, openApi3);
+
   });
   // TODO aggregate!
   /*
@@ -157,14 +162,14 @@ program.swagger.forEach((swaggerOrOpenApiFilename) => {
   } else {
     api = Api.parseSwaggerFile(swagger);
 
-    if (!dstPath) {
-      dstPath = path.dirname(swagger);
-    }
   }
   */
 });
 
+
 setTimeout(function() {
+  console.info(`Destination path: ${dstPath}`);
+
   const projectGenerators = [];
 
   // create all projectGenerators

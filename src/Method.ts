@@ -5,6 +5,7 @@ import { Type } from "./Type";
 import { OperationObject, ParameterObject, RequestBodyObject } from "openapi3-ts";
 import * as _ from "lodash";
 import { checkContent, Limitation, Deprecation } from "./utils";
+import * as path from "path";
 
 export class Method {
   api: Api = null;
@@ -62,7 +63,7 @@ export class Method {
       throw new Limitation(`operationId is required at ${api.filename}`);
     }
     m.operationId = operation.operationId;
-    m.filename = `/src/routes/${operation.operationId}.ts`;
+    m.filename = path.join(api.destinationPath, `src/routes/${operation.operationId}.ts`);
     m.description = operation.description;
 
     m.parameters = parameters.map((x: ParameterObject) => {

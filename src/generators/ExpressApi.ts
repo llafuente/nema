@@ -58,8 +58,8 @@ export class ExpressApi {
     this.indexFile("/index.ts");
     this.routesFile("/src/routes.ts");
     this.api.eachMethod((method, name) => {
-      this.routeFile(method, `/src/routes/${method.operationId}.ts`);
-      this.routeTestFile(method, `/test/${method.operationId}.test.ts`);
+      this.routeFile(method, `src/routes/${method.operationId}.ts`);
+      this.routeTestFile(method, `test/${method.operationId}.test.ts`);
     });
 
     if (pretty) {
@@ -72,22 +72,24 @@ export class ExpressApi {
   }
 
   indexFile(filename: string) {
-    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.index());
+    const file = path.join(this.dstPath, filename);
+    CommonGenerator.writeZonedTemplate(file, this.index(file));
   }
 
   routesFile(filename: string) {
-    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, `.${filename}`), this.routes(filename));
+    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.routes(filename));
   }
 
   routeFile(method: Method, filename: string) {
-    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, `.${filename}`), this.route(method, filename));
+    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.route(method, filename));
   }
 
   routeTestFile(method: Method, filename: string) {
-    if (fs.existsSync(path.join(this.dstPath, `.${filename}`))) {
-      console.info(`file exist: ${filename}, skip creation`);
+    const file = path.join(this.dstPath, filename);
+    if (fs.existsSync(file)) {
+      console.info(`file exist: ${file}, skip creation`);
     } else {
-      fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.routeTest(method, filename));
+      fs.writeFileSync(file, this.routeTest(method, filename));
     }
   }
 
@@ -101,7 +103,7 @@ const swaggerUi = require('swagger-ui-express');`;
 
     const s = [];
     this.api.eachMethod((method, operationId) => {
-      ts.addImport(`${method.operationId}Route`, method.filename);
+      ts.addAbsoluteImport(`${method.operationId}Route`, method.filename);
 
       s.push(
         `r.${method.verb.toLowerCase()}(${JSON.stringify(method.url.replace(/{/g, ":").replace(/}/g, ""))}, ${
@@ -131,7 +133,7 @@ export function routes(app: express.Application) {
 
     return {
       tokens: ["swagger-ui-options"],
-      template: ts.toString(filename),
+      template: ts.toString(path.join(this.api.destinationPath, filename)),
     };
   }
 
@@ -301,7 +303,7 @@ ${responses.join("\n\n")}
 
     return {
       tokens: ["custom-imports", "method-body", "extras", "pre-middleware", "post-middleware"],
-      template: ts.toString(filename),
+      template: ts.toString(path.join(this.api.destinationPath, filename)),
     };
   }
 
@@ -355,30 +357,27 @@ test.cb.serial("${method.operationId}", (t) => {
     return ts.toString(filename);
   }
 
-  index(): ModificableTemplate {
+  index(filename: string): ModificableTemplate {
+    const ts = new TypescriptFile();
+
     const s = [];
     this.api.eachModel((model, name) => {
-      s.push(`
-      import { ${name} } from ".${model.filename.substr(0, model.filename.length - 3)}";
-      export { ${name} } from ".${model.filename.substr(0, model.filename.length - 3)}";
-`);
+      ts.addAbsoluteImport(model.name, model.filename);
+      ts.addAbsoluteExport(model.name, model.filename);
     });
+
     this.api.eachMethod((method, name) => {
-      s.push(`
-      import { ${method.operationId} } from "./src/routes/${method.operationId}";
-      export { ${method.operationId} } from "./src/routes/${method.operationId}";
-`);
+      ts.addAbsoluteImport(method.operationId, method.filename);
+      ts.addAbsoluteExport(method.operationId, method.filename);
     });
+
+    ts.addAbsoluteExport("routes", path.join(this.api.destinationPath, "src/routes"));
 
     return {
       // internal-mongoose-initialization is not exported
       // will be empty or override by mongoose generator
       tokens: [""],
-      template: `
-export { routes } from "./src/routes";
-
-${s.join("\n")}
-`,
+      template: ts.toString(filename)
     };
   }
 }

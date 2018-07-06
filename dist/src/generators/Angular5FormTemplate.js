@@ -33,7 +33,7 @@ class Angular5FormTemplate {
         const htmlFilename = path.basename(htmlPath);
         const tsPath = dstFile + ".ts";
         const ts = new TypescriptFile_1.TypescriptFile();
-        ts.addImport(model.name, model.filename);
+        ts.addAbsoluteImport(model.name, model.filename);
         ts.body = [`
 import { Component, Input } from "@angular/core";
 
@@ -126,12 +126,15 @@ import { Component, Input } from "@angular/core";
                 throw new Error(`control type not handled: ${type.type}`);
         }
     }
+    getId(path) {
+        return path.join("_").replace(/\[/g, "{{").replace(/\]/g, "}}").toLowerCase();
+    }
     checkbox(t, path) {
         return `
 ${this.wrapIn}
 <bb-check
-  id="${path.join("-")}"
-  name="${path.join("_")}"
+  id="${this.getId(path)}"
+  name="${this.getId(path)}"
   ${t.required ? 'required="required"' : ''}
   ${t.readOnly ? 'disabled="disabled"' : ''}
   [(ngModel)]="${path.join(".")}">${t.description}</bb-check>
@@ -142,8 +145,8 @@ ${this.wrapOut}
         return `
 ${this.wrapIn}
 <bb-datepicker
-  id="${path.join("-")}"
-  name="${path.join("_")}"
+  id="${this.getId(path)}"
+  name="${this.getId(path)}"
   label="${t.description}"
   ${t.required ? 'required="required"' : ''}
   ${t.readOnly ? 'disabled="disabled"' : ''}
@@ -160,8 +163,8 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${path.join("-")}"
-    name="${path.join("_")}"
+    id="${this.getId(path)}"
+    name="${this.getId(path)}"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
@@ -192,7 +195,7 @@ ${this.wrapOut}
         const indexesArgs = this.indexes.length ? this.indexes.join(", ") : "";
         path.pop();
         path.push(lastPath);
-        t.items.getParser("x", ts); // addImports
+        t.items.getParser("x", ts); // addImports auto :)
         ts.klass.methods.push(`
 ${addFunction}(${indexesDeclArgs}) {
   this.${ngModel}.push(${t.items.getEmptyValue()});
@@ -243,19 +246,27 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
         ts.klass.declarations.push(`@Input()  ${name}: {_id: string, label:string}[]`);
         return `
 <bb-static label="${t.description}">
-  <div *ngFor="let row of ${name}" style="position: relative; min-height: 2rem;">
-    <label class="custom-control ui-checkbox">
-      <input class="custom-control-input" type="checkbox" [checklist]="${path.join(".")}" [value]="row._id">
-      <span class="custom-control-indicator"></span>
-      <span class="custom-control-description">{{row.label}}</span>
-    </label>
+  <div *ngFor="let row of ${name}; let i = index" style="position: relative; min-height: 2rem;">
+    <div class="custom-control custom-checkbox"
+      ${t.required ? '[class.form-control-required]="true"' : ""}
+      [class.has-danger]="model?.errors">
+      <input
+        [id]="'${name}' + i"
+        class="custom-control-input"
+        type="checkbox"
+        ${t.required ? '[required]="true"' : ""}
+        [checklist]="${path.join(".")}"
+        [value]="row._id" />
+      <label class="custom-control-label" [attr.for]="'${name}' + i">{{row.label}}</label>
+      <span class="custom-control-label-indicator"></span>
+    </div>
   </div>
 </bb-static>
 `;
     }
-    foreignKey(t, path, ts) {
+    foreignKey(t, modelPath, ts) {
         const model = t.api.getReference(t.foreignKey);
-        ts.addImport(model.name, model.filename);
+        ts.addAbsoluteImport(model.name, model.filename);
         ts.klass.declarations.push(`@Input() ${model.namePlural}: ${model.name}`);
         return `
 ${this.wrapIn}
@@ -263,17 +274,17 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${path.join("-")}"
-    name="${path.join("_")}"
+    id="${this.getId(modelPath)}"
+    name="${this.getId(modelPath)}"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
-    [(ngModel)]="${path.join(".")}"
-    #${utils_1.camelcase(path.join("-"))}="ngModel">
+    [(ngModel)]="${modelPath.join(".")}"
+    #${utils_1.camelcase(modelPath.join("-"))}="ngModel">
     <option [ngValue]="row._id" *ngFor="let row of ${model.namePlural}">{{row.label}}</option>
     </select>
 </bb-input-container>
 
-<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(modelPath.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
@@ -286,8 +297,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${path.join("-")}"
-    name="${path.join("_")}"
+    id="${this.getId(path)}"
+    name="${this.getId(path)}"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
@@ -307,8 +318,8 @@ ${this.wrapIn}
   label="${t.description}">
   <textarea
     bb-child
-    id="${path.join("-")}"
-    name="${path.join("_")}"
+    id="${this.getId(path)}"
+    name="${this.getId(path)}"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
@@ -328,8 +339,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${path.join("-")}"
-    name="${path.join("_")}"
+    id="${this.getId(path)}"
+    name="${this.getId(path)}"
     type="number"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}

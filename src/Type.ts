@@ -2,6 +2,7 @@ import * as _ from "lodash";
 import { TypescriptFile } from "./TypescriptFile";
 import { Api } from "./Api";
 import { Model } from "./Model";
+import * as path from "path";
 
 export const controls = ["hidden", "customZone", "checkboxList"];
 
@@ -370,7 +371,7 @@ export class Type {
       case Kind.REFERENCE:
         return this.api.getReference<Model>(this.referenceModel).type.getRandom(ts);
       case Kind.ENUM:
-        ts.addImport(this.name, `/src/models/${this.name}.ts`);
+        ts.addAbsoluteImport(this.name, path.join(this.api.destinationPath, `src/models/${this.name}.ts`));
         return `${this.name}.${this.choices[0].toUpperCase()}`;
       case Kind.VOID:
       // file is really a Blob and don't need to be casted
@@ -381,7 +382,7 @@ export class Type {
       case Kind.ARRAY:
         // loop through arrays casting it's values
         if (this.items.isPrimitive()) {
-          ts.addImport("Random", `/src/Random.ts`);
+          ts.addAbsoluteImport("Random", path.join(this.api.destinationPath, `src/Random.ts`));
           return `[Random.${this.items.type}(), Random.${this.items.type}()]`;
         }
 
@@ -392,13 +393,13 @@ export class Type {
 
     if (this.isPrimitive()) {
       // primitive simple casting with null
-      ts.addImport("Random", `/src/Random.ts`);
+      ts.addAbsoluteImport("Random", path.join(this.api.destinationPath, `src/Random.ts`));
       return `Random.${this.type}()`;
     }
 
     if (this.isDefinition) {
       // use model.parse
-      ts.addImport(this.name, `/src/models/${this.name}.ts`);
+      ts.addAbsoluteImport(this.name, path.join(this.api.destinationPath, `src/models/${this.name}.ts`));
       return `${this.name}.randomInstance()`;
     }
 
@@ -416,7 +417,7 @@ export class Type {
   getParser(src, ts: TypescriptFile) {
     switch (this.type) {
       case Kind.DATE:
-        ts.addImport("Cast", `/src/Cast.ts`);
+        ts.addAbsoluteImport("Cast", path.join(this.api.destinationPath, `src/Cast.ts`));
         return `Cast.date(${src})`;
       case Kind.REFERENCE:
         return this.api.getReference<Model>(this.referenceModel).type.getParser(src, ts);
@@ -426,19 +427,17 @@ export class Type {
         // file is really a Blob and don't need to be casted
         return src;
       case Kind.ENUM:
-        ts.addImport(this.name, `/src/models/${this.name}.ts`);
+        ts.addAbsoluteImport(this.name, path.join(this.api.destinationPath, `src/models/${this.name}.ts`));
         //return `${JSON.stringify(this.choices)}.indexOf(${src}) === -1 ? null : ${src}`;
         return `[${this.choices
           .map((x) => this.name + "." + x.toUpperCase())
           .join(",")}].indexOf(${src}) === -1 ? null : ${src}`;
       case Kind.ARRAY:
         if (this.items.isPrimitive()) {
-          ts.addImport("Cast", `/src/Cast.ts`);
+          ts.addAbsoluteImport("Cast", path.join(this.api.destinationPath, `src/Cast.ts`));
           return `(${src} || []).map((x) => Cast.${this.items.type}(x))`;
         }
 
-        //ts.addImport(this.items.toTypeScriptType(), `/src/models/${this.items.toTypeScriptType()}.ts`);
-        //return `(${src} || []).map((x) => ${this.items.toTypeScriptType()}.parse(x))`;
         return `(${src} || []).map((x) => ${this.items.getParser("x", ts)})`;
       case Kind.ID:
         return `Cast.string(${src})`;
@@ -446,12 +445,12 @@ export class Type {
 
     if (this.isPrimitive()) {
       // primitive simple casting with null
-      ts.addImport("Cast", `/src/Cast.ts`);
+      ts.addAbsoluteImport("Cast", path.join(this.api.destinationPath, `src/Cast.ts`));
       return `Cast.${this.type}(${src})`;
     }
 
     if (this.isDefinition) {
-      ts.addImport(this.name, `/src/models/${this.name}.ts`);
+      ts.addAbsoluteImport(this.name, path.join(this.api.destinationPath, `src/models/${this.name}.ts`));
       return `${this.name}.parse(${src})`;
     }
 

@@ -39,6 +39,8 @@ export class Api {
   filename: string;
   /** Swagger contents atm */
   originalSource: any;
+  /** Path to API */
+  destinationPath: string;
 
   info: Info;
 
@@ -95,10 +97,11 @@ export class Api {
   }
 
 
-  static parseOpenApi(filename: string, swagger: OpenAPIObject): Api {
+  static parseOpenApi(filename: string, dstPath: string, swagger: OpenAPIObject): Api {
     const api = new Api();
 
     api.filename = filename;
+    api.destinationPath = dstPath;
     Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
 
     if (swagger["x-nema"]) {

@@ -40,9 +40,10 @@ class Api {
         // two levels when executed as JS
         this.root = path.join(__dirname, "..", "..");
     }
-    static parseOpenApi(filename, swagger) {
+    static parseOpenApi(filename, dstPath, swagger) {
         const api = new Api();
         api.filename = filename;
+        api.destinationPath = dstPath;
         Object.defineProperty(api, "originalSource", { value: swagger, writable: true, enumerable: false });
         if (swagger["x-nema"]) {
             api.apiName = "" + swagger["x-nema"].apiName;

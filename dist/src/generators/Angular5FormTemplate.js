@@ -52,14 +52,17 @@ import { Component, Input } from "@angular/core";
                 `@Input() entity: ${model.name}`
             ],
             methods: [`
+
+//<custom-declarations>
+//</custom-declarations>
+
   constructor(
     injector: Injector,
     activatedRoute: ActivatedRoute,
   ) {
     super(injector, activatedRoute);
   }
-//<custom-declarations>
-//</custom-declarations>`
+`
             ]
         };
         const html = this.getTemplateHTML(model, ["entity"], ts);
@@ -76,85 +79,101 @@ import { Component, Input } from "@angular/core";
             template: ts.toString(tsPath)
         });
     }
-    getTemplateHTML(model, path, ts) {
+    getTemplateHTML(model, modelPath, ts) {
         const t = [];
         _.each(model.type.properties, (property, propertyName) => {
             // console.log(property);
-            path.push(propertyName);
-            t.push(this.getTemplateHTMLType(property, path, ts));
-            path.pop();
+            modelPath.push(propertyName);
+            t.push(this.getTemplateHTMLType(property, modelPath, ts));
+            modelPath.pop();
         });
         return t.join("\n\n");
     }
-    getTemplateHTMLType(type, path, ts) {
+    getTemplateHTMLType(type, modelPath, ts) {
         // very unsafe atm...
         if (type.control) {
-            return this[type.control[0]](type, path, ts, type.control);
+            return this[type.control[0]](type, modelPath, ts, type.control);
         }
         switch (type.type) {
             case Type_1.Kind.BOOLEAN:
-                return this.checkbox(type, path);
+                return this.checkbox(type, modelPath);
             case Type_1.Kind.DATE:
-                return this.date(type, path);
+                return this.date(type, modelPath);
             case Type_1.Kind.ENUM:
-                return this.enum(type, path);
+                return this.enum(type, modelPath);
             case Type_1.Kind.NUMBER:
-                return this.number(type, path);
+                return this.number(type, modelPath);
             case Type_1.Kind.ID:
             case Type_1.Kind.STRING:
                 if (type.foreignKey) {
-                    return this.foreignKey(type, path, ts);
+                    return this.foreignKey(type, modelPath, ts);
                 }
-                return this.text(type, path);
+                return this.text(type, modelPath);
             case Type_1.Kind.OBJECT:
                 return _.map(type.properties, (property, propertyName) => {
-                    path.push(propertyName);
-                    const r = this.getTemplateHTMLType(property, path, ts);
-                    path.pop();
+                    modelPath.push(propertyName);
+                    const r = this.getTemplateHTMLType(property, modelPath, ts);
+                    modelPath.pop();
                     return r;
                 }).join("\n\n");
             case Type_1.Kind.REFERENCE:
                 const refModel = this.api.getReference(type.referenceModel);
                 //if (refModel.type.type == Kind.ENUM) {
                 //refModel.type.description = type.description;
-                return this.getTemplateHTMLType(refModel.type, path, ts);
+                return this.getTemplateHTMLType(refModel.type, modelPath, ts);
             //}
             //return "";
             case Type_1.Kind.ARRAY:
-                return this.array(type, path, ts);
+                return this.array(type, modelPath, ts);
             default:
                 throw new Error(`control type not handled: ${type.type}`);
         }
     }
-    getId(path) {
-        return path.join("_").replace(/\[/g, "{{").replace(/\]/g, "}}").toLowerCase();
+    getAttributeAsModel(attr, modelPath) {
+        const p = [];
+        let evaluate = false;
+        for (let i of modelPath) {
+            const c = i.indexOf("[");
+            if (c !== -1) {
+                p.push(`'${i.substring(0, c)}'`);
+                p.push(i.substring(c + 1, i.length - 1));
+                evaluate = true;
+            }
+            else {
+                p.push(`'${i}'`);
+            }
+        }
+        if (evaluate) {
+            return `[${attr}]="${p.join("+")}"`;
+        }
+        return `${attr}="${modelPath.join("_")}"`;
     }
-    checkbox(t, path) {
+    checkbox(t, modelPath) {
         return `
 ${this.wrapIn}
 <bb-check
-  id="${this.getId(path)}"
-  name="${this.getId(path)}"
+  ${this.getAttributeAsModel("id", modelPath)}
+  ${this.getAttributeAsModel("name", modelPath)}
   ${t.required ? 'required="required"' : ''}
   ${t.readOnly ? 'disabled="disabled"' : ''}
-  [(ngModel)]="${path.join(".")}">${t.description}</bb-check>
+  [(ngModel)]="${modelPath.join(".")}">${t.description}</bb-check>
 ${this.wrapOut}
 `;
     }
-    date(t, path) {
+    date(t, modelPath) {
         return `
 ${this.wrapIn}
 <bb-datepicker
-  id="${this.getId(path)}"
-  name="${this.getId(path)}"
+  ${this.getAttributeAsModel("id", modelPath)}
+  ${this.getAttributeAsModel("name", modelPath)}
   label="${t.description}"
   ${t.required ? 'required="required"' : ''}
   ${t.readOnly ? 'disabled="disabled"' : ''}
-  [(ngModel)]="${path.join(".")}"></bb-datepicker>
+  [(ngModel)]="${modelPath.join(".")}"></bb-datepicker>
 ${this.wrapOut}
 `;
     }
-    enum(t, path) {
+    enum(t, modelPath) {
         // TODO: <% if (field.controlHelp) { %> help="<%= field.controlHelp %>" <% } %>
         // class="bordered top-label"
         return `
@@ -163,38 +182,38 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", modelPath)}
+    ${this.getAttributeAsModel("name", modelPath)}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
-    [(ngModel)]="${path.join(".")}"
-    #${utils_1.camelcase(path.join("-"))}="ngModel">
+    [(ngModel)]="${modelPath.join(".")}"
+    #${utils_1.camelcase(modelPath.join("-"))}="ngModel">
     ${t.choices.map((choice) => {
             return `<option value="${choice}">${choice}</option>`;
         })}
     </select>
 </bb-input-container>
 
-<bb-errors [model]="${utils_1.camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${utils_1.camelcase(modelPath.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
     }
-    array(t, path, ts) {
-        const lastPath = path[path.length - 1];
-        const indexName = utils_1.camelcase(path[path.length - 1] + "-id");
-        const ngModel = path.join(".");
-        const ccName = utils_1.camelcase(path.join("-"));
-        const addFunction = utils_1.camelcase("add-" + path.join("-"));
-        const removeFunction = utils_1.camelcase("remove-" + path.join("-"));
-        path.pop();
-        path.push(`${lastPath}[${indexName}]`);
+    array(t, modelPath, ts) {
+        const lastPath = modelPath[modelPath.length - 1];
+        const indexName = utils_1.camelcase(modelPath[modelPath.length - 1] + "-id");
+        const ngModel = modelPath.join(".");
+        const ccName = utils_1.camelcase(modelPath.join("-"));
+        const addFunction = utils_1.camelcase("add-" + modelPath.join("-"));
+        const removeFunction = utils_1.camelcase("remove-" + modelPath.join("-"));
+        modelPath.pop();
+        modelPath.push(`${lastPath}[${indexName}]`);
         this.indexes.push(indexName);
-        const children = this.getTemplateHTMLType(t.items, path, ts);
+        const children = this.getTemplateHTMLType(t.items, modelPath, ts);
         this.indexes.pop();
         const indexesDeclArgs = this.indexes.length ? this.indexes.join(": number, ") + ": number" : "";
         const indexesArgs = this.indexes.length ? this.indexes.join(", ") : "";
-        path.pop();
-        path.push(lastPath);
+        modelPath.pop();
+        modelPath.push(lastPath);
         t.items.getParser("x", ts); // addImports auto :)
         ts.klass.methods.push(`
 ${addFunction}(${indexesDeclArgs}) {
@@ -231,9 +250,9 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
 </div>
 `;
     }
-    hidden(t, path, ts, args) {
+    hidden(t, modelPath, ts, args) {
     }
-    customZone(t, path, ts, args) {
+    customZone(t, modelPath, ts, args) {
         this.htmlZones.push(args[1]);
         return `<!--${args[1]}-->\n\n<!--/${args[1]}-->`;
     }
@@ -241,8 +260,8 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
      * list of checkboxes
      * Generate an input in the component
      */
-    checkboxList(t, path, ts, args) {
-        const name = path[path.length - 1];
+    checkboxList(t, modelPath, ts, args) {
+        const name = modelPath[modelPath.length - 1];
         ts.klass.declarations.push(`@Input()  ${name}: {_id: string, label:string}[]`);
         return `
 <bb-static label="${t.description}">
@@ -255,7 +274,7 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
         class="custom-control-input"
         type="checkbox"
         ${t.required ? '[required]="true"' : ""}
-        [checklist]="${path.join(".")}"
+        [checklist]="${modelPath.join(".")}"
         [value]="row._id" />
       <label class="custom-control-label" [attr.for]="'${name}' + i">{{row.label}}</label>
       <span class="custom-control-label-indicator"></span>
@@ -274,8 +293,8 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${this.getId(modelPath)}"
-    name="${this.getId(modelPath)}"
+    ${this.getAttributeAsModel("id", modelPath)}
+    ${this.getAttributeAsModel("name", modelPath)}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${modelPath.join(".")}"
@@ -297,8 +316,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
@@ -318,8 +337,8 @@ ${this.wrapIn}
   label="${t.description}">
   <textarea
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}
     [(ngModel)]="${path.join(".")}"
@@ -339,8 +358,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     type="number"
     ${t.required ? 'required="required"' : ''}
     ${t.readOnly ? 'disabled="disabled"' : ''}

@@ -62,14 +62,17 @@ import { Component, Input } from "@angular/core";
         `@Input() entity: ${model.name}`
       ],
       methods: [`
+
+//<custom-declarations>
+//</custom-declarations>
+
   constructor(
     injector: Injector,
     activatedRoute: ActivatedRoute,
   ) {
     super(injector, activatedRoute);
   }
-//<custom-declarations>
-//</custom-declarations>`
+`
       ]
     };
 
@@ -91,46 +94,46 @@ import { Component, Input } from "@angular/core";
     });
   }
 
-  getTemplateHTML(model: Model, path: string[], ts: TypescriptFile) {
+  getTemplateHTML(model: Model, modelPath: string[], ts: TypescriptFile) {
     const t = [];
     _.each(model.type.properties, (property, propertyName) => {
       // console.log(property);
 
-      path.push(propertyName);
-      t.push(this.getTemplateHTMLType(property, path, ts));
+      modelPath.push(propertyName);
+      t.push(this.getTemplateHTMLType(property, modelPath, ts));
 
-      path.pop();
+      modelPath.pop();
     });
 
     return t.join("\n\n");
   }
 
-  getTemplateHTMLType(type: Type, path: string[], ts: TypescriptFile) {
+  getTemplateHTMLType(type: Type, modelPath: string[], ts: TypescriptFile) {
     // very unsafe atm...
     if (type.control) {
-      return this[type.control[0]](type, path, ts, type.control);
+      return this[type.control[0]](type, modelPath, ts, type.control);
     }
 
     switch (type.type) {
       case Kind.BOOLEAN:
-        return this.checkbox(type, path);
+        return this.checkbox(type, modelPath);
       case Kind.DATE:
-        return this.date(type, path);
+        return this.date(type, modelPath);
       case Kind.ENUM:
-        return this.enum(type, path);
+        return this.enum(type, modelPath);
       case Kind.NUMBER:
-        return this.number(type, path);
+        return this.number(type, modelPath);
       case Kind.ID:
       case Kind.STRING:
         if (type.foreignKey) {
-          return this.foreignKey(type, path, ts);
+          return this.foreignKey(type, modelPath, ts);
         }
-        return this.text(type, path);
+        return this.text(type, modelPath);
       case Kind.OBJECT:
         return _.map(type.properties, (property, propertyName) => {
-          path.push(propertyName)
-          const r = this.getTemplateHTMLType(property, path, ts);
-          path.pop();
+          modelPath.push(propertyName)
+          const r = this.getTemplateHTMLType(property, modelPath, ts);
+          modelPath.pop();
 
           return r;
         }).join("\n\n");
@@ -138,11 +141,11 @@ import { Component, Input } from "@angular/core";
         const refModel = this.api.getReference<Model>(type.referenceModel);
         //if (refModel.type.type == Kind.ENUM) {
           //refModel.type.description = type.description;
-          return this.getTemplateHTMLType(refModel.type, path, ts);
+          return this.getTemplateHTMLType(refModel.type, modelPath, ts);
         //}
         //return "";
       case Kind.ARRAY:
-        return this.array(type, path, ts);
+        return this.array(type, modelPath, ts);
       default:
         throw new Error(`control type not handled: ${type.type}`);
     }
@@ -151,38 +154,53 @@ import { Component, Input } from "@angular/core";
   wrapIn = `<div class="row"><div class="col-12">`;
   wrapOut = `</div></div>`;
 
-  getId(path: string[]) {
-    return path.join("_").replace(/\[/g, "{{").replace(/\]/g, "}}").toLowerCase();
+  getAttributeAsModel(attr, modelPath: string[]) {
+    const p = [];
+    let evaluate = false;
+    for (let i of modelPath) {
+      const c = i.indexOf("[");
+      if (c !== -1) {
+        p.push(`'${i.substring(0, c)}'`);
+        p.push(i.substring(c + 1, i.length - 1));
+        evaluate = true;
+      } else {
+        p.push(`'${i}'`);
+      }
+    }
+    if (evaluate) {
+      return `[${attr}]="${p.join("+")}"`;
+    }
+    return `${attr}="${modelPath.join("_")}"`;
   }
 
-  checkbox(t: Type, path: string[]) {
+  checkbox(t: Type, modelPath: string[]) {
     return `
 ${this.wrapIn}
 <bb-check
-  id="${this.getId(path)}"
-  name="${this.getId(path)}"
+  ${this.getAttributeAsModel("id", modelPath)}
+  ${this.getAttributeAsModel("name", modelPath)}
   ${t.required ? 'required="required"': ''}
   ${t.readOnly ? 'disabled="disabled"': ''}
-  [(ngModel)]="${path.join(".")}">${t.description}</bb-check>
+  [(ngModel)]="${modelPath.join(".")}">${t.description}</bb-check>
 ${this.wrapOut}
 `;
   }
 
-  date(t: Type, path: string[]) {
+  date(t: Type, modelPath: string[]) {
     return `
 ${this.wrapIn}
 <bb-datepicker
-  id="${this.getId(path)}"
-  name="${this.getId(path)}"
+  ${this.getAttributeAsModel("id", modelPath)}
+  ${this.getAttributeAsModel("name", modelPath)}
   label="${t.description}"
   ${t.required ? 'required="required"': ''}
   ${t.readOnly ? 'disabled="disabled"': ''}
-  [(ngModel)]="${path.join(".")}"></bb-datepicker>
+  [(ngModel)]="${modelPath.join(".")}"></bb-datepicker>
 ${this.wrapOut}
 `;
   }
 
-  enum(t: Type, path: string[]) {
+  enum(t: Type, modelPath: string[]) {
   // TODO: <% if (field.controlHelp) { %> help="<%= field.controlHelp %>" <% } %>
   // class="bordered top-label"
 
@@ -192,43 +210,43 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", modelPath)}
+    ${this.getAttributeAsModel("name", modelPath)}
     ${t.required ? 'required="required"': ''}
     ${t.readOnly ? 'disabled="disabled"': ''}
-    [(ngModel)]="${path.join(".")}"
-    #${camelcase(path.join("-"))}="ngModel">
+    [(ngModel)]="${modelPath.join(".")}"
+    #${camelcase(modelPath.join("-"))}="ngModel">
     ${t.choices.map((choice) => {
       return `<option value="${choice}">${choice}</option>`;
     })}
     </select>
 </bb-input-container>
 
-<bb-errors [model]="${camelcase(path.join("-"))}"></bb-errors>
+<bb-errors [model]="${camelcase(modelPath.join("-"))}"></bb-errors>
 ${this.wrapOut}
 `;
   }
 
-  array(t: Type, path: string[], ts: TypescriptFile) {
-    const lastPath = path[path.length-1];
-    const indexName = camelcase(path[path.length-1] + "-id");
-    const ngModel = path.join(".");
-    const ccName = camelcase(path.join("-"));
-    const addFunction = camelcase("add-" + path.join("-"));
-    const removeFunction = camelcase("remove-" + path.join("-"));
+  array(t: Type, modelPath: string[], ts: TypescriptFile) {
+    const lastPath = modelPath[modelPath.length-1];
+    const indexName = camelcase(modelPath[modelPath.length-1] + "-id");
+    const ngModel = modelPath.join(".");
+    const ccName = camelcase(modelPath.join("-"));
+    const addFunction = camelcase("add-" + modelPath.join("-"));
+    const removeFunction = camelcase("remove-" + modelPath.join("-"));
 
-    path.pop();
-    path.push(`${lastPath}[${indexName}]`)
+    modelPath.pop();
+    modelPath.push(`${lastPath}[${indexName}]`)
 
     this.indexes.push(indexName);
-    const children = this.getTemplateHTMLType(t.items, path, ts);
+    const children = this.getTemplateHTMLType(t.items, modelPath, ts);
     this.indexes.pop();
 
     const indexesDeclArgs = this.indexes.length ? this.indexes.join(": number, ") + ": number" : "";
     const indexesArgs = this.indexes.length ? this.indexes.join(", ") : "";
 
-    path.pop();
-    path.push(lastPath);
+    modelPath.pop();
+    modelPath.push(lastPath);
 
 
 
@@ -270,10 +288,10 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
 `;
   }
 
-  hidden(t: Type, path: string[], ts: TypescriptFile, args: string[]) {
+  hidden(t: Type, modelPath: string[], ts: TypescriptFile, args: string[]) {
   }
 
-  customZone(t: Type, path: string[], ts: TypescriptFile, args: string[]) {
+  customZone(t: Type, modelPath: string[], ts: TypescriptFile, args: string[]) {
     this.htmlZones.push(args[1]);
 
     return `<!--${args[1]}-->\n\n<!--/${args[1]}-->`
@@ -282,8 +300,8 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
    * list of checkboxes
    * Generate an input in the component
    */
-  checkboxList(t: Type, path: string[], ts: TypescriptFile, args: string[]) {
-    const name = path[path.length - 1]
+  checkboxList(t: Type, modelPath: string[], ts: TypescriptFile, args: string[]) {
+    const name = modelPath[modelPath.length - 1]
     ts.klass.declarations.push(`@Input()  ${name}: {_id: string, label:string}[]`);
 
     return `
@@ -297,7 +315,7 @@ ${removeFunction}(${indexesDeclArgs ? indexesDeclArgs + "," : ""} index: number)
         class="custom-control-input"
         type="checkbox"
         ${t.required ? '[required]="true"' : ""}
-        [checklist]="${path.join(".")}"
+        [checklist]="${modelPath.join(".")}"
         [value]="row._id" />
       <label class="custom-control-label" [attr.for]="'${name}' + i">{{row.label}}</label>
       <span class="custom-control-label-indicator"></span>
@@ -321,8 +339,8 @@ ${this.wrapIn}
   label="${t.description}">
   <select
     bb-child
-    id="${this.getId(modelPath)}"
-    name="${this.getId(modelPath)}"
+    ${this.getAttributeAsModel("id", modelPath)}
+    ${this.getAttributeAsModel("name", modelPath)}
     ${t.required ? 'required="required"': ''}
     ${t.readOnly ? 'disabled="disabled"': ''}
     [(ngModel)]="${modelPath.join(".")}"
@@ -346,8 +364,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     ${t.required ? 'required="required"': ''}
     ${t.readOnly ? 'disabled="disabled"': ''}
     [(ngModel)]="${path.join(".")}"
@@ -369,8 +387,8 @@ ${this.wrapIn}
   label="${t.description}">
   <textarea
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     ${t.required ? 'required="required"': ''}
     ${t.readOnly ? 'disabled="disabled"': ''}
     [(ngModel)]="${path.join(".")}"
@@ -392,8 +410,8 @@ ${this.wrapIn}
   label="${t.description}">
   <input
     bb-child
-    id="${this.getId(path)}"
-    name="${this.getId(path)}"
+    ${this.getAttributeAsModel("id", path)}
+    ${this.getAttributeAsModel("name", path)}
     type="number"
     ${t.required ? 'required="required"': ''}
     ${t.readOnly ? 'disabled="disabled"': ''}

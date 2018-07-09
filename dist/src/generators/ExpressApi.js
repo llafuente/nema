@@ -294,7 +294,7 @@ test.cb.serial("${method.operationId}", (t) => {
             ts.addAbsoluteImport(method.operationId, method.filename);
             ts.addAbsoluteExport(method.operationId, method.filename);
         });
-        ts.addAbsoluteExport("routes", path.join(this.api.destinationPath, "src/routes"));
+        ts.addAbsoluteExport("routes", path.join(this.api.destinationPath, "src/routes.ts"));
         return {
             // internal-mongoose-initialization is not exported
             // will be empty or override by mongoose generator

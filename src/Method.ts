@@ -43,6 +43,9 @@ export class Method {
     errorURL: { [name: string]: string };
   } = null;
 
+  // REVIEW this may change in the future, simplify now...
+  secuity: string = null;
+
   static parseOpenApi(
     api: Api,
     verb: string,
@@ -120,6 +123,22 @@ export class Method {
     if (operation["x-override-front"]) {
       console.error(m);
       throw new Deprecation(`deprecated usage: x-override-front, parsing ${api.filename}`);
+    }
+
+    if (operation.security) {
+      if (operation.security.length > 1) {
+        throw new Limitation("only one item allowed at operation.security");
+      } else if (operation.security.length == 1) {
+        const k = Object.keys(operation.security[0]);
+        if (k.length != 1) {
+          throw new Limitation("only one security method allowed at operation.security[0]");
+        }
+        m.secuity = k[0];
+
+        if (m.secuity != api.security.name) {
+          throw new Error(`Cannot find security scheme: ${m.secuity}`);
+        }
+      }
     }
 
     // very unsafe :) and powerfull ^.^

@@ -44,6 +44,9 @@ class ExpressApi {
             this.routeFile(method, `src/routes/${method.operationId}.ts`);
             this.routeTestFile(method, `test/${method.operationId}.test.ts`);
         });
+        if (this.api.security) {
+            CommonGenerator.writeZonedTemplate(path.join(this.expressAppRoot, "src/auth.ts"), this.security());
+        }
         if (pretty) {
             CommonGenerator.pretty(this.api, this.dstPath);
         }
@@ -222,8 +225,12 @@ function (req: Request, res: Response, next: express.NextFunction) {
   ${method.operationId}(${getParams.join(", ")});
 }
 `);
+        if (method.secuity) {
+            ts.addAbsoluteImport("authMiddleware", path.join(this.expressAppRoot, "src/auth.ts"));
+        }
         ts.push(`
 export const ${method.operationId}Route = [
+  ${method.secuity ? "...authMiddleware," : ""}
   //<pre-middleware>
   //</pre-middleware>
   ${middleware.join(",\n")}
@@ -300,6 +307,82 @@ test.cb.serial("${method.operationId}", (t) => {
             // will be empty or override by mongoose generator
             tokens: [""],
             template: ts.toString(filename)
+        };
+    }
+    security() {
+        return {
+            // internal-mongoose-initialization is not exported
+            // will be empty or override by mongoose generator
+            tokens: ["custom-imports", "authenticate"],
+            template: `import { pbkdf2Sync, randomBytes } from "crypto";
+import { Request } from "./index";
+import { Unauthorized } from "./HttpErrors";
+import * as express from "express";
+const expressJwt = require("express-jwt");
+
+//<custom-imports>
+//</custom-imports>
+
+export const JWTSecret = "sdlfkj389sd83j8";
+
+export const authMiddleware = [];
+
+function configure(app: express.Express) {
+
+  if (!app.get("JWTSecret")) {
+    throw new Error('defined JWTSecret using express.set("JWTSecret", ...)')
+  }
+
+  // JWT: regenerate session pass
+  authMiddleware.push(
+    expressJwt({
+      secret: app.get("JWTSecret"),
+      credentialsRequired: false,
+      getToken: function fromHeader(req) {
+        const header = req.headers[${JSON.stringify(this.api.security.headerName.toLowerCase())}];
+        if (header) {
+          const x = header.split(" ");
+          if (x[0] === "Bearer") {
+            return x[1];
+          }
+        }
+
+        return null;
+      }
+    })
+  );
+
+  authMiddleware.push(
+    function auth(
+      req: Request,
+      res: express.Response,
+      next: express.NextFunction
+    ) {
+      const r: any = req;
+
+      // bypass typesystem a moment ^.^
+      if (!r.user || !r.user._id) {
+        return next(new Unauthorized());
+      }
+
+      // here you may go to database to get the lastest user object.
+      // or just continue using the one you sent to user :)
+
+      //<authenticate>
+
+      // It's recommended to define this type at: interface Request @./index.ts
+      // move to user -> loggedUser
+      req.loggedUser = r.user;
+      delete r.user;
+
+      next();
+
+      //</authenticate>
+    }
+  );
+
+}
+`
         };
     }
 }

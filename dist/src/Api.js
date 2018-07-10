@@ -37,6 +37,7 @@ class Api {
          * references: #/responses/XXXX
          */
         this.responses = {};
+        this.security = null;
         // two levels when executed as JS
         this.root = path.join(__dirname, "..", "..");
     }
@@ -90,6 +91,29 @@ class Api {
         _.each(swagger.components.responses, (param, paramName) => {
             api.responses[paramName] = Response_1.Response.parseSwagger(api, null, param);
         });
+        const k = Object.keys(swagger.components.securitySchemes || {});
+        if (k.length > 1) {
+            throw new utils_1.Limitation("Only one securitySchemes is allowed");
+        }
+        else if (k.length == 1) {
+            // this may evolve in the future, right now only one implementation
+            // is allowed
+            const security = swagger.components.securitySchemes[k[0]];
+            if (security.type !== 'apiKey') {
+                throw new utils_1.Limitation("apiKey is the only security.type allowed");
+            }
+            if (security.in !== 'header') {
+                throw new utils_1.Limitation("header is the only security.in type allowed");
+            }
+            if (security['x-nema-security'] !== 'JWT') {
+                throw new utils_1.Limitation("security.x-nema-security must be JWT");
+            }
+            api.security = {
+                name: k[0],
+                headerName: security.name,
+                type: "jwt",
+            };
+        }
         _.each(swagger.paths, (pathItem, uri) => {
             if (["/swagger"].indexOf(uri) !== -1) {
                 throw new utils_1.Limitation(`forbidden API uri: ${uri}`);

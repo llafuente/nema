@@ -91,6 +91,12 @@ export class Api {
 
   root: string;
 
+  security: {
+    name: string,
+    headerName: string,
+    type: string
+  } = null;
+
   constructor() {
     // two levels when executed as JS
     this.root = path.join(__dirname, "..", "..");
@@ -163,6 +169,34 @@ export class Api {
     _.each(swagger.components.responses, (param: ResponseObject, paramName) => {
       api.responses[paramName] = Response.parseSwagger(api, null, param);
     });
+
+    const k = Object.keys(swagger.components.securitySchemes || {});
+    if (k.length > 1) {
+      throw new Limitation("Only one securitySchemes is allowed");
+    } else if (k.length == 1) {
+
+      // this may evolve in the future, right now only one implementation
+      // is allowed
+      const security = swagger.components.securitySchemes[k[0]];
+
+      if (security.type !== 'apiKey') {
+        throw new Limitation("apiKey is the only security.type allowed");
+      }
+
+      if (security.in !== 'header') {
+        throw new Limitation("header is the only security.in type allowed");
+      }
+
+      if (security['x-nema-security'] !== 'JWT') {
+        throw new Limitation("security.x-nema-security must be JWT");
+      }
+
+      api.security = {
+        name: k[0],
+        headerName: security.name,
+        type: "jwt",
+      };
+    }
 
     _.each(swagger.paths, (pathItem: PathItemObject, uri) => {
       if (["/swagger"].indexOf(uri) !== -1) {

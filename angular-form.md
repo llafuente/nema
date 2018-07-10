@@ -1,6 +1,6 @@
 # nema: Angular (5) form generator
 
-Angular 5 generator use HttpClient.
+Angular 5 form/component generator
 
 ## Metadata
 
@@ -10,5 +10,7 @@ Angular 5 generator use HttpClient.
 
 Force a custom control when generating form templates.
 
-for example: `type: string` will be an input text, if you want a textare use:
-`x-nema-control: textarea`
+for example: `type: string` will be an input text by default,
+if you want a textare use: `x-nema-control: textarea`
+
+

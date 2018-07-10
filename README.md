@@ -2,12 +2,13 @@
 [![Build Status](https://travis-ci.org/llafuente/nema.svg?branch=master)](https://travis-ci.org/llafuente/nema)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/llafuente/nema/master/LICENSE)
 
-`nema` is a command line generator that target full stack:
+`nema` is a command line generator that target full stack development.
+
 It generates API/Templates from Swagger 2 and OpenApi 3 YAMLS.
 
 Frontend
-* Angular 5 api-client using HttpClient
-* Angular 5 forms (template and componet) require: [angular-bootstrap-ui](https://github.com/llafuente/angular-bootstrap-ui)
+* Angular 5 API client using HttpClient
+* Angular 5 forms (template and component) require: [angular-bootstrap-ui](https://github.com/llafuente/angular-bootstrap-ui)
 
 Backend
 * Node server using [express](https://github.com/expressjs/express)
@@ -51,11 +52,17 @@ Backend
     nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/
 ```
 
-## Swagger aggregation
+## OpenAPI 2 (Swagger) support.
 
-You can aggregate many Swaggers into one unique generation.
+OpenAPI 2 is made possible by converting their spec to OpenApi 3.
 
-`nema` will take global schema configuration from the first file and
+We really recommend to use OpenApi 3 if possible.
+
+## Definitions file aggregation
+
+You can aggregate many definitions into one unique generation.
+
+`nema` will take global configuration from the first file and
 add parameters, definitions and paths from each other files.
 
 In the end you will have one unique module with all methods an models.
@@ -67,6 +74,31 @@ Be aware of collisions :)
 nema --swagger=./base-api.yml --swagger=./products-api.yml --angular5-api
 ```
 
+## Implementation details
+
+* `type:string` with `format: date|date-format` are treated the same:
+Javascript Date
+
+* `type:number` with `format: int32|int64|float|double` are the same:
+Javascript Number (double)
+
+* `type:string` with `format: binary` are treated as Blob
+
+
+### any as Type
+
+If you dont add properties to and object type, will be `any` in `TypeScript`.
+
+```
+definitions:
+  object_with_any:
+    type: object
+    properties:
+      this_is_any:
+        type: object
+```
+
+
 ## Limitations / Changes / Caveats
 
 `nema` has to do some triage, we cannot support all Swagger/OpenApi features and also
@@ -76,9 +108,9 @@ can't do everything 100% `standard`.
 
   Everything in `nema` need a name so you can instance them by name.
 
-* *Operation Object*: `operationId` is required
+* At *Operation Object*: `operationId` is required
 
-* A sucess Response (2xx) must be defined and **only one**.
+* A sucess Response (2xx) must be defined and **ONLY ONE**.
 
   `default` response is considered as 200.
 
@@ -90,20 +122,14 @@ can't do everything 100% `standard`.
   error TS2440: Import declaration conflicts with local declaration of 'XXX'.
   ```
 
-* `type:string` with `format: date|date-format` are treated the same:
-Javascript Date
+* `/api-ui` path is forbidden it's used by swagger-ui
 
-* `type:number` with `format: int32|int64|float|double` are the same:
-Javascript Number (double)
-
-* `type:number` with `format: binary` are treated as Blob
-
-* `/swagger` path is forbidden it's used by swagger-ui
-
-Not supported:
+## Unsupported spec
 
 * Overriding Global Servers
 * Server Templating
+
+We are sure this is not the full list...
 
 ## Zoned templates
 
@@ -130,24 +156,11 @@ app.set("cors", false);
 Internal zones are marked as `&gt;internal-*>` and should not be edited. This is
 used to compose generated files.
 
-## Type: any
-
-If you dont add properties to and object type, will be any in TypeScript.
-
-```
-definitions:
-  object_with_any:
-    type: object
-    properties:
-      this_is_any:
-        type: object
-```
-
 # `nema` (custom) metadata
 
 Common metadata for all generators.
 
-## [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema)
+## At [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema)
 
 ```
 x-nema:
@@ -157,7 +170,7 @@ x-nema:
   frontBasePath: /reverse-proxy/api/v1 # optional
 ```
 
-## [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject)
+## At [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject)
 
 ### x-nema-override
 
@@ -176,7 +189,8 @@ paths:
 ```
 
 The final operation id will be: getBook
-*dev note*: getProduct won't be accesible at any target generation.
+
+*NOTE*: getProduct won't be accesible at any target generation.
 
 ## [Parameter Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject)
 
@@ -204,7 +218,7 @@ paths:
           type: string
 ```
 
-## [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject)
+## At [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject) or [Schemas](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#schemaObject)
 
 ### x-nema-plural
 

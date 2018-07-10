@@ -51,7 +51,7 @@ export class ExpressApi {
     CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
 
     fs.writeFileSync(
-      path.join(this.dstPath, "./src/swagger.json.ts"),
+      path.join(this.dstPath, "./src/api-definition.json.ts"),
       "export default " + JSON.stringify(this.api.originalSource, null, 2),
     );
 
@@ -106,7 +106,7 @@ export class ExpressApi {
     ts.header = "// EDIT ONLY BETWEEN SAFE ZONES //<xxx> //</xxx>";
 
     ts.rawImports = `import * as express from "express";
-import swaggerDocument from "./swagger.json";
+import swaggerDocument from "./api-definition.json";
 const swaggerUi = require('swagger-ui-express');`;
 
     const s = [];
@@ -126,12 +126,13 @@ export function routes(app: express.Application) {
   const r: express.Router = express.Router();
   app.use(r);
 
+  // remove the content it if don't want to display your API
+  //<swagger-ui-options>
   var options = {
-    //<swagger-ui-options>
-    //</swagger-ui-options>
   };
 
-  app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+  app.use('/api-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+  //</swagger-ui-options>
 
 
   ${s.join("\n")}

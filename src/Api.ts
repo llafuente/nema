@@ -199,7 +199,7 @@ export class Api {
     }
 
     _.each(swagger.paths, (pathItem: PathItemObject, uri) => {
-      if (["/swagger"].indexOf(uri) !== -1) {
+      if (["/api-ui"].indexOf(uri) !== -1) {
         throw new Limitation(`forbidden API uri: ${uri}`);
       }
 

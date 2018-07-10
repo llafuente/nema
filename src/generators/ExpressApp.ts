@@ -220,6 +220,14 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
     });
   }
 
+  if (err instanceof BadRequest) {
+    return res.status(400).json({
+      status: 400,
+      code: "bad-request",
+      message: err.message || "Bad request"
+    });
+  }
+
   if (err instanceof Forbidden) {
     return res.status(403).json({
       status: 403,
@@ -227,6 +235,7 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
       message: err.message || "Forbidden"
     });
   }
+
 
   if (err instanceof InternalError) {
     return res.status(500).json({

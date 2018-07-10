@@ -37,7 +37,7 @@ class ExpressApi {
         CommonGenerator.models(this.api, this.dstPath);
         // copy raw files (those that don't need to be generated)
         CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
-        fs.writeFileSync(path.join(this.dstPath, "./src/swagger.json.ts"), "export default " + JSON.stringify(this.api.originalSource, null, 2));
+        fs.writeFileSync(path.join(this.dstPath, "./src/api-definition.json.ts"), "export default " + JSON.stringify(this.api.originalSource, null, 2));
         this.indexFile("/index.ts");
         this.routesFile("/src/routes.ts");
         this.api.eachMethod((method, name) => {
@@ -78,7 +78,7 @@ class ExpressApi {
         const ts = new TypescriptFile_1.TypescriptFile();
         ts.header = "// EDIT ONLY BETWEEN SAFE ZONES //<xxx> //</xxx>";
         ts.rawImports = `import * as express from "express";
-import swaggerDocument from "./swagger.json";
+import swaggerDocument from "./api-definition.json";
 const swaggerUi = require('swagger-ui-express');`;
         const s = [];
         this.api.eachMethod((method, operationId) => {
@@ -91,12 +91,13 @@ export function routes(app: express.Application) {
   const r: express.Router = express.Router();
   app.use(r);
 
+  // remove the content it if don't want to display your API
+  //<swagger-ui-options>
   var options = {
-    //<swagger-ui-options>
-    //</swagger-ui-options>
   };
 
-  app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+  app.use('/api-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+  //</swagger-ui-options>
 
 
   ${s.join("\n")}
@@ -154,8 +155,9 @@ import { Request, Response, Upload } from "${relPath}/";
             if (src != null) {
                 getParams.push(`${src} == null ? null : ${p.type.getParser(`${src}`, ts)}`);
                 if (p.required) {
+                    ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
                     paramValidations.push(`if (!${src}) {
-            return res.status(400).json({message: "${p.name} required in ${p.in}"})
+            return next(new BadRequest("${p.name} required in ${p.in}"))
           }`);
                 }
             }
@@ -195,8 +197,9 @@ let upload = multer({
                     implParams.push(`$body: ${method.body.type.toTypeScriptType()}`);
             }
             if (method.body.required) {
+                ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
                 paramValidations.push(`if (!req.body) {
-          return res.status(400).json({message: "body of type: ${method.body.type.toTypeScriptType()} is required"})
+          return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
         }`);
             }
         }

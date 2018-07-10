@@ -198,9 +198,12 @@ import { Request, Response, Upload } from "${relPath}/";
 
       if (src != null) {
         getParams.push(`${src} == null ? null : ${p.type.getParser(`${src}`, ts)}`);
+
         if (p.required) {
+          ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
+
           paramValidations.push(`if (!${src}) {
-            return res.status(400).json({message: "${p.name} required in ${p.in}"})
+            return next(new BadRequest("${p.name} required in ${p.in}"))
           }`);
         }
       }
@@ -256,8 +259,10 @@ let upload = multer({
 
 
       if (method.body.required) {
+        ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
+
         paramValidations.push(`if (!req.body) {
-          return res.status(400).json({message: "body of type: ${method.body.type.toTypeScriptType()} is required"})
+          return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
         }`);
       }
     }

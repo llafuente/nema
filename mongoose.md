@@ -1,8 +1,10 @@
 # nema: Mongoose generator
 
-## `nema` (custom) metadata
+Generate mongoose models and schemas.
 
-### [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject)
+## Metadata
+
+### At [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject) or [Schemas](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#schemaObject)
 
 #### x-nema-db
 

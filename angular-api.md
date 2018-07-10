@@ -1,6 +1,6 @@
 # nema: Angular generator
 
-# security
+# Security
 
 Angular generator don't generate any security related code.
 

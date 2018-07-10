@@ -145,6 +145,7 @@ definitions:
 
 # `nema` (custom) metadata
 
+Common metadata for all generators.
 
 ## [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schema)
 
@@ -229,6 +230,17 @@ Force lowercase
 
 Mark the property as unique.
 -->
+
+# Generators
+
+Here you can find more specific information and metadata that only applies
+to one generator.
+
+* [angular-api](angular-api.md)
+* [angular-form](angular-form.md)
+* [mongoose](mongoose.md)
+* [express](express.md)
+
 
 # Develop notes
 

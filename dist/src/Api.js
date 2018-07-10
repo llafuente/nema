@@ -115,7 +115,7 @@ class Api {
             };
         }
         _.each(swagger.paths, (pathItem, uri) => {
-            if (["/swagger"].indexOf(uri) !== -1) {
+            if (["/api-ui"].indexOf(uri) !== -1) {
                 throw new utils_1.Limitation(`forbidden API uri: ${uri}`);
             }
             ["get", "put", "post", "delete", "options", "head", "patch", "trace"].forEach((verb) => {

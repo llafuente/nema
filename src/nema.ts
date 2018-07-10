@@ -40,7 +40,7 @@ export function yellow(text) {
 
 program
   .version(packageJSON.version)
-  .description("Code generation from swagger")
+  .description("Code generation from OpenApi 2/3")
 
   .option("--angular5-api", "TARGET(project) Generate an Angular 5 Module Api client")
 
@@ -59,37 +59,37 @@ require --express-api in the same destination`)
   .option("--override-methods", "Override all methods while agreggating")
   .option("--lint", "Lint output (tslint), this may take a while")
   .option(
-    "--swagger <path>",
-    "Path to swagger yml, repeat to aggregate",
+    "--src <path>",
+    "Path to definition file, repeat to aggregate",
     function(val, memo) {
       memo.push(val);
       return memo;
     },
     [],
   )
-  .option("--file <path>", "Output path for TARGET(file) path")
-  .option("--dst <path>", "Output path for TARGET(project), default: same as the first swagger")
+  .option("--file <path>", "Output file path for file generators path")
+  .option("--dst <path>", "Output directory path project generators. By default: same as the first definition file")
   .parse(process.argv);
 
 program.on("--help", function() {
   console.log("");
-  console.log("  At least one swagger file is required");
+  console.log("  At least one definition file is required");
   console.log("  One TARGET is required");
   console.log("");
   console.log("  Examples:");
   console.log("");
   console.log("  Generate and express with mongoose server");
-  console.log("    nema --swagger=swagger-file.yml --express-app --dst server/");
-  console.log("    nema --swagger=swagger-file.yml --mongoose-app --express --dst server/");
-  console.log("    nema --swagger=swagger-file.yml --express-api --dst server/users/");
-  console.log("    nema --swagger=swagger-file.yml --mongoose-api --express --dst server/users");
+  console.log("    nema --src=swagger-file.yml --express-app --dst server/");
+  console.log("    nema --src=swagger-file.yml --mongoose-app --express --dst server/");
+  console.log("    nema --src=swagger-file.yml --express-api --dst server/users/");
+  console.log("    nema --src=swagger-file.yml --mongoose-api --express --dst server/users");
   console.log("  Generate angular5 client");
-  console.log("    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/");
+  console.log("    nema --src=swagger-file.yml --angular5-api --dst angular/app/src/api/");
   console.log("");
 });
 
-if (!program.swagger) {
-  red("--swagger <path> is required");
+if (!program.src) {
+  red("--src <path> is required");
   program.help();
   process.exit(1);
 }
@@ -146,7 +146,7 @@ function parse(filename, cb: (openApi3) => void) {
 //import * as async from "async";
 
 
-program.swagger.forEach((swaggerOrOpenApiFilename) => {
+program.src.forEach((swaggerOrOpenApiFilename) => {
   parse(swaggerOrOpenApiFilename, (openApi3) => {
     if (!dstPath) {
       dstPath = path.dirname(swaggerOrOpenApiFilename);

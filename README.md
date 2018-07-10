@@ -22,34 +22,42 @@ Backend
  _  _  _ _  _
 | |(/_| | |(_|1.0.0
 
-
   Usage: nema [options]
 
-  Code generation from swagger
+  Code generation from OpenApi 2/3
 
 
   Options:
 
     -V, --version                    output the version number
-    --angular5-api                   TARGET(full project): Generate an Angular 5 Module Api client
-    --mongoose                       TARGET(plugin@express): Generate Mongoose Schema, Models & Repositories
-    --express                        TARGET(full project): Generate Express app/routes
-    --angular5-form-template <path>  TARGET(plugin@angular5-api): Generate an Angular 5 Template from given model
+    --angular5-api                   TARGET(project) Generate an Angular 5 Module Api client
+    --mongoose-api                   TARGET(project) Generate Mongoose Schemas, Models & Repositories
+    --mongoose-app                   TARGET(project) Generate Mongoose Express app
+    require --express-api in the same destination
+    --express-api                    TARGET(project) Generate Express routes/models
+    --express-app                    TARGET(project) Generate Express app
+    --express-csv                    TARGET(project) Experimental
+    --angular5-form-template <path>  TARGET(file) Generate an Angular 5 Template from given model
     --override-models                Override all models while agreggating
     --override-methods               Override all methods while agreggating
     --lint                           Lint output (tslint), this may take a while
-    --swagger <path>                 Path to swagger yml, repeat to aggregate (default: )
-    --file <path>                    Output path for TARGET(file) path
-    --dst <path>                     Output path for TARGET(project), default: same as the first swagger
+    --src <path>                     Path to definition file, repeat to aggregate (default: )
+    --file <path>                    Output file path for file generators path
+    --dst <path>                     Output directory path project generators. By default: same as the first definition file
     -h, --help                       output usage information
 
-  At least one swagger file is required
-  At least one TARGET is required
+  At least one definition file is required
+  One TARGET is required
 
   Examples:
 
-    nema --swagger=swagger-file.yml --mongoose --express --dst server/
-    nema --swagger=swagger-file.yml --angular5-api --dst angular/app/src/api/
+  Generate and express with mongoose server
+    nema --src=swagger-file.yml --express-app --dst server/
+    nema --src=swagger-file.yml --mongoose-app --express --dst server/
+    nema --src=swagger-file.yml --express-api --dst server/users/
+    nema --src=swagger-file.yml --mongoose-api --express --dst server/users
+  Generate angular5 client
+    nema --src=swagger-file.yml --angular5-api --dst angular/app/src/api/
 ```
 
 ## OpenAPI 2 (Swagger) support.
@@ -71,7 +79,7 @@ Be aware of collisions :)
 
 
 ```
-nema --swagger=./base-api.yml --swagger=./products-api.yml --angular5-api
+nema --src=./base-api.yml --src=./products-api.yml --angular5-api
 ```
 
 ## Implementation details
@@ -128,6 +136,9 @@ can't do everything 100% `standard`.
 
 * Overriding Global Servers
 * Server Templating
+* Components.Callbacks
+* Components.Links
+* Security only ApiKey
 
 We are sure this is not the full list...
 

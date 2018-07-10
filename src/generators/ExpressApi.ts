@@ -411,7 +411,7 @@ const expressJwt = require("express-jwt");
 
 export const authMiddleware = [];
 
-function configure(app: express.Express) {
+export function configure(app: express.Express) {
 
   if (!app.get("JWTSecret")) {
     throw new Error('defined JWTSecret using express.set("JWTSecret", ...)')

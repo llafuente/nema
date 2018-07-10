@@ -68,13 +68,11 @@ export function routes(app: express.Application) {
     }
     index() {
         return {
-            // mongoose-initialization is not exported
-            // will be empty or override by mongoose generator
-            tokens: ["custom-imports", "express-configuration", "request", "response"],
+            tokens: ["mongoose-initialization", "custom-imports", "express-configuration", "request", "response"],
             template: `import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
-import { NotFound, Unauthorized } from "./HttpErrors";
+import { NotFound, Unauthorized, Forbidden, InternalError } from "./HttpErrors";
 
 // Remember to import at least your routes ^.^
 //<custom-imports>
@@ -91,12 +89,17 @@ process.on("SIGUSR2", () => {
 });
 
 export const app = express();
+
 //<express-configuration>
 app.set("mongodb", process.env.MONGO_URI || "mongodb://127.0.0.1:27017/test");
 
-// false to disable
+// want to disable CORS? app.set("cors", false);
 app.set("cors", {
-  origin: "http://localhost:3003",
+  // this allow all origins
+  origin: function(origin, callback) {
+    callback(null, true);
+  },
+  // this allow cookies
   credentials: true,
 })
 //</express-configuration>
@@ -119,6 +122,7 @@ export class Upload {
   buffer: string;
 }
 
+// declare a Request extension to store all we need
 export interface Request extends express.Request {
   file: Upload;
   files: { [s: string]: Upload };
@@ -126,6 +130,7 @@ export interface Request extends express.Request {
   //</request>
 }
 
+// declare a Response extension to store all we need
 export interface Response extends express.Response {
   //<response>
   //</response>
@@ -149,6 +154,7 @@ app.use(
 
 routes(app);
 
+// route not found
 app.use((req: Request, res: express.Response, next: express.NextFunction) => {
   res.status(404).json({
     status: 404,
@@ -157,6 +163,7 @@ app.use((req: Request, res: express.Response, next: express.NextFunction) => {
   });
 });
 
+// error handler
 app.use((err: Error, req: Request, res: express.Response, next: express.NextFunction) => {
   console.error("Error handler: ", err);
 
@@ -177,6 +184,22 @@ app.use((err: Error, req: Request, res: express.Response, next: express.NextFunc
       status: 401,
       code: "unauthorized",
       message: err.message || "Unauthorized"
+    });
+  }
+
+  if (err instanceof Forbidden) {
+    return res.status(403).json({
+      status: 403,
+      code: "forbidden",
+      message: err.message || "Forbidden"
+    });
+  }
+
+  if (err instanceof InternalError) {
+    return res.status(500).json({
+      status: 500,
+      code: "internal-server-error",
+      message: err.message || "Internal server error"
     });
   }
 

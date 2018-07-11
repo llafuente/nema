@@ -72,7 +72,7 @@ export function routes(app: express.Application) {
             template: `import * as express from "express";
 import * as path from "path";
 import * as bodyParser from "body-parser";
-import { NotFound, Unauthorized, Forbidden, InternalError } from "./HttpErrors";
+import { NotFound, Unauthorized, Forbidden, InternalError, BadRequest } from "./HttpErrors";
 
 // Remember to import at least your routes ^.^
 //<custom-imports>

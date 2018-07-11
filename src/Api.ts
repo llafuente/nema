@@ -63,6 +63,7 @@ export class Api {
    * in the middle
    */
   frontBasePath: string = "/";
+  backBasePath: string = "/";
 
   authorName: string;
   authorEmail: string;
@@ -115,6 +116,7 @@ export class Api {
       api.angularClientNodeModuleName = "" + swagger["x-nema"].angularClientNodeModuleName;
       api.angularClientModuleName = "" + swagger["x-nema"].angularClientModuleName;
       api.frontBasePath = "" + (swagger["x-nema"].frontBasePath || "/");
+      api.backBasePath = "" + (swagger["x-nema"].backBasePath || "/");
     }
 
     if (!api.apiName) {
@@ -146,7 +148,7 @@ export class Api {
     if (!api.servers || !api.servers.length) {
       throw new Requirement(
         `Swagger: host, basePath and schemes is required at ${filename}\n` +
-        `OpenApi: #/components/servers is required at ${filename}`
+        `OpenApi 3: #/components/servers is required at ${filename}`
       );
     }
 
@@ -172,7 +174,10 @@ export class Api {
 
     const k = Object.keys(swagger.components.securitySchemes || {});
     if (k.length > 1) {
-      throw new Limitation("Only one securitySchemes is allowed");
+      throw new Limitation(
+        `Swagger: Only one securityDefinitions is allowed at ${filename}\n` +
+        `OpenApi 3: Only one securitySchemes is allowed at ${filename}`
+      );
     } else if (k.length == 1) {
 
       // this may evolve in the future, right now only one implementation

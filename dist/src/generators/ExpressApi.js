@@ -89,7 +89,7 @@ const swaggerUi = require('swagger-ui-express');`;
             `
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
-  app.use(r);
+  app.use(${JSON.stringify(this.api.backBasePath)}, r);
 
   // remove the content it if don't want to display your API
   //<swagger-ui-options>

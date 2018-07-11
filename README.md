@@ -132,6 +132,11 @@ can't do everything 100% `standard`.
 
 * `/api-ui` path is forbidden it's used by swagger-ui
 
+* Swagger (OpenApi 2) `basePath` is ignored in favor of:
+
+  * x-name.frontBasePath
+  * x-name.backBasePath
+
 ## Unsupported spec
 
 * Overriding Global Servers
@@ -175,10 +180,13 @@ Common metadata for all generators.
 
 ```
 x-nema:
+  # angular 5 api
   angularClientModuleName: XXX
   angularClientNodeModuleName: xxx
   apiName: XXXApi
   frontBasePath: /reverse-proxy/api/v1 # optional
+  # express
+  backBasePath: /reverse-proxy/api/v1 # optional
 ```
 
 ## At [Operation Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject)

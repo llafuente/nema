@@ -101,6 +101,7 @@ if (dstPath && !path.isAbsolute(dstPath)) {
 }
 const swagger_parser_1 = require("swagger-parser");
 function parse(filename, cb) {
+    console.info(`parsing: ${filename}`);
     swagger_parser_1.parse(filename, (err, swagger) => {
         if (err)
             throw err;
@@ -116,25 +117,27 @@ function parse(filename, cb) {
         cb(swagger);
     });
 }
-//import * as async from "async";
-program.src.forEach((swaggerOrOpenApiFilename) => {
+const async = require("async");
+async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     parse(swaggerOrOpenApiFilename, (openApi3) => {
         if (!dstPath) {
             dstPath = path.dirname(swaggerOrOpenApiFilename);
         }
+        // TODO aggregate!
+        /*
+        if (api) {
+          api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
+        } else {
+          api = Api.parseSwaggerFile(swagger);
+      
+        }
+        */
         api = Api_1.Api.parseOpenApi(swaggerOrOpenApiFilename, dstPath, openApi3);
+        next();
     });
-    // TODO aggregate!
-    /*
-    if (api) {
-      api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
-    } else {
-      api = Api.parseSwaggerFile(swagger);
-  
-    }
-    */
-});
-setTimeout(function () {
+}, (err) => {
+    if (err)
+        throw err;
     console.info(`Destination path: ${dstPath}`);
     const projectGenerators = [];
     // create all projectGenerators
@@ -173,5 +176,5 @@ setTimeout(function () {
         throw new Error("wtf?!");
     }
     fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
-}, 5000);
+});
 //# sourceMappingURL=nema.js.map

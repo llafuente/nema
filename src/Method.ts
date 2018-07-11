@@ -122,7 +122,7 @@ export class Method {
 
     if (operation["x-override-front"]) {
       console.error(m);
-      throw new Deprecation(`deprecated usage: x-override-front, parsing ${api.filename}`);
+      throw new Deprecation(`deprecated usage: x-override-front use: x-nema-override, parsing ${api.filename}`);
     }
 
     if (operation.security) {

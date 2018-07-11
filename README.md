@@ -97,6 +97,8 @@ Javascript Number (double)
 
 If you dont add properties to and object type, will be `any` in `TypeScript`.
 
+This is the way to bypass all the castings we do.
+
 ```
 definitions:
   object_with_any:
@@ -141,11 +143,15 @@ can't do everything 100% `standard`.
 
 * Overriding Global Servers
 * Server Templating
-* Components.Callbacks
-* Components.Links
-* Security only ApiKey
+* [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#componentsObject).[Callbacks](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#callbackObject)
+* [Components Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#componentsObject).[links](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#linkObject) [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#responseObject).[links](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#linkObject)
+* [Security Scheme Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#securitySchemeObject) the only type allowed is `apiKey`
+* [Schema Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#schemaObject).`oneOf`, `anyOf`, `not`, `additionalProperties`
+* Wildcard response 4xx, 5xx
 
-We are sure this is not the full list...
+* [Response Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#responseObject) [headers](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#headerObject) (will be soon)
+
+We are sure this is not the full list, the spec is huge...
 
 ## Zoned templates
 

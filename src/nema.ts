@@ -126,6 +126,7 @@ if (dstPath && !path.isAbsolute(dstPath)) {
 
 import { parse as parseSwagger } from "swagger-parser";
 function parse(filename, cb: (openApi3) => void) {
+  console.info(`parsing: ${filename}`);
   parseSwagger(filename, (err, swagger) => {
     if (err) throw err;
 
@@ -143,18 +144,14 @@ function parse(filename, cb: (openApi3) => void) {
   });
 }
 
-//import * as async from "async";
+import * as async from "async";
 
-
-program.src.forEach((swaggerOrOpenApiFilename) => {
+async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
   parse(swaggerOrOpenApiFilename, (openApi3) => {
     if (!dstPath) {
       dstPath = path.dirname(swaggerOrOpenApiFilename);
     }
 
-    api = Api.parseOpenApi(swaggerOrOpenApiFilename, dstPath, openApi3);
-
-  });
   // TODO aggregate!
   /*
   if (api) {
@@ -164,10 +161,13 @@ program.src.forEach((swaggerOrOpenApiFilename) => {
 
   }
   */
-});
+    api = Api.parseOpenApi(swaggerOrOpenApiFilename, dstPath, openApi3);
 
+    next();
+  });
+}, (err) => {
+  if (err) throw err;
 
-setTimeout(function() {
   console.info(`Destination path: ${dstPath}`);
 
   const projectGenerators = [];
@@ -205,5 +205,5 @@ setTimeout(function() {
 
   fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
 
-}, 5000)
+});
 

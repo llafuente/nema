@@ -92,7 +92,7 @@ class Method {
         m.resolve = operation["x-nema-resolve"] || null;
         if (operation["x-override-front"]) {
             console.error(m);
-            throw new utils_1.Deprecation(`deprecated usage: x-override-front, parsing ${api.filename}`);
+            throw new utils_1.Deprecation(`deprecated usage: x-override-front use: x-nema-override, parsing ${api.filename}`);
         }
         if (operation.security) {
             if (operation.security.length > 1) {

@@ -87,6 +87,8 @@ class Api {
         api.authorEmail = contact.email || "";
         api.authorURL = contact.url || "";
         api.parseSwaggerDefinitions(swagger, false);
+        // safe accesss
+        swagger.components = swagger.components || {};
         _.each(swagger.components.parameters, (param, paramName) => {
             api.parameters[paramName] = Parameter_1.Parameter.parseOpenApi(api, param);
         });

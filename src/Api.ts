@@ -164,6 +164,9 @@ export class Api {
 
     api.parseSwaggerDefinitions(swagger, false);
 
+    // safe accesss
+    swagger.components = swagger.components || {};
+
     _.each(swagger.components.parameters, (param: ParameterObject, paramName) => {
       api.parameters[paramName] = Parameter.parseOpenApi(api, param);
     });

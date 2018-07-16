@@ -134,7 +134,7 @@ class Type {
             t.type = Kind.REFERENCE;
         }
         t.foreignKey = obj["x-nema-fk"] || null;
-        if (t.foreignKey && !obj.$ref) {
+        if ((t.foreignKey && !obj.$ref) || obj["x-nema-id"]) {
             t.type = Kind.ID;
         }
         t.readOnly = obj["x-nema-readonly"] || false;

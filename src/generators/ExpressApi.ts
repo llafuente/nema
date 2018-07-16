@@ -116,7 +116,7 @@ const swaggerUi = require('swagger-ui-express');`;
       s.push(
         `r.${method.verb.toLowerCase()}(${JSON.stringify(method.url.replace(/{/g, ":").replace(/}/g, ""))}, ${
           method.operationId
-        }Route);`,
+        }Route(app));`,
       );
     });
 
@@ -298,18 +298,21 @@ function (req: Request, res: Response, next: express.NextFunction) {
 `);
 
     if (method.secuity) {
-      ts.addAbsoluteImport("authMiddleware", path.join(this.expressAppRoot, "src/auth.ts"));
+      ts.addAbsoluteImport("auth", path.join(this.expressAppRoot, "src/auth.ts"));
     }
 
     ts.push(`
-export const ${method.operationId}Route = [
-  ${method.secuity ? "...authMiddleware," : ""}
-  //<pre-middleware>
-  //</pre-middleware>
-  ${middleware.join(",\n")}
-  //<post-middleware>
-  //</post-middleware>
-];
+export function ${method.operationId}Route(app: express.Application): express.RequestHandler[] {
+  return [
+    ${method.secuity ? "auth(app)," : ""}
+    //<pre-middleware>
+    //</pre-middleware>
+    ${middleware.join(",\n")}
+    //<post-middleware>
+    //</post-middleware>
+  ] as any[];
+}
+
 export function ${method.operationId}(${implParams.join(", ")}) {
 //<method-body>
 ${defaultMethodBody}
@@ -415,16 +418,14 @@ const expressJwt = require("express-jwt");
 //<custom-imports>
 //</custom-imports>
 
-export const authMiddleware = [];
-
-export function configure(app: express.Express) {
+export function auth(app: express.Application): express.RequestHandler[] {
 
   if (!app.get("JWTSecret")) {
     throw new Error('defined JWTSecret using express.set("JWTSecret", ...)')
   }
 
   // JWT: regenerate session pass
-  authMiddleware.push(
+  return [
     expressJwt({
       secret: app.get("JWTSecret"),
       credentialsRequired: false,
@@ -439,10 +440,7 @@ export function configure(app: express.Express) {
 
         return null;
       }
-    })
-  );
-
-  authMiddleware.push(
+    }),
     function auth(
       req: Request,
       res: express.Response,
@@ -469,7 +467,7 @@ export function configure(app: express.Express) {
 
       //</authenticate>
     }
-  );
+  ];
 
 }
 `

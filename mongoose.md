@@ -6,6 +6,12 @@ Generate mongoose models and schemas.
 
 ### At [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject) or [Schemas](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#schemaObject)
 
+#### x-nema-id
+
+Force a type to be a mongoose ID
+
+### At [Definitions Object](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#definitionsObject) or [Schemas](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.1.md#schemaObject)
+
 #### x-nema-db
 
 Mark model as a db entity (mongoose treat it as a collection)

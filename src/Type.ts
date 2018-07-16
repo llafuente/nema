@@ -154,7 +154,7 @@ export class Type {
     }
     t.foreignKey = obj["x-nema-fk"] || null;
 
-    if (t.foreignKey && !obj.$ref) {
+    if ((t.foreignKey && !obj.$ref) || obj["x-nema-id"]) {
       t.type = Kind.ID;
     }
 

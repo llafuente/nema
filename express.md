@@ -30,20 +30,11 @@ Edit the zones in the file accordingly: `src/routes.ts`
 
 ## Security
 
-For security a middleware is created and a `configure` function.
+For security a middleware is created and will be imported first at
+any route that need it.
 
-`configure` should be called at `express-configuration` at `/index.ts`.
-
-
-example:
+JWT require to set a secret string at your app: `index.ts` @ `express-configuration`
 
 ```
-export const app = express();
-
-//<express-configuration>
-// ...
-app.set("JWTSecret", "dkjmne398fskj32w98fskjslk");
-configure(app);
-// ...
-//</express-configuration>
+app.set("JWTSecret", "xxx");
 ```

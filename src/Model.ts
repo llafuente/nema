@@ -104,6 +104,9 @@ export class Model {
     }
 
     const m = this.api.getReference(this.extends) as Model;
+    if (m.extends) {
+      m.eachParentProperty(cb);
+    }
     m.eachProperty(cb);
   }
 

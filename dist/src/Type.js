@@ -279,8 +279,15 @@ class Type {
                 }
                 break;
             case Kind.ID:
-                const mdl = this.api.getReference(this.foreignKey);
-                d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(mdl.name)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
+                // if it has a foreignKey use ref so it van be populated
+                if (this.foreignKey) {
+                    const mdl = this.api.getReference(this.foreignKey);
+                    d.push(`type: mongoose.Schema.Types.ObjectId, ref: ${JSON.stringify(mdl.name)}, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
+                }
+                else {
+                    // this case is when x-nema-id is used
+                    d.push(`type: mongoose.Schema.Types.ObjectId, set: function(v) { return v ? new mongoose.Types.ObjectId(v) : null; }`);
+                }
                 break;
             default:
                 d.push(`type: ${this.type}`);

@@ -70,6 +70,9 @@ class Model {
             throw new Error("This model has no parent model");
         }
         const m = this.api.getReference(this.extends);
+        if (m.extends) {
+            m.eachParentProperty(cb);
+        }
         m.eachProperty(cb);
     }
     isEnum() {

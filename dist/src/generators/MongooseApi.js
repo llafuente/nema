@@ -55,7 +55,10 @@ class MongooseApi {
         s.push(`import { ${model.interfaceName} } from "../models/${model.name}";`);
         s.push(`import * as mongoose from "mongoose";`);
         s.push(`
-export interface ${model.mongooseInterface} extends ${model.interfaceName}, mongoose.Document {}
+export interface ${model.mongooseInterface} extends ${model.interfaceName}, mongoose.Document {
+//<mongoose-methods>
+//</mongoose-methods>
+}
 
 export const ${model.mongooseSchema} = new mongoose.Schema(
   {`);
@@ -79,6 +82,17 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
 );
 
 //<mongoose-after-schema>
+// here you can update your schema before it became a final model
+
+// If you are going to add a method/static remember to add it to ${model.mongooseInterface} too
+// here alone is not enough for you to use it
+
+// examples:
+//${model.mongooseInterface}.pre("save", function pre(next) {})
+//${model.mongooseInterface}.pre("update", function update(next) {})
+//${model.mongooseInterface}.method("doSomething", function(xx, yy): void { })
+//${model.mongooseInterface}.static("doSomething", function(xx, yy): void { })
+
 //</mongoose-after-schema>
 
 export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});

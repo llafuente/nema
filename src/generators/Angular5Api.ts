@@ -38,7 +38,7 @@ export class Angular5Api {
       this.resolveFile(method, `/src/resolve/${method.resolve.name}.ts`);
     });
 
-    this.indexFile(`/src/${this.api.apiName}.ts`);
+    this.indexFile(path.join(this.dstPath, "src", `${this.api.apiName}.ts`));
 
     this.moduleFile(`/index.ts`);
 
@@ -62,7 +62,7 @@ export class Angular5Api {
   }
 
   indexFile(filename: string) {
-    fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.index(filename));
+    fs.writeFileSync(filename, this.index(filename));
   }
 
   packageJSONFile(filename: string) {
@@ -209,6 +209,8 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
   }
 
   index(filename): string {
+    console.log(filename);
+
     const ts = new TypescriptFile();
     ts.header = header;
 
@@ -222,6 +224,21 @@ import { Subject, Observable } from "rxjs";`);
     this.api.eachModel((model, modelName) => {
       ts.addAbsoluteImport(model.name, model.filename);
     });
+
+    // gather all error types
+    const errorTypes: string[] = ["Error"];
+    this.api.eachMethod((m) => {
+      m.eachResponse((r) => {
+        if (r.httpCode >= 300) {
+          const t = r.type.toTypeScriptType();
+
+          if (errorTypes.indexOf(t) === -1) {
+            errorTypes.push(t);
+          }
+        }
+      })
+    });
+    console.log(errorTypes);
 
     // Api class
     ts.push(`
@@ -306,7 +323,7 @@ function qsStringify(a) {
 export class ${this.api.apiName} {
   debug: boolean = false;
   host: string = ${JSON.stringify(this.api.servers[0].url)};
-  onError: Subject<Error> = new Subject<Error>();
+  onError: Subject<${errorTypes.join("|")}> = new Subject<${errorTypes.join("|")}>();
 
   constructor(
     public http: HttpClient,

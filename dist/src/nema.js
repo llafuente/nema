@@ -48,6 +48,7 @@ require --express-api in the same destination`)
     .option("--override-models", "Override all models while agreggating")
     .option("--override-methods", "Override all methods while agreggating")
     .option("--lint", "Lint output (tslint), this may take a while")
+    .option("--no-pretty", "Disable pretty output (prettier)")
     .option("--src <path>", "Path to definition file, repeat to aggregate", function (val, memo) {
     memo.push(val);
     return memo;
@@ -144,27 +145,27 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     // some generator may modify api metadata
     if (program.angular5Api) {
         green("Instancing generator: angular5-api");
-        new Angular5Api_1.Angular5Api(dstPath, api).generate(true, !!program.lint);
+        new Angular5Api_1.Angular5Api(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.expressApi) {
         green("Instancing generator: express");
-        new ExpressApi_1.ExpressApi(dstPath, api).generate(true, !!program.lint);
+        new ExpressApi_1.ExpressApi(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.expressApp) {
         green("Instancing generator: express App");
-        new ExpressApp_1.ExpressApp(dstPath, api).generate(true, !!program.lint);
+        new ExpressApp_1.ExpressApp(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.mongooseApi) {
         green("Instancing generator: mongoose");
-        new MongooseApi_1.MongooseApi(dstPath, api).generate(true, !!program.lint);
+        new MongooseApi_1.MongooseApi(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.mongooseApp) {
         green("Instancing generator: mongoose App");
-        new MongooseApp_1.MongooseApp(dstPath, api).generate(true, !!program.lint);
+        new MongooseApp_1.MongooseApp(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.expressCsv) {
         green("Instancing generator: express CSV");
-        new ExpressCSV_1.ExpressCSV(dstPath, api).generate(true, !!program.lint);
+        new ExpressCSV_1.ExpressCSV(dstPath, api).generate(!!program.pretty, !!program.lint);
     }
     else if (program.angular5FormTemplate) {
         const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);

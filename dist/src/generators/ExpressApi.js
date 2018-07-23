@@ -243,10 +243,14 @@ export function ${method.operationId}Route(app: express.Application): express.Re
   ] as any[];
 }
 
-export function ${method.operationId}(${implParams.join(", ")}) {
+export async function ${method.operationId}(${implParams.join(", ")}) {
+  try {
 //<method-body>
 ${defaultMethodBody}
 //</method-body>
+} catch(e) {
+  next(e);
+}
 }
 ${responses.join("\n\n")}
 //<extras>

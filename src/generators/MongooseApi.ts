@@ -79,9 +79,19 @@ export class MongooseApi {
     s.push(`import { ${model.interfaceName} } from "../models/${model.name}";`);
     s.push(`import * as mongoose from "mongoose";`);
     s.push(`
+//<custom-imports>
+//</custom-imports>
+
 export interface ${model.mongooseInterface} extends ${model.interfaceName}, mongoose.Document {
-//<mongoose-methods>
-//</mongoose-methods>
+//<mongoose-instance-methods>
+// declare instance methods here
+//</mongoose-instance-methods>
+}
+
+export interface ${model.mongooseInterface}Model extends mongoose.Model<${model.mongooseInterface}> {
+//<mongoose-static-methods>
+// declare static methods here
+//</mongoose-static-methods>
 }
 
 export const ${model.mongooseSchema} = new mongoose.Schema(
@@ -121,10 +131,10 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
 
 //</mongoose-after-schema>
 
-export const ${model.mongooseModel} = mongoose.model<${model.mongooseInterface}>("${model.name}", ${model.mongooseSchema});
+export const ${model.mongooseModel}: ${model.mongooseInterface}Model = mongoose.model<${model.mongooseInterface}, ${model.mongooseInterface}Model>("${model.name}", ${model.mongooseSchema});
 `);
     return {
-      tokens: ["mongoose-after-schema"],
+      tokens: ["custom-imports","mongoose-after-schema", "mongoose-instance-methods", "mongoose-static-methods"],
       template: s.join("\n")
     }
   }

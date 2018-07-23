@@ -35,7 +35,7 @@ export class Angular5Api {
 
     // generate all resolves
     this.api.eachResolve((method, modelName) => {
-      this.resolveFile(method, `/src/resolve/${method.resolve.name}.ts`);
+      this.resolveFile(method, path.join(this.dstPath, "src", "resolve", `${method.resolve.name}.ts`));
     });
 
     this.indexFile(path.join(this.dstPath, "src", `${this.api.apiName}.ts`));
@@ -54,7 +54,7 @@ export class Angular5Api {
   }
 
   resolveFile(method: Method, filename: string) {
-    fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.resolve(method));
+    fs.writeFileSync(filename, this.resolve(method));
   }
 
   moduleFile(filename: string) {
@@ -209,8 +209,6 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
   }
 
   index(filename): string {
-    console.log(filename);
-
     const ts = new TypescriptFile();
     ts.header = header;
 
@@ -238,7 +236,6 @@ import { Subject, Observable } from "rxjs";`);
         }
       })
     });
-    console.log(errorTypes);
 
     // Api class
     ts.push(`

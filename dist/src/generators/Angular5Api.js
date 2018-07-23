@@ -23,7 +23,7 @@ class Angular5Api {
         fs.copyFileSync(path.join(this.api.root, "templates", "angular5client", "RequestOptions.ts"), path.join(this.dstPath, "src", "RequestOptions.ts"));
         // generate all resolves
         this.api.eachResolve((method, modelName) => {
-            this.resolveFile(method, `/src/resolve/${method.resolve.name}.ts`);
+            this.resolveFile(method, path.join(this.dstPath, "src", "resolve", `${method.resolve.name}.ts`));
         });
         this.indexFile(path.join(this.dstPath, "src", `${this.api.apiName}.ts`));
         this.moduleFile(`/index.ts`);
@@ -37,7 +37,7 @@ class Angular5Api {
         }
     }
     resolveFile(method, filename) {
-        fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.resolve(method));
+        fs.writeFileSync(filename, this.resolve(method));
     }
     moduleFile(filename) {
         fs.writeFileSync(path.join(this.dstPath, `.${filename}`), this.module());
@@ -172,7 +172,6 @@ export class ${method.resolve.name} implements Resolve<${responseType.type.toTyp
 `;
     }
     index(filename) {
-        console.log(filename);
         const ts = new TypescriptFile_1.TypescriptFile();
         ts.header = header;
         ts.push(`import { HttpClient, HttpHeaders, HttpParams, HttpErrorResponse } from "@angular/common/http";
@@ -195,7 +194,6 @@ import { Subject, Observable } from "rxjs";`);
                 }
             });
         });
-        console.log(errorTypes);
         // Api class
         ts.push(`
 

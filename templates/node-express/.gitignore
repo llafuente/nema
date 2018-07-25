@@ -3,3 +3,7 @@
 
 # typescript generated files
 /dist
+
+# code coverage
+/.nyc_output/
+/coverage/

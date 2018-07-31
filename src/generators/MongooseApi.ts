@@ -94,6 +94,7 @@ export interface ${model.mongooseInterface}Model extends mongoose.Model<${model.
 //</mongoose-static-methods>
 }
 
+// tslint:disable-next-line:variable-name
 export const ${model.mongooseSchema} = new mongoose.Schema(
   {`);
 
@@ -131,6 +132,7 @@ export const ${model.mongooseSchema} = new mongoose.Schema(
 
 //</mongoose-after-schema>
 
+// tslint:disable-next-line:variable-name
 export const ${model.mongooseModel}: ${model.mongooseInterface}Model = mongoose.model<${model.mongooseInterface}, ${model.mongooseInterface}Model>("${model.name}", ${model.mongooseSchema});
 `);
     return {
@@ -211,8 +213,8 @@ export function query(
   where: {[name: string]: Where},
   sort: {[name: string]: Order},
 ): Promise<{result: ${model.mongooseInterface}[], total: number}> {
-  let query = ${model.mongooseModel}.find({});
-  let qCount = ${model.mongooseModel}.find({}).count();
+  let dbQuery = ${model.mongooseModel}.find({});
+  let dbQueryCount = ${model.mongooseModel}.find({}).count();
 
   if (where) {
     _.each(where, (w: Where, path: string) => {
@@ -256,20 +258,20 @@ export function query(
 
           console.log("w.value", w.value);
 
-          query = query.where(path).in(w.value);
-          qCount = qCount.where(path).in(w.value);
+          dbQuery = dbQuery.where(path).in(w.value);
+          dbQueryCount = dbQueryCount.where(path).in(w.value);
           break;
         case Operators.LIKE:
-          query = query.where(path).regex(w.value);
-          qCount = qCount.where(path).regex(w.value);
+          dbQuery = dbQuery.where(path).regex(w.value);
+          dbQueryCount = dbQueryCount.where(path).regex(w.value);
           break;
         case Operators.RAW:
-          query = query.and(w.value);
-          qCount = qCount.and(w.value);
+          dbQuery = dbQuery.and(w.value);
+          dbQueryCount = dbQueryCount.and(w.value);
           break;
         default:
-          query = query.where(path).equals(w.value);
-          qCount = qCount.where(path).equals(w.value);
+          dbQuery = dbQuery.where(path).equals(w.value);
+          dbQueryCount = dbQueryCount.where(path).equals(w.value);
           break;
       }
     });
@@ -287,25 +289,25 @@ export function query(
         throw new Error("populate[" + s + "] can't be populated");
       }
       */
-      query.populate(path);
+      dbQuery.populate(path);
     });
   }
 
   if (offset) {
-    query.skip(offset);
+    dbQuery.skip(offset);
   }
 
   if (limit) {
-    query.limit(limit);
+    dbQuery.limit(limit);
   }
 
   if (fields && fields.length) {
-    query.select(fields.join(" "));
+    dbQuery.select(fields.join(" "));
   }
 
   if (sort) {
     // http://mongoosejs.com/docs/api.html#query_Query-sort
-    query.sort(_.map((sort || []), (s: Order, key: string) => {
+    dbQuery.sort(_.map((sort || []), (s: Order, key: string) => {
       const options = ${model.mongooseSchema}.path(key);
       if (!options) {
         throw new Error("sort[" + key + "] not found");
@@ -317,7 +319,7 @@ export function query(
 
 
   return new Promise((resolve, reject) => {
-    Promise.join(query, qCount, (result, total) => {
+    Promise.join(dbQuery, dbQueryCount, (result, total) => {
       resolve({
         result,
         total

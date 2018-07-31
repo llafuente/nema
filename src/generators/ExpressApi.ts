@@ -128,10 +128,7 @@ export function routes(app: express.Application) {
 
   // remove the content it if don't want to display your API
   //<swagger-ui-options>
-  var options = {
-  };
-
-  app.use('/api-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+  app.use('/docs/swagger-ui', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {}));
   //</swagger-ui-options>
 
 
@@ -274,15 +271,16 @@ let upload = multer({
       response.type.getRandom(ts);
 
       // TODO handle file response
+      const code = response.httpCode || 200;
+      const tslint = code > 300 ? "// tslint:disable-next-line:no-unused-variable\n" : "";
+
       if (method.producesJSON()) {
-        responses.push(`function respond${response.httpCode ||
-          200}(res: Response, result: ${response.type.toTypeScriptType()}) {
-          res.status(${response.httpCode || 200}).json(result);
+        responses.push(`${tslint}function respond${code}(res: Response, result: ${response.type.toTypeScriptType()}) {
+          res.status(${code}).json(result);
         }`);
       } else {
-        responses.push(`function respond${response.httpCode ||
-          200}(res: Response, result: ${response.type.toTypeScriptType()}) {
-          res.status(${response.httpCode || 200}).send(result);
+        responses.push(`${tslint}function respond${code}(res: Response, result: ${response.type.toTypeScriptType()}) {
+          res.status(${code}).send(result);
         }`);
       }
     });
@@ -445,7 +443,7 @@ export function auth(app: express.Application): express.RequestHandler[] {
         return null;
       }
     }),
-    function auth(
+    function authMiddleware(
       req: Request,
       res: express.Response,
       next: express.NextFunction

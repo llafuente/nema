@@ -9,8 +9,8 @@
   "scripts": {
     "test": "npm run build && ava --verbose ./dist/test/all.test.js --fail-fast",
     "testcv": "npm run build && nyc ava --verbose ./dist/test/all.test.js && nyc report --reporter html --report-dir coverage/html",
-    "pretty": "prettier --write --parser typescript --print-width 120 \"src/**/*.ts\"",
-    "lint": "npm run pretty && tslint --force --fix -c ./tslint.json --type-check -p ./tsconfig.json",
+    "pretty": "prettier --write --parser typescript --print-width 80 \"src/**/*.ts\"",
+    "lint": "tslint --force --fix -c ./tslint.json -project ./tsconfig.json && npm run pretty",
     "build": "tsc -p ./tsconfig.json",
     "start": "npm run build && node ./dist/src/index.js",
     "nodemon": "npm start || exit 1"

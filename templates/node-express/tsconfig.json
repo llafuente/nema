@@ -19,7 +19,7 @@
       "sinon"
     ],
     "baseUrl": ".",
-    "sourceMap": true
+    "inlineSourceMap": true
   },
   "files": [
     "./src/index.ts"

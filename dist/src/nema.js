@@ -95,7 +95,7 @@ if (targets == 2) {
     process.exit(1);
 }
 // parse and aggregate definitions files
-let api;
+let api = new Api_1.Api();
 let dstPath = program.dst || null;
 if (dstPath && !path.isAbsolute(dstPath)) {
     dstPath = path.join(process.cwd(), dstPath);
@@ -126,7 +126,7 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
         }
         // TODO aggregate!
         /*
-        if (api) {
+        if (api.filename) {
           api.aggregate(Api.parseSwaggerFile(swagger), !!program.overrideMethods, !!program.overrideModels);
         } else {
           api = Api.parseSwaggerFile(swagger);
@@ -139,6 +139,11 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
 }, (err) => {
     if (err)
         throw err;
+    if (!api.filename && !dstPath) {
+        red("You must specify target directory when no definition is sent");
+        program.help();
+        process.exit(1);
+    }
     console.info(`Destination path: ${dstPath}`);
     const projectGenerators = [];
     // create all projectGenerators

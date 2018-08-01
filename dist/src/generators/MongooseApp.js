@@ -11,7 +11,6 @@ class MongooseApp {
         this.api = api;
     }
     generate(pretty, lint) {
-        this.api.sort();
         // create generation paths
         mkdirp(path.join(this.dstPath, "src/"));
         mkdirp(path.join(this.dstPath, "test/"));

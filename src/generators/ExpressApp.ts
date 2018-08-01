@@ -13,8 +13,6 @@ export class ExpressApp {
   constructor(public dstPath: string, public api: Api) {}
 
   generate(pretty: boolean, lint: boolean) {
-    this.api.sort();
-
     // create generation paths
     mkdirp(path.join(this.dstPath, "src"));
     mkdirp(path.join(this.dstPath, "test"));

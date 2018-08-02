@@ -195,9 +195,19 @@ let upload = multer({
             }
             if (method.body.required) {
                 ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
-                paramValidations.push(`if (!req.body) {
-          return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
-        }`);
+                ts.addImport("* as _", "lodash");
+                const t = method.body.type.derefence();
+                if (t.type == Type_1.Kind.OBJECT) {
+                    // check empty object, its what express exposes :*
+                    paramValidations.push(`if (_.isEmpty(req.body)) {
+            return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
+          }`);
+                }
+                else {
+                    paramValidations.push(`if (!req.body) {
+            return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
+          }`);
+                }
             }
         }
         const responses = [];
@@ -205,7 +215,7 @@ let upload = multer({
             response.type.getRandom(ts);
             // TODO handle file response
             const code = response.httpCode || 200;
-            const tslint = code > 300 ? "// tslint:disable-next-line:no-unused-variable\n" : "";
+            const tslint = code > 300 ? "// tslint:disable-next-line:no-unused-variable\n/* istanbul ignore next */\n" : "";
             if (method.producesJSON()) {
                 responses.push(`${tslint}function respond${code}(res: Response, result: ${response.type.toTypeScriptType()}) {
           res.status(${code}).json(result);
@@ -246,7 +256,7 @@ export async function ${method.operationId}(${implParams.join(", ")}) {
 ${defaultMethodBody}
 //</method-body>
 } catch(e) {
-  next(e);
+  /* istanbul ignore next */ next(e);
 }
 }
 ${responses.join("\n\n")}

@@ -257,10 +257,20 @@ let upload = multer({
 
       if (method.body.required) {
         ts.addAbsoluteImport("BadRequest", path.join(this.expressAppRoot, "src/HttpErrors.ts"));
+        ts.addImport("* as _", "lodash");
 
-        paramValidations.push(`if (!req.body) {
-          return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
-        }`);
+        const t = method.body.type.derefence();
+
+        if (t.type == Kind.OBJECT) {
+          // check empty object, its what express exposes :*
+          paramValidations.push(`if (_.isEmpty(req.body)) {
+            return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
+          }`);
+        } else {
+          paramValidations.push(`if (!req.body) {
+            return next(new BadRequest("body of type: ${method.body.type.toTypeScriptType()} is required"));
+          }`);
+        }
       }
     }
 

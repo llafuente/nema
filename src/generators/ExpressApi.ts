@@ -272,7 +272,7 @@ let upload = multer({
 
       // TODO handle file response
       const code = response.httpCode || 200;
-      const tslint = code > 300 ? "// tslint:disable-next-line:no-unused-variable\n" : "";
+      const tslint = code > 300 ? "// tslint:disable-next-line:no-unused-variable\n/* istanbul ignore next */\n" : "";
 
       if (method.producesJSON()) {
         responses.push(`${tslint}function respond${code}(res: Response, result: ${response.type.toTypeScriptType()}) {
@@ -317,7 +317,7 @@ export async function ${method.operationId}(${implParams.join(", ")}) {
 ${defaultMethodBody}
 //</method-body>
 } catch(e) {
-  next(e);
+  /* istanbul ignore next */ next(e);
 }
 }
 ${responses.join("\n\n")}

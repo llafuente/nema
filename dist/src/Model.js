@@ -50,6 +50,7 @@ class Model {
         m.description = obj.description;
         //m.dtoName = `${name}Dto`;
         m.interfaceName = `I${name}`;
+        m.interfaceOptionalName = `IOptional${name}`;
         m.mongooseInterface = `I${name}Model`;
         m.mongooseSchema = `${name}Schema`;
         m.mongooseRepository = `${name}Repository`;

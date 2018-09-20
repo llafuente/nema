@@ -135,6 +135,12 @@ function modelInterface(api, model, ts) {
         s.push(`${name}: ${t.toTypeScriptType()},`);
     });
     s.push(`}`);
+    // start optional interface
+    s.push(`export interface ${model.interfaceOptionalName} {`);
+    _.each(model.type.properties, (t, name) => {
+        s.push(`${name}?: ${t.toTypeScriptType()},`);
+    });
+    s.push(`}`);
     // end interface
     return s.join("\n");
 }
@@ -152,6 +158,7 @@ function modelClass(api, model, ts) {
     });
     const constructorParams = [];
     const constructorBody = [];
+    const fromBody = [];
     //super for extended classes
     if (model.extends) {
         // parent properties
@@ -166,6 +173,7 @@ function modelClass(api, model, ts) {
     model.eachProperty((t, name) => {
         constructorParams.push(`${name}: ${t.toTypeScriptType()},`);
         constructorBody.push(`this.${name} = ${name};`);
+        fromBody.push(`ret.${name} = json.${name};`);
     });
     s.push(`constructor(${constructorParams.join("\n")}) {\n${constructorBody.join("\n")}\n}`);
     // end constructor
@@ -191,6 +199,13 @@ function modelClass(api, model, ts) {
       return new ${model.name}(
       ${parseNewParams.join(",\n")}
       );
+    }
+
+    static from(json: ${model.interfaceOptionalName}): ${model.name} {
+      if (json == null) {
+        return ${model.name}.emptyInstance();
+      }
+      return ${model.name}.parse(json);
     }
 
     static randomInstance(): ${model.name} {

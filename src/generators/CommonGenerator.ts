@@ -175,6 +175,14 @@ export function modelInterface(api: Api, model: Model, ts: TypescriptFile): stri
     s.push(`${name}: ${t.toTypeScriptType()},`);
   });
   s.push(`}`);
+
+  // start optional interface
+  s.push(`export interface ${model.interfaceOptionalName} {`);
+  _.each(model.type.properties, (t, name) => {
+    s.push(`${name}?: ${t.toTypeScriptType()},`);
+  });
+  s.push(`}`);
+
   // end interface
 
   return s.join("\n");
@@ -196,6 +204,7 @@ export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
 
   const constructorParams = [];
   const constructorBody = [];
+  const fromBody = [];
 
   //super for extended classes
   if (model.extends) {
@@ -211,6 +220,7 @@ export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
   model.eachProperty((t, name) => {
     constructorParams.push(`${name}: ${t.toTypeScriptType()},`);
     constructorBody.push(`this.${name} = ${name};`);
+    fromBody.push(`ret.${name} = json.${name};`);
   });
 
   s.push(`constructor(${constructorParams.join("\n")}) {\n${constructorBody.join("\n")}\n}`);
@@ -242,6 +252,13 @@ export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
       return new ${model.name}(
       ${parseNewParams.join(",\n")}
       );
+    }
+
+    static from(json: ${model.interfaceOptionalName}): ${model.name} {
+      if (json == null) {
+        return ${model.name}.emptyInstance();
+      }
+      return ${model.name}.parse(json);
     }
 
     static randomInstance(): ${model.name} {

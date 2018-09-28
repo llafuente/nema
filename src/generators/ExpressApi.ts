@@ -2,6 +2,7 @@ import { Api } from "../Api";
 import { Method } from "../Method";
 import { Kind } from "../Type";
 import { ParameterType } from "../Parameter";
+import { Config } from "../Config";
 import * as fs from "fs";
 import * as path from "path";
 import * as CommonGenerator from "./CommonGenerator";
@@ -13,8 +14,6 @@ const mkdirp = require("mkdirp").sync;
 
 export class ExpressApi {
   expressAppRoot: string;
-
-  constructor(public dstPath: string, public api: Api) {}
 
   static getExpressAppRoot(dstPath: string): string {
     let p = dstPath;
@@ -33,36 +32,36 @@ export class ExpressApi {
     throw new Error("package.json cannot be found");
   }
 
-  generate(pretty: boolean, lint: boolean) {
-    this.api.sort();
+  constructor(public config: Config) {
+    this.config.api.sort();
 
-    this.expressAppRoot = ExpressApi.getExpressAppRoot(this.dstPath);
+    this.expressAppRoot = ExpressApi.getExpressAppRoot(this.config.dstPath);
 
     console.info(`Located package.json at: ${this.expressAppRoot}`);
 
     // create generation paths
-    mkdirp(path.join(this.dstPath, "src/models"));
-    mkdirp(path.join(this.dstPath, "src/routes"));
-    mkdirp(path.join(this.dstPath, "test"));
+    mkdirp(path.join(this.config.dstPath, "src/models"));
+    mkdirp(path.join(this.config.dstPath, "src/routes"));
+    mkdirp(path.join(this.config.dstPath, "test"));
 
-    CommonGenerator.models(this.api, this.dstPath);
+    CommonGenerator.models(this.config.api, this.config.dstPath);
 
     // copy raw files (those that don't need to be generated)
-    CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
+    CommonGenerator.copyCommonTemplates(this.config.api, this.config.dstPath);
 
     fs.writeFileSync(
-      path.join(this.dstPath, "./src/api-definition.json.ts"),
-      "export default " + JSON.stringify(this.api.originalSource, null, 2),
+      path.join(this.config.dstPath, "./src/api-definition.json.ts"),
+      "export default " + JSON.stringify(this.config.api.originalSource, null, 2),
     );
 
     this.indexFile("/index.ts");
     this.routesFile("/src/routes.ts");
-    this.api.eachMethod((method, name) => {
+    this.config.api.eachMethod((method, name) => {
       this.routeFile(method, `src/routes/${method.operationId}.ts`);
       this.routeTestFile(method, `test/${method.operationId}.test.ts`);
-    });
+    }, this.config.deprecated);
 
-    if (this.api.security) {
+    if (this.config.api.security) {
       CommonGenerator.writeZonedTemplate(
         path.join(this.expressAppRoot, "src/auth.ts"),
         this.security()
@@ -70,30 +69,30 @@ export class ExpressApi {
     }
 
 
-    if (pretty) {
-      CommonGenerator.pretty(this.api, this.dstPath);
+    if (config.pretty) {
+      CommonGenerator.pretty(this.config.api, this.config.dstPath);
     }
     // this may take a long time...
-    if (lint) {
-      CommonGenerator.lint(this.api, this.dstPath);
+    if (config.lint) {
+      CommonGenerator.lint(this.config.api, this.config.dstPath);
     }
   }
 
   indexFile(filename: string) {
-    const file = path.join(this.dstPath, filename);
+    const file = path.join(this.config.dstPath, filename);
     CommonGenerator.writeZonedTemplate(file, this.index(file));
   }
 
   routesFile(filename: string) {
-    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.routes(filename));
+    CommonGenerator.writeZonedTemplate(path.join(this.config.dstPath, filename), this.routes(filename));
   }
 
   routeFile(method: Method, filename: string) {
-    CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.route(method, filename));
+    CommonGenerator.writeZonedTemplate(path.join(this.config.dstPath, filename), this.route(method, filename));
   }
 
   routeTestFile(method: Method, filename: string) {
-    const file = path.join(this.dstPath, filename);
+    const file = path.join(this.config.dstPath, filename);
     if (fs.existsSync(file)) {
       console.info(`file exist: ${file}, skip creation`);
     } else {
@@ -110,7 +109,7 @@ import swaggerDocument from "./api-definition.json";
 const swaggerUi = require('swagger-ui-express');`;
 
     const s = [];
-    this.api.eachMethod((method, operationId) => {
+    this.config.api.eachMethod((method, operationId) => {
       ts.addAbsoluteImport(`${method.operationId}Route`, method.filename);
 
       s.push(
@@ -118,13 +117,13 @@ const swaggerUi = require('swagger-ui-express');`;
           method.operationId
         }Route(app));`,
       );
-    });
+    }, this.config.deprecated);
 
     ts.body = [
       `
 export function routes(app: express.Application) {
   const r: express.Router = express.Router();
-  app.use(${JSON.stringify(this.api.backBasePath)}, r);
+  app.use(${JSON.stringify(this.config.api.backBasePath)}, r);
 
   // remove the content it if don't want to display your API
   //<swagger-ui-options>
@@ -139,14 +138,14 @@ export function routes(app: express.Application) {
 
     return {
       tokens: ["swagger-ui-options"],
-      template: ts.toString(path.join(this.api.destinationPath, filename)),
+      template: ts.toString(path.join(this.config.api.destinationPath, filename)),
     };
   }
 
   route(method: Method, filename: string): ModificableTemplate {
 
     // NOTE cannot resolve as linux directly
-    const targetDir = path.join(this.dstPath, path.dirname(filename));
+    const targetDir = path.join(this.config.dstPath, path.dirname(filename));
     const relPath = path.relative(targetDir, path.join(this.expressAppRoot, "src")).replace(/\\/g, "/");
 
     const ts = new TypescriptFile();
@@ -337,7 +336,7 @@ ${responses.join("\n\n")}
 
     return {
       tokens: ["custom-imports", "method-body", "extras", "pre-middleware", "post-middleware"],
-      template: ts.toString(path.join(this.api.destinationPath, filename)),
+      template: ts.toString(path.join(this.config.api.destinationPath, filename)),
     };
   }
 
@@ -395,17 +394,17 @@ test.cb.serial("${method.operationId}", (t) => {
     const ts = new TypescriptFile();
 
     const s = [];
-    this.api.eachModel((model, name) => {
+    this.config.api.eachModel((model, name) => {
       ts.addAbsoluteImport(model.name, model.filename);
       ts.addAbsoluteExport(model.name, model.filename);
     });
 
-    this.api.eachMethod((method, name) => {
+    this.config.api.eachMethod((method, name) => {
       ts.addAbsoluteImport(method.operationId, method.filename);
       ts.addAbsoluteExport(method.operationId, method.filename);
-    });
+    }, this.config.deprecated);
 
-    ts.addAbsoluteExport("routes", path.join(this.api.destinationPath, "src/routes.ts"));
+    ts.addAbsoluteExport("routes", path.join(this.config.api.destinationPath, "src/routes.ts"));
 
     return {
       // internal-mongoose-initialization is not exported
@@ -442,7 +441,7 @@ export function auth(app: express.Application): express.RequestHandler[] {
       secret: app.get("JWTSecret"),
       credentialsRequired: false,
       getToken: function fromHeader(req) {
-        const header = req.headers[${JSON.stringify(this.api.security.headerName.toLowerCase())}];
+        const header = req.headers[${JSON.stringify(this.config.api.security.headerName.toLowerCase())}];
         if (header) {
           const x = header.split(" ");
           if (x[0] === "Bearer") {

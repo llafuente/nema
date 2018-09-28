@@ -7,7 +7,7 @@ export function validateTypes(api: Api, t: CallbackTestContext) {
     method.eachResponse((response) => {
       t.deepEqual(response.type.type != null, true, `invalid type: ${JSON.stringify(response.type, null, 2)}`);
     });
-  });
+  }, true);
 }
 
 export function parse(filename: string, sort = true) : Api {

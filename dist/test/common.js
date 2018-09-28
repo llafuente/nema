@@ -5,7 +5,7 @@ function validateTypes(api, t) {
         method.eachResponse((response) => {
             t.deepEqual(response.type.type != null, true, `invalid type: ${JSON.stringify(response.type, null, 2)}`);
         });
-    });
+    }, true);
 }
 exports.validateTypes = validateTypes;
 function parse(filename, sort = true) {

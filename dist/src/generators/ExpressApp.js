@@ -6,40 +6,37 @@ const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
 const mkdirp = require("mkdirp").sync;
 class ExpressApp {
-    constructor(dstPath, api) {
-        this.dstPath = dstPath;
-        this.api = api;
-    }
-    generate(pretty, lint) {
+    constructor(config) {
+        this.config = config;
         // create generation paths
-        mkdirp(path.join(this.dstPath, "src"));
-        mkdirp(path.join(this.dstPath, "test"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "node-express", ".gitignore"), path.join(this.dstPath, ".gitignore"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "node-express", "nodemon.json"), path.join(this.dstPath, "nodemon.json"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "node-express", "package.json"), path.join(this.dstPath, "package.json"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "node-express", "tsconfig.json"), path.join(this.dstPath, "tsconfig.json"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "HttpErrors.ts"), path.join(this.dstPath, "./src/HttpErrors.ts"));
-        if (!fs.existsSync(path.join(this.dstPath, "test", "all.test.ts"))) {
-            fs.copyFileSync(path.join(this.api.root, "templates", "node-express", "all.test.ts"), path.join(this.dstPath, "test", "all.test.ts"));
+        mkdirp(path.join(this.config.dstPath, "src"));
+        mkdirp(path.join(this.config.dstPath, "test"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "node-express", ".gitignore"), path.join(this.config.dstPath, ".gitignore"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "node-express", "nodemon.json"), path.join(this.config.dstPath, "nodemon.json"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "node-express", "package.json"), path.join(this.config.dstPath, "package.json"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "node-express", "tsconfig.json"), path.join(this.config.dstPath, "tsconfig.json"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "HttpErrors.ts"), path.join(this.config.dstPath, "./src/HttpErrors.ts"));
+        if (!fs.existsSync(path.join(this.config.dstPath, "test", "all.test.ts"))) {
+            fs.copyFileSync(path.join(this.config.api.root, "templates", "node-express", "all.test.ts"), path.join(this.config.dstPath, "test", "all.test.ts"));
         }
         else {
             console.error("skip /test/all.test.ts");
         }
         this.routesFile("/src/routes.ts");
         this.indexFile("./src/index.ts");
-        if (pretty) {
-            CommonGenerator.pretty(this.api, this.dstPath);
+        if (config.pretty) {
+            CommonGenerator.pretty(this.config.api, this.config.dstPath);
         }
         // this may take a long time...
-        if (lint) {
-            CommonGenerator.lint(this.api, this.dstPath);
+        if (config.lint) {
+            CommonGenerator.lint(this.config.api, this.config.dstPath);
         }
     }
     indexFile(filename) {
-        CommonGenerator.writeZonedTemplate(path.join(this.dstPath, filename), this.index());
+        CommonGenerator.writeZonedTemplate(path.join(this.config.dstPath, filename), this.index());
     }
     routesFile(filename) {
-        CommonGenerator.writeZonedTemplate(path.join(this.dstPath, `.${filename}`), this.routes(filename));
+        CommonGenerator.writeZonedTemplate(path.join(this.config.dstPath, `.${filename}`), this.routes(filename));
     }
     routes(filename) {
         const ts = new TypescriptFile_1.TypescriptFile();

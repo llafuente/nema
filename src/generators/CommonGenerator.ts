@@ -253,7 +253,9 @@ export function modelClass(api: Api, model: Model, ts: TypescriptFile): string {
       ${parseNewParams.join(",\n")}
       );
     }
-
+    /**
+     * This is the recommended use to create a model from code
+     */
     static from(json: ${model.interfaceOptionalName}): ${model.name} {
       if (json == null) {
         return ${model.name}.emptyInstance();

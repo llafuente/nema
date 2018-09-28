@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Config_1 = require("../src/Config");
 const Angular5Api_1 = require("../src/generators/Angular5Api");
 const ava_1 = require("ava");
 const path = require("path");
@@ -83,7 +84,8 @@ ava_1.default.cb.serial("check models/methods", (t) => {
     t.end();
 });
 ava_1.default.cb.serial("generate angular 5 api", (t) => {
-    (new Angular5Api_1.Angular5Api(path.join(__dirname, `../test-generated/api-test-001/`), api)).generate(true, false);
+    const config = new Config_1.Config(path.join(__dirname, `../test-generated/api-test-001/`), api, true, false, true);
+    new Angular5Api_1.Angular5Api(config);
     t.end();
 });
 //# sourceMappingURL=api.class.test.js.map

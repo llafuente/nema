@@ -1,4 +1,5 @@
 import { Api } from "../src/Api";
+import { Config } from "../src/Config";
 import { Angular5Api } from "../src/generators/Angular5Api";
 import test from "ava";
 import * as path from "path";
@@ -103,6 +104,13 @@ test.cb.serial("check models/methods", (t) => {
 });
 
 test.cb.serial("generate angular 5 api", (t) => {
-  (new Angular5Api(path.join(__dirname, `../test-generated/api-test-001/`), api)).generate(true, false);
+  const config = new Config(
+    path.join(__dirname, `../test-generated/api-test-001/`),
+    api,
+    true,
+    false,
+    true
+  );
+  new Angular5Api(config);
   t.end();
 });

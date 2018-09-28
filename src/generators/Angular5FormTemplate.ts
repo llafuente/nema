@@ -3,6 +3,7 @@ import { Method } from "../Method";
 import { Model } from "../Model";
 import { Type, Kind } from "../Type";
 import { Parameter, ParameterType } from "../Parameter";
+import { Config } from "../Config";
 import * as fs from "fs";
 import * as path from "path";
 import * as _ from "lodash";

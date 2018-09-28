@@ -6,15 +6,13 @@ const CommonGenerator = require("./CommonGenerator");
 const utils_1 = require("../utils");
 const mkdirp = require("mkdirp").sync;
 class MongooseApp {
-    constructor(dstPath, api) {
-        this.dstPath = dstPath;
-        this.api = api;
-    }
-    generate(pretty, lint) {
+    constructor(config) {
+        this.config = config;
         // create generation paths
-        mkdirp(path.join(this.dstPath, "src/"));
-        mkdirp(path.join(this.dstPath, "test/"));
-        const packageJSONFile = path.join(this.dstPath, "package.json");
+        mkdirp(path.join(this.config.dstPath, "src/"));
+        mkdirp(path.join(this.config.dstPath, "test/"));
+        console.info("# add more dependencies to the project");
+        const packageJSONFile = path.join(this.config.dstPath, "package.json");
         try {
             const packageJSON = require(packageJSONFile);
             packageJSON.dependencies["bluebird"] = "3.5.1";
@@ -34,7 +32,8 @@ class MongooseApp {
         catch (e) {
             console.log(`cannot read: ${packageJSONFile}`);
         }
-        const tsconfigFile = path.join(this.dstPath, "tsconfig.json");
+        console.info("# modify tsconfig");
+        const tsconfigFile = path.join(this.config.dstPath, "tsconfig.json");
         try {
             const tsconfig = require(tsconfigFile);
             utils_1.uniquePush(tsconfig.compilerOptions.types, "bluebird");
@@ -49,13 +48,15 @@ class MongooseApp {
         catch (e) {
             console.log(`cannot read: ${tsconfigFile}`);
         }
-        if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
-            fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.dstPath, "test", "mongoose.connection.test.ts"));
+        console.info("# add mongoose.connection.test.ts");
+        if (!fs.existsSync(path.join(this.config.dstPath, "test", "mongoose.connection.test.ts"))) {
+            fs.copyFileSync(path.join(this.config.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.config.dstPath, "test", "mongoose.connection.test.ts"));
         }
         else {
-            console.error("skip /test/mongoose.connection.test.ts");
+            console.error("# skip /test/mongoose.connection.test.ts");
         }
-        const indexFile = path.join(this.dstPath, "./src/index.ts");
+        console.info("# modify /src/index.ts");
+        const indexFile = path.join(this.config.dstPath, "./src/index.ts");
         if (!fs.existsSync(indexFile)) {
             throw new Error(`${indexFile} must exists. Execute --express-app before this generator`);
         }
@@ -64,16 +65,17 @@ import initMongoose from "./mongoose";
 initMongoose(app);
       `);
         // TODO do it!
-        CommonGenerator.setZonedTemplate(path.join(this.dstPath, "./src/index.ts"), "mongoose-error-handling", `
+        CommonGenerator.setZonedTemplate(path.join(this.config.dstPath, "./src/index.ts"), "mongoose-error-handling", `
 // ????
       `);
-        CommonGenerator.copyZonedTemplate(path.join(this.api.root, "templates", "mongoose", "mongoose.ts"), path.join(this.dstPath, "src", "mongoose.ts"), ["import-models"]);
-        if (pretty) {
-            CommonGenerator.pretty(this.api, this.dstPath);
+        console.info("# modify /templates/mongoose/mongoose.ts");
+        CommonGenerator.copyZonedTemplate(path.join(this.config.api.root, "templates", "mongoose", "mongoose.ts"), path.join(this.config.dstPath, "src", "mongoose.ts"), ["import-models"]);
+        if (config.pretty) {
+            CommonGenerator.pretty(this.config.api, this.config.dstPath);
         }
         // this may take a long time...
-        if (lint) {
-            CommonGenerator.lint(this.api, this.dstPath);
+        if (config.lint) {
+            CommonGenerator.lint(this.config.api, this.config.dstPath);
         }
     }
 }

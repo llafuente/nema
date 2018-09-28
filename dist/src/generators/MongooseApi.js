@@ -6,39 +6,36 @@ const CommonGenerator = require("./CommonGenerator");
 const ExpressApi_1 = require("./ExpressApi");
 const mkdirp = require("mkdirp").sync;
 class MongooseApi {
-    constructor(dstPath, api) {
-        this.dstPath = dstPath;
-        this.api = api;
-    }
-    generate(pretty, lint) {
-        this.api.sort();
-        this.expressAppRoot = ExpressApi_1.ExpressApi.getExpressAppRoot(this.dstPath);
+    constructor(config) {
+        this.config = config;
+        this.config.api.sort();
+        this.expressAppRoot = ExpressApi_1.ExpressApi.getExpressAppRoot(this.config.dstPath);
         // create generation paths
-        mkdirp(path.join(this.dstPath, "src/models")); // raw models
-        mkdirp(path.join(this.dstPath, "src/mongoose")); // mongoose schema/model
-        mkdirp(path.join(this.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
-        this.api.eachModel((model, modelName) => {
+        mkdirp(path.join(this.config.dstPath, "src/models")); // raw models
+        mkdirp(path.join(this.config.dstPath, "src/mongoose")); // mongoose schema/model
+        mkdirp(path.join(this.config.dstPath, "src/repositories")); // insert/update/delete/get/list mongoose models
+        this.config.api.eachModel((model, modelName) => {
             if (model.isDb) {
-                this.mongooseModelFile(model, path.join(this.dstPath, `src/mongoose/${modelName}.ts`));
-                this.mongooseRepositoryFile(model, path.join(this.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
+                this.mongooseModelFile(model, path.join(this.config.dstPath, `src/mongoose/${modelName}.ts`));
+                this.mongooseRepositoryFile(model, path.join(this.config.dstPath, `src/repositories/${model.mongooseRepository}.ts`));
             }
         });
-        if (!fs.existsSync(path.join(this.dstPath, "test", "mongoose.connection.test.ts"))) {
-            fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.dstPath, "test", "mongoose.connection.test.ts"));
+        if (!fs.existsSync(path.join(this.config.dstPath, "test", "mongoose.connection.test.ts"))) {
+            fs.copyFileSync(path.join(this.config.api.root, "templates", "mongoose", "mongoose.connection.test.ts"), path.join(this.config.dstPath, "test", "mongoose.connection.test.ts"));
         }
         else {
             console.error("skip /test/mongoose.connection.test.ts");
         }
         // copy raw files (those that don't need to be generated)
-        CommonGenerator.copyCommonTemplates(this.api, this.dstPath);
-        fs.copyFileSync(path.join(this.api.root, "templates", "HttpErrors.ts"), path.join(this.dstPath, "src", "HttpErrors.ts"));
-        fs.copyFileSync(path.join(this.api.root, "templates", "mongoose", "Query.ts"), path.join(this.dstPath, "src", "Query.ts"));
-        if (pretty) {
-            CommonGenerator.pretty(this.api, this.dstPath);
+        CommonGenerator.copyCommonTemplates(this.config.api, this.config.dstPath);
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "HttpErrors.ts"), path.join(this.config.dstPath, "src", "HttpErrors.ts"));
+        fs.copyFileSync(path.join(this.config.api.root, "templates", "mongoose", "Query.ts"), path.join(this.config.dstPath, "src", "Query.ts"));
+        if (config.pretty) {
+            CommonGenerator.pretty(this.config.api, this.config.dstPath);
         }
         // this may take a long time...
-        if (lint) {
-            CommonGenerator.lint(this.api, this.dstPath);
+        if (config.lint) {
+            CommonGenerator.lint(this.config.api, this.config.dstPath);
         }
     }
     mongooseModelFile(model, filename) {
@@ -307,13 +304,13 @@ export function query(
     }
     packageJSON() {
         return JSON.stringify({
-            name: this.api.angularClientNodeModuleName,
-            version: this.api.version,
-            description: this.api.description,
+            name: this.config.api.angularClientNodeModuleName,
+            version: this.config.api.version,
+            description: this.config.api.description,
             author: {
-                name: this.api.authorName,
-                email: this.api.authorEmail,
-                url: this.api.authorURL,
+                name: this.config.api.authorName,
+                email: this.config.api.authorEmail,
+                url: this.config.api.authorURL,
             },
             peerDependencies: {
                 "@angular/core": ">=5.2.0",

@@ -103,8 +103,9 @@ function checkContent(content, context = undefined) {
         console.error(content, context);
         throw new Error("Only a single content encoding is allowed");
     }
-    if (["application/json", "multipart/form-data"].indexOf(k[0]) === -1 ||
-        k[0].indexOf("text/") == 0) {
+    console.log(["application/json", "multipart/form-data"].indexOf(k[0]), k[0].indexOf("text/"));
+    if (["application/json", "multipart/form-data"].indexOf(k[0]) === -1 &&
+        k[0].indexOf("text/") != 0) {
         console.error(content, context);
         throw new Error(`Unsupported content type: ${k[0]}`);
     }

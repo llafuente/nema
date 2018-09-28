@@ -6,15 +6,12 @@ const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
 const mkdirp = require("mkdirp").sync;
 class ExpressCSV {
-    constructor(dstPath, api) {
-        this.dstPath = dstPath;
-        this.api = api;
-    }
-    generate(pretty, lint) {
-        this.api.sort();
+    constructor(config) {
+        this.config = config;
+        this.config.api.sort();
         // create generation paths
-        mkdirp(path.join(this.dstPath, "src/csv"));
-        const packageJSONFile = path.join(this.dstPath, "package.json");
+        mkdirp(path.join(this.config.dstPath, "src/csv"));
+        const packageJSONFile = path.join(this.config.dstPath, "package.json");
         try {
             const packageJSON = require(packageJSONFile);
             packageJSON.dependencies["xlsx"] = "0.12.5";
@@ -30,16 +27,16 @@ class ExpressCSV {
         catch (e) {
             console.error(`cannot read: ${packageJSONFile}`);
         }
-        this.api.eachModel((mdl, modelName) => {
+        this.config.api.eachModel((mdl, modelName) => {
             const dst = `/src/csv/${mdl.name}.ts`;
-            fs.writeFileSync(path.join(this.dstPath, `.${dst}`), this.csv(this.api, mdl, dst));
+            fs.writeFileSync(path.join(this.config.dstPath, `.${dst}`), this.csv(this.config.api, mdl, dst));
         });
-        if (pretty) {
-            CommonGenerator.pretty(this.api, this.dstPath);
+        if (config.pretty) {
+            CommonGenerator.pretty(this.config.api, this.config.dstPath);
         }
         // this may take a long time...
-        if (lint) {
-            CommonGenerator.lint(this.api, this.dstPath);
+        if (config.lint) {
+            CommonGenerator.lint(this.config.api, this.config.dstPath);
         }
     }
     csv(api, model, filename) {

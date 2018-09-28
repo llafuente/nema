@@ -314,7 +314,7 @@ export class Api {
     _.each(this.enums, cb);
   }
 
-  eachMethod(cb: (m: Method, operationId: string) => void) {
+  eachMethod(cb: (m: Method, operationId: string) => void, deprecated: boolean) {
     _.each(this.methods, cb);
   }
 
@@ -323,13 +323,13 @@ export class Api {
       if (m.resolve) {
         cb(m, operationId);
       }
-    });
+    }, true);
   }
 
   aggregate(api: Api, overrideMethods, overrideModels) {
     api.eachMethod((m) => {
       this.addMethod(m, overrideMethods);
-    });
+    }, true);
 
     api.eachModel((m) => {
       this.addModel(m, overrideModels);

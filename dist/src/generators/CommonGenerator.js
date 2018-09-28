@@ -200,7 +200,9 @@ function modelClass(api, model, ts) {
       ${parseNewParams.join(",\n")}
       );
     }
-
+    /**
+     * This is the recommended use to create a model from code
+     */
     static from(json: ${model.interfaceOptionalName}): ${model.name} {
       if (json == null) {
         return ${model.name}.emptyInstance();

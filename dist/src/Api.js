@@ -190,7 +190,7 @@ class Api {
     eachEnum(cb) {
         _.each(this.enums, cb);
     }
-    eachMethod(cb) {
+    eachMethod(cb, deprecated) {
         _.each(this.methods, cb);
     }
     eachResolve(cb) {
@@ -198,12 +198,12 @@ class Api {
             if (m.resolve) {
                 cb(m, operationId);
             }
-        });
+        }, true);
     }
     aggregate(api, overrideMethods, overrideModels) {
         api.eachMethod((m) => {
             this.addMethod(m, overrideMethods);
-        });
+        }, true);
         api.eachModel((m) => {
             this.addModel(m, overrideModels);
         });

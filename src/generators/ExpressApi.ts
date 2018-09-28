@@ -33,8 +33,6 @@ export class ExpressApi {
   }
 
   constructor(public config: Config) {
-    this.config.api.sort();
-
     this.expressAppRoot = ExpressApi.getExpressAppRoot(this.config.dstPath);
 
     console.info(`Located package.json at: ${this.expressAppRoot}`);
@@ -66,15 +64,6 @@ export class ExpressApi {
         path.join(this.expressAppRoot, "src/auth.ts"),
         this.security()
       );
-    }
-
-
-    if (config.pretty) {
-      CommonGenerator.pretty(this.config.api, this.config.dstPath);
-    }
-    // this may take a long time...
-    if (config.lint) {
-      CommonGenerator.lint(this.config.api, this.config.dstPath);
     }
   }
 

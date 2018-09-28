@@ -8,7 +8,6 @@ const mkdirp = require("mkdirp").sync;
 class MongooseApi {
     constructor(config) {
         this.config = config;
-        this.config.api.sort();
         this.expressAppRoot = ExpressApi_1.ExpressApi.getExpressAppRoot(this.config.dstPath);
         // create generation paths
         mkdirp(path.join(this.config.dstPath, "src/models")); // raw models
@@ -30,13 +29,6 @@ class MongooseApi {
         CommonGenerator.copyCommonTemplates(this.config.api, this.config.dstPath);
         fs.copyFileSync(path.join(this.config.api.root, "templates", "HttpErrors.ts"), path.join(this.config.dstPath, "src", "HttpErrors.ts"));
         fs.copyFileSync(path.join(this.config.api.root, "templates", "mongoose", "Query.ts"), path.join(this.config.dstPath, "src", "Query.ts"));
-        if (config.pretty) {
-            CommonGenerator.pretty(this.config.api, this.config.dstPath);
-        }
-        // this may take a long time...
-        if (config.lint) {
-            CommonGenerator.lint(this.config.api, this.config.dstPath);
-        }
     }
     mongooseModelFile(model, filename) {
         CommonGenerator.writeZonedTemplate(filename, this.mongooseModel(model));

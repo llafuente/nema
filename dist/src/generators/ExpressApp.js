@@ -24,13 +24,6 @@ class ExpressApp {
         }
         this.routesFile("/src/routes.ts");
         this.indexFile("./src/index.ts");
-        if (config.pretty) {
-            CommonGenerator.pretty(this.config.api, this.config.dstPath);
-        }
-        // this may take a long time...
-        if (config.lint) {
-            CommonGenerator.lint(this.config.api, this.config.dstPath);
-        }
     }
     indexFile(filename) {
         CommonGenerator.writeZonedTemplate(path.join(this.config.dstPath, filename), this.index());

@@ -11,7 +11,6 @@ const mkdirp = require("mkdirp").sync;
 class ExpressApi {
     constructor(config) {
         this.config = config;
-        this.config.api.sort();
         this.expressAppRoot = ExpressApi.getExpressAppRoot(this.config.dstPath);
         console.info(`Located package.json at: ${this.expressAppRoot}`);
         // create generation paths
@@ -30,13 +29,6 @@ class ExpressApi {
         }, this.config.deprecated);
         if (this.config.api.security) {
             CommonGenerator.writeZonedTemplate(path.join(this.expressAppRoot, "src/auth.ts"), this.security());
-        }
-        if (config.pretty) {
-            CommonGenerator.pretty(this.config.api, this.config.dstPath);
-        }
-        // this may take a long time...
-        if (config.lint) {
-            CommonGenerator.lint(this.config.api, this.config.dstPath);
         }
     }
     static getExpressAppRoot(dstPath) {

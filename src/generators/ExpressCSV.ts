@@ -10,8 +10,6 @@ const mkdirp = require("mkdirp").sync;
 
 export class ExpressCSV {
   constructor(public config: Config) {
-    this.config.api.sort();
-
     // create generation paths
     mkdirp(path.join(this.config.dstPath, "src/csv"));
 
@@ -39,14 +37,6 @@ export class ExpressCSV {
       const dst = `/src/csv/${mdl.name}.ts`;
       fs.writeFileSync(path.join(this.config.dstPath, `.${dst}`), this.csv(this.config.api, mdl, dst));
     });
-
-    if (config.pretty) {
-      CommonGenerator.pretty(this.config.api, this.config.dstPath);
-    }
-    // this may take a long time...
-    if (config.lint) {
-      CommonGenerator.lint(this.config.api, this.config.dstPath);
-    }
   }
 
   csv(api: Api, model: Model, filename: string) {

@@ -8,6 +8,7 @@ import { MongooseApp } from "./generators/MongooseApp";
 import { ExpressApi } from "./generators/ExpressApi";
 import { ExpressApp } from "./generators/ExpressApp";
 import { ExpressCSV } from "./generators/ExpressCSV";
+import { pretty, lint } from "./generators/CommonGenerator";
 import { Config } from "./Config";
 
 import * as path from "path";
@@ -179,6 +180,8 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
   console.info(`Destination path: ${dstPath}`);
 
   const projectGenerators = [];
+
+  api.sort();
   const config = new Config(
     dstPath,
     api,
@@ -220,6 +223,17 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     throw new Error("wtf?!");
   }
 
+  if (config.pretty) {
+    console.info("# prettify code")
+    pretty(config.api, config.dstPath);
+  }
+  // this may take a long time...
+  if (config.lint) {
+    console.info("# lint code, patient!")
+    lint(config.api, config.dstPath);
+  }
+
+  console.info("# write nema.json with debug information");
   fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
 
 });

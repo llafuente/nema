@@ -15,8 +15,6 @@ export class MongooseApi {
   expressAppRoot: string;
 
   constructor(public config: Config) {
-    this.config.api.sort();
-
     this.expressAppRoot = ExpressApi.getExpressAppRoot(this.config.dstPath);
 
     // create generation paths
@@ -50,14 +48,6 @@ export class MongooseApi {
       path.join(this.config.api.root, "templates", "mongoose", "Query.ts"),
       path.join(this.config.dstPath, "src", "Query.ts"),
     );
-
-    if (config.pretty) {
-      CommonGenerator.pretty(this.config.api, this.config.dstPath);
-    }
-    // this may take a long time...
-    if (config.lint) {
-      CommonGenerator.lint(this.config.api, this.config.dstPath);
-    }
   }
 
   mongooseModelFile(model: Model, filename: string) {

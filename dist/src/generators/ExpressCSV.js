@@ -2,13 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const fs = require("fs");
 const path = require("path");
-const CommonGenerator = require("./CommonGenerator");
 const TypescriptFile_1 = require("../TypescriptFile");
 const mkdirp = require("mkdirp").sync;
 class ExpressCSV {
     constructor(config) {
         this.config = config;
-        this.config.api.sort();
         // create generation paths
         mkdirp(path.join(this.config.dstPath, "src/csv"));
         const packageJSONFile = path.join(this.config.dstPath, "package.json");
@@ -31,13 +29,6 @@ class ExpressCSV {
             const dst = `/src/csv/${mdl.name}.ts`;
             fs.writeFileSync(path.join(this.config.dstPath, `.${dst}`), this.csv(this.config.api, mdl, dst));
         });
-        if (config.pretty) {
-            CommonGenerator.pretty(this.config.api, this.config.dstPath);
-        }
-        // this may take a long time...
-        if (config.lint) {
-            CommonGenerator.lint(this.config.api, this.config.dstPath);
-        }
     }
     csv(api, model, filename) {
         const ts = new TypescriptFile_1.TypescriptFile();

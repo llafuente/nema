@@ -9,6 +9,7 @@ const MongooseApp_1 = require("./generators/MongooseApp");
 const ExpressApi_1 = require("./generators/ExpressApi");
 const ExpressApp_1 = require("./generators/ExpressApp");
 const ExpressCSV_1 = require("./generators/ExpressCSV");
+const CommonGenerator_1 = require("./generators/CommonGenerator");
 const Config_1 = require("./Config");
 const path = require("path");
 const fs = require("fs");
@@ -148,6 +149,7 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     }
     console.info(`Destination path: ${dstPath}`);
     const projectGenerators = [];
+    api.sort();
     const config = new Config_1.Config(dstPath, api, !!program.pretty, !!program.lint, !!program.deprecated);
     console.info(config);
     // create all projectGenerators
@@ -185,6 +187,16 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
         // should be here
         throw new Error("wtf?!");
     }
+    if (config.pretty) {
+        console.info("# prettify code");
+        CommonGenerator_1.pretty(config.api, config.dstPath);
+    }
+    // this may take a long time...
+    if (config.lint) {
+        console.info("# lint code, patient!");
+        CommonGenerator_1.lint(config.api, config.dstPath);
+    }
+    console.info("# write nema.json with debug information");
     fs.writeFileSync(path.join(dstPath, "nema.json"), JSON.stringify(api, null, 2));
 });
 //# sourceMappingURL=nema.js.map

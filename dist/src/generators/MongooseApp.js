@@ -70,13 +70,6 @@ initMongoose(app);
       `);
         console.info("# modify /templates/mongoose/mongoose.ts");
         CommonGenerator.copyZonedTemplate(path.join(this.config.api.root, "templates", "mongoose", "mongoose.ts"), path.join(this.config.dstPath, "src", "mongoose.ts"), ["import-models"]);
-        if (config.pretty) {
-            CommonGenerator.pretty(this.config.api, this.config.dstPath);
-        }
-        // this may take a long time...
-        if (config.lint) {
-            CommonGenerator.lint(this.config.api, this.config.dstPath);
-        }
     }
 }
 exports.MongooseApp = MongooseApp;

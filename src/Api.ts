@@ -315,7 +315,11 @@ export class Api {
   }
 
   eachMethod(cb: (m: Method, operationId: string) => void, deprecated: boolean) {
-    _.each(this.methods, cb);
+    _.each(this.methods, (m, operationId) => {
+      if (deprecated === true || m.deprecated === false) {
+        cb(m, operationId);
+      }
+    });
   }
 
   eachResolve(cb: (m: Method, operationId: string) => void) {

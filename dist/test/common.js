@@ -8,15 +8,4 @@ function validateTypes(api, t) {
     }, true);
 }
 exports.validateTypes = validateTypes;
-function parse(filename, sort = true) {
-    /*
-    const api = Api.parseOpenApiFile(path.join(__dirname, "..", "..", "test", filename));
-    if (sort) {
-      api.sort();
-    }
-    return api;
-    */
-    return null;
-}
-exports.parse = parse;
 //# sourceMappingURL=common.js.map

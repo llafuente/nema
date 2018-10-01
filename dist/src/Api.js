@@ -191,7 +191,11 @@ class Api {
         _.each(this.enums, cb);
     }
     eachMethod(cb, deprecated) {
-        _.each(this.methods, cb);
+        _.each(this.methods, (m, operationId) => {
+            if (deprecated === true || m.deprecated === false) {
+                cb(m, operationId);
+            }
+        });
     }
     eachResolve(cb) {
         this.eachMethod((m, operationId) => {

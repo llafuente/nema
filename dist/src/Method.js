@@ -33,6 +33,7 @@ class Method {
         this.resolve = null;
         // REVIEW this may change in the future, simplify now...
         this.secuity = null;
+        this.deprecated = false;
     }
     static parseOpenApi(api, verb, url, parameters, operation) {
         const m = new Method();
@@ -109,6 +110,7 @@ class Method {
                 }
             }
         }
+        m.deprecated = !!operation["deprecated"];
         // very unsafe :) and powerfull ^.^
         _.assign(m, operation["x-nema-override"] || {});
         return m;

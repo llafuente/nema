@@ -9,15 +9,3 @@ export function validateTypes(api: Api, t: CallbackTestContext) {
     });
   }, true);
 }
-
-export function parse(filename: string, sort = true) : Api {
-  /*
-  const api = Api.parseOpenApiFile(path.join(__dirname, "..", "..", "test", filename));
-  if (sort) {
-    api.sort();
-  }
-  return api;
-  */
-
-  return null;
-}

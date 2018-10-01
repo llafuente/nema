@@ -1,15 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const Api_1 = require("../src/Api");
 const Config_1 = require("../src/Config");
-const Angular5Api_1 = require("../src/generators/Angular5Api");
+const AngularApi_1 = require("../src/generators/AngularApi");
 const ava_1 = require("ava");
 const path = require("path");
-const common_1 = require("./common");
+const nema_1 = require("../src/nema");
 let api;
 ava_1.default.cb.serial("parse swagger", (t) => {
-    api = common_1.parse("swaggers/api-test-001.yaml", false);
-    //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
-    t.end();
+    nema_1.parseAndConvert(path.join(__dirname, "..", "..", "test", "swaggers", "api-test-001.yaml"), (openApi3) => {
+        api = Api_1.Api.parseOpenApi("api-test-001", path.join(__dirname, "..", "..", "test", "generated", "api-test-001.yaml"), openApi3);
+        t.end();
+    });
 });
 ava_1.default.cb.serial("check methods", (t) => {
     t.deepEqual(Object.keys(api.methods), [
@@ -85,7 +87,7 @@ ava_1.default.cb.serial("check models/methods", (t) => {
 });
 ava_1.default.cb.serial("generate angular 5 api", (t) => {
     const config = new Config_1.Config(path.join(__dirname, `../test-generated/api-test-001/`), api, true, false, true);
-    new Angular5Api_1.Angular5Api(config);
+    new AngularApi_1.AngularApi(config);
     t.end();
 });
 //# sourceMappingURL=api.class.test.js.map

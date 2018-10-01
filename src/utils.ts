@@ -110,7 +110,7 @@ export function checkContent(content, context = undefined) {
   );
 
   if (
-    ["application/json", "multipart/form-data"].indexOf(k[0]) === -1 &&
+    ["application/json", "multipart/form-data", "application/x-www-form-urlencoded"].indexOf(k[0]) === -1 &&
     k[0].indexOf("text/") != 0
   ) {
     console.error(content, context);

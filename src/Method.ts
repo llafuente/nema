@@ -46,6 +46,8 @@ export class Method {
   // REVIEW this may change in the future, simplify now...
   secuity: string = null;
 
+  deprecated: boolean = false;
+
   static parseOpenApi(
     api: Api,
     verb: string,
@@ -141,6 +143,7 @@ export class Method {
       }
     }
 
+    m.deprecated = !!operation["deprecated"];
     // very unsafe :) and powerfull ^.^
     _.assign(m, operation["x-nema-override"] || {});
 

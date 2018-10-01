@@ -1,15 +1,24 @@
 import { Api } from "../src/Api";
 import { Config } from "../src/Config";
-import { Angular5Api } from "../src/generators/Angular5Api";
+import { AngularApi } from "../src/generators/AngularApi";
 import test from "ava";
 import * as path from "path";
-import { validateTypes, parse } from "./common";
+import { validateTypes } from "./common";
+import { parseAndConvert } from "../src/nema";
 
 let api: Api;
 test.cb.serial("parse swagger", (t) => {
-  api = parse("swaggers/api-test-001.yaml", false);
-  //console.log(JSON.stringify(swagger.methods.initStrategyRest, null, 2));
-  t.end();
+  parseAndConvert(
+    path.join(__dirname, "..", "..", "test", "swaggers", "api-test-001.yaml"),
+    (openApi3) => {
+      api = Api.parseOpenApi(
+        "api-test-001",
+        path.join(__dirname, "..", "..", "test", "generated", "api-test-001.yaml"),
+        openApi3
+      );
+
+      t.end();
+  });
 });
 
 test.cb.serial("check methods", (t) => {
@@ -111,6 +120,6 @@ test.cb.serial("generate angular 5 api", (t) => {
     false,
     true
   );
-  new Angular5Api(config);
+  new AngularApi(config);
   t.end();
 });

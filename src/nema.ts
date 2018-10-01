@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Api } from "./Api";
-import { Angular5Api } from "./generators/Angular5Api";
+import { AngularApi } from "./generators/AngularApi";
 import { Angular5FormTemplate } from "./generators/Angular5FormTemplate";
 import { MongooseApi } from "./generators/MongooseApi";
 import { MongooseApp } from "./generators/MongooseApp";
@@ -43,7 +43,7 @@ program
   .version(packageJSON.version)
   .description("Code generation from OpenApi 2/3")
 
-  .option("--angular5-api", "TARGET(project) Generate an Angular 5 Module Api client")
+  .option("--angular-api", "TARGET(project) Generate an Angular 6+ Module Api client")
 
   .option("--mongoose-api", "TARGET(project) Generate Mongoose Schemas, Models & Repositories")
   .option("--mongoose-app", `TARGET(project) Generate Mongoose Express app
@@ -86,8 +86,8 @@ program.on("--help", function() {
   console.log("    nema --src=swagger-file.yml --mongoose-app --express --dst server/");
   console.log("    nema --src=swagger-file.yml --express-api --dst server/users/");
   console.log("    nema --src=swagger-file.yml --mongoose-api --express --dst server/users");
-  console.log("  Generate angular5 client");
-  console.log("    nema --src=swagger-file.yml --angular5-api --dst angular/app/src/api/");
+  console.log("  Generate angular client");
+  console.log("    nema --src=swagger-file.yml --angular-api --dst angular/app/src/api/");
   console.log("");
 });
 
@@ -98,7 +98,7 @@ if (!program.src) {
 }
 
 const targets =
-  (program.angular5Api ? 1 : 0) +
+  (program.angularApi ? 1 : 0) +
   (program.mongooseApi ? 1 : 0) +
   (program.mongooseApp ? 1 : 0) +
   (program.expressApi ? 1 : 0) +
@@ -128,7 +128,8 @@ if (dstPath && !path.isAbsolute(dstPath)) {
 }
 
 import { parse as parseSwagger } from "swagger-parser";
-function parse(filename, cb: (openApi3) => void) {
+
+export function parseAndConvert(filename, cb: (openApi3) => void) {
   console.info(`parsing: ${filename}`);
   parseSwagger(filename, (err, swagger) => {
     if (err) throw err;
@@ -150,7 +151,7 @@ function parse(filename, cb: (openApi3) => void) {
 import * as async from "async";
 
 async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
-  parse(swaggerOrOpenApiFilename, (openApi3) => {
+  parseAndConvert(swaggerOrOpenApiFilename, (openApi3) => {
     if (!dstPath) {
       dstPath = path.dirname(swaggerOrOpenApiFilename);
     }
@@ -195,9 +196,9 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
   // create all projectGenerators
   // some generator may modify api metadata
 
-  if (program.angular5Api) {
-    green("Instancing generator: angular5-api");
-    new Angular5Api(config);
+  if (program.angularApi) {
+    green("Instancing generator: angular-api");
+    new AngularApi(config);
   } else if (program.expressApi) {
     green("Instancing generator: express");
     new ExpressApi(config);

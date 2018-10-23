@@ -195,7 +195,8 @@ function qsStringify(a) {
   var rbracket = /\[\]$/;
   var add = function (k, v) {
     // ignore functions, because are part of TypeScript classes :S
-    if (typeof v !== 'function') {
+    // do not sent undefined values -> null or empty string
+    if (typeof v !== 'function' && v !== undefined) {
       v = typeof v === 'function' ? v() : v;
       v = v === null ? '' : v === undefined ? '' : v;
       s[s.length] = encodeURIComponent(k) + '=' + encodeURIComponent(v);

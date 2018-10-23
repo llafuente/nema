@@ -122,6 +122,8 @@ function generateModel(api, model, filename) {
     if (model.extends) {
         const mdl = model.api.getReference(model.extends);
         ts.addAbsoluteImport(mdl.name, mdl.filename);
+        ts.addAbsoluteImport(mdl.interfaceName, mdl.filename);
+        ts.addAbsoluteImport(mdl.interfaceOptionalName, mdl.filename);
     }
     ts.push(modelInterface(api, model, ts));
     ts.push(modelClass(api, model, ts));
@@ -129,14 +131,18 @@ function generateModel(api, model, filename) {
 }
 exports.generateModel = generateModel;
 function modelInterface(api, model, ts) {
+    let extendedModel = null;
+    if (model.extends) {
+        extendedModel = model.api.getReference(model.extends);
+    }
     // start interface
-    const s = [`export interface ${model.interfaceName} {`];
+    const s = [`export interface ${model.interfaceName} ${model.extends ? "extends " + extendedModel.interfaceName : ""} {`];
     _.each(model.type.properties, (t, name) => {
         s.push(`${name}: ${t.toTypeScriptType()},`);
     });
     s.push(`}`);
     // start optional interface
-    s.push(`export interface ${model.interfaceOptionalName} {`);
+    s.push(`export interface ${model.interfaceOptionalName} ${model.extends ? "extends " + extendedModel.interfaceOptionalName : ""} {`);
     _.each(model.type.properties, (t, name) => {
         s.push(`${name}?: ${t.toTypeScriptType()},`);
     });
@@ -147,12 +153,12 @@ function modelInterface(api, model, ts) {
 exports.modelInterface = modelInterface;
 function modelClass(api, model, ts) {
     const s = [];
-    let ex = null;
+    let extendedModel = null;
     if (model.extends) {
-        ex = model.api.getReference(model.extends);
+        extendedModel = model.api.getReference(model.extends);
     }
     // start class
-    s.push(`export class ${model.name} ${model.extends ? "extends " + ex.name : ""} implements ${model.interfaceName} {`);
+    s.push(`export class ${model.name} ${model.extends ? "extends " + extendedModel.name : ""} implements ${model.interfaceName} {`);
     model.eachProperty((t, name) => {
         s.push(`${name}: ${t.toTypeScriptType()};`);
     });

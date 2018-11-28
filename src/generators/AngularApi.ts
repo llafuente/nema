@@ -336,7 +336,7 @@ export class ${this.config.api.apiName} {
         pathParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
         pathParamsNames.push(`${p.name}`);
 
-        pathParamsReplace.push(`.replace("{${p.name}}", ${p.name}.toString())`);
+        pathParamsReplace.push(`.replace("{${p.name}}", encodeURIComponent(${p.name}.toString()))`);
       });
       method.eachQueryParam((p) => {
         queryParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
@@ -497,7 +497,9 @@ found: "${method.produces}" at ${method.api.filename}/${method.operationId}`,
       ts.push(`
         const ret = new Subject<${responseTypeTS}>();
         observable.subscribe((response: ${responseTypeTS == "void" ? "null" : responseTypeTS}) => {
-          console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response, $reqOptions);
+          if (this.debug) {
+            console.info(\`${method.verb.toUpperCase()}:\${$url}\`, response, $reqOptions);
+          }
 
           ret.next(${responseTypeTS == "void" ? "null" : responseType.getParser("response", ts)});
           ret.complete();

@@ -24,6 +24,10 @@ class Api {
          */
         this.models = {};
         /**
+         * references: #/schema/requestBodies
+         */
+        this.bodies = {};
+        /**
          * This is just a special place for enums, to keep it separate from
          * other models because has no "class.parse"
          *
@@ -150,6 +154,23 @@ class Api {
         _.each(swagger.parameters, (param, paramName) => {
             this.parameters[paramName] = Parameter_1.Parameter.parseOpenApi(this, param);
         });
+        _.each(swagger.components.requestBodies, (model, name) => {
+            const mdl = Model_1.Model.parseSwagger(this, name, model);
+            mdl.internal = internal;
+            this.addBody(mdl, false);
+        });
+    }
+    /**
+     * @internal used to declare blacklisted models
+     */
+    addBody(model, override) {
+        if (!model.internal) {
+            //console.log(`addModel: ${model.name}`);
+            if (!override && this.bodies[model.name] !== undefined) {
+                throw new Error(`try to override an already defined body: ${model.name} from ${this.models[model.name].api.filename} to ${model.api.filename}`);
+            }
+        }
+        this.bodies[model.name] = model;
     }
     /**
      * @internal used to declare blacklisted models
@@ -241,6 +262,11 @@ class Api {
                     throw new Error(`getReference: can't find responses: ${target} at ${this.filename}`);
                 }
                 return (this.responses[target]);
+            case "requestBodies":
+                if (!this.bodies[target]) {
+                    throw new Error(`getReference: can't find responses: ${target} at ${this.filename}`);
+                }
+                return (this.bodies[target]);
             default:
                 throw new Error(`getReference: target[${ref}] not handled`);
         }

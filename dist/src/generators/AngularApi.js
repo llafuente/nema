@@ -22,6 +22,7 @@ class AngularApi {
             this.resolveFile(method, path.join(this.config.dstPath, "src", "resolve", `${method.resolve.name}.ts`));
         });
         this.indexFile(path.join(this.config.dstPath, "src", `${this.config.api.apiName}.ts`));
+        this.promiseFile(path.join(this.config.dstPath, "src", `${this.config.api.apiName}Promise.ts`));
         this.moduleFile(`/index.ts`);
         this.packageJSONFile(`/package.json`);
     }
@@ -34,6 +35,9 @@ class AngularApi {
     indexFile(filename) {
         fs.writeFileSync(filename, this.index(filename));
     }
+    promiseFile(filename) {
+        fs.writeFileSync(filename, this.promise(filename));
+    }
     packageJSONFile(filename) {
         fs.writeFileSync(path.join(this.config.dstPath, `.${filename}`), this.packageJSON());
     }
@@ -44,6 +48,8 @@ class AngularApi {
 import { HttpClientModule, HTTP_INTERCEPTORS, HttpInterceptor } from "@angular/common/http";
 import { ${this.config.api.apiName} } from "./src/${this.config.api.apiName}";
 export { ${this.config.api.apiName} } from "./src/${this.config.api.apiName}";
+import { ${this.config.api.apiName}Promise } from "./src/${this.config.api.apiName}Promise";
+export { ${this.config.api.apiName}Promise } from "./src/${this.config.api.apiName}Promise";
 `,
         ];
         this.config.api.eachModel((model, modelName) => {
@@ -66,7 +72,7 @@ export { ${this.config.api.apiName} } from "./src/${this.config.api.apiName}";
   declarations: [
   ],
   providers: [
-    ${this.config.api.apiName}, ${resolves.join(",")}
+    ${this.config.api.apiName}, ${this.config.api.apiName}Promise, ${resolves.join(",")}
   ],
   exports: [
   ]
@@ -104,7 +110,7 @@ export class ${this.config.api.angularClientModuleName} {}
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { ActivatedRouteSnapshot, Resolve } from "@angular/router";
-import { Observable, Subject } from "rxjs/Rx";
+import { Observable, Subject } from "rxjs";
 import { ${this.config.api.apiName} } from "../${this.config.api.apiName}";
 import { ${responseType.type.toTypeScriptType()} } from "../models/${responseType.type.toTypeScriptType()}";
 
@@ -463,6 +469,103 @@ found: "${method.produces}" at ${method.api.filename}/${method.operationId}`);
         return ret;
       }\n`);
         }, this.config.deprecated);
+        ts.push(`}`);
+        return ts.toString(filename);
+    }
+    promise(filename) {
+        const ts = new TypescriptFile_1.TypescriptFile();
+        ts.header = header;
+        ts.push(`import { Observable, Subject } from "rxjs";
+import { Injectable } from "@angular/core";
+import { ${this.config.api.apiName} } from "./${this.config.api.apiName}";`);
+        ts.addAbsoluteImport("RequestOptions", path.join(this.config.api.destinationPath, "src/RequestOptions.ts"));
+        // import all models
+        this.config.api.eachModel((model, modelName) => {
+            console.log("import", modelName);
+            ts.addAbsoluteImport(model.name, model.filename);
+        });
+        // gather all error types
+        const errorTypes = ["Error"];
+        this.config.api.eachMethod((m) => {
+            m.eachResponse((r) => {
+                if (r.httpCode >= 300) {
+                    const t = r.type.toTypeScriptType();
+                    if (errorTypes.indexOf(t) === -1) {
+                        errorTypes.push(t);
+                    }
+                }
+            });
+        }, this.config.deprecated);
+        // Api class
+        ts.push(`
+
+@Injectable()
+export class ${this.config.api.apiName}Promise {
+  constructor(
+    public api: ${this.config.api.apiName},
+  ) {}
+
+`);
+        this.config.api.eachMethod((method) => {
+            // CONSTANTS
+            const pathParams = [];
+            const pathParamsNames = [];
+            const queryParamsCheck = [];
+            const queryParamsNames = [];
+            const headerParamsNames = [];
+            const headerParams = [];
+            const queryParams = [];
+            const bodyParamsNames = [];
+            const bodyParams = [];
+            method.eachPathParam((p) => {
+                pathParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
+                pathParamsNames.push(`${p.name}`);
+            });
+            method.eachQueryParam((p) => {
+                queryParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
+                queryParamsNames.push(`${p.name}`);
+                queryParamsCheck.push(`${JSON.stringify(p.name)}: ${p.name}`);
+            });
+            method.eachHeaderParam((p) => {
+                headerParamsNames.push(`${p.name}`);
+                headerParams.push(`${p.name}: ${p.type.toTypeScriptType()},`);
+            }, true);
+            if (method.hasBody()) {
+                bodyParamsNames.push(`$body`);
+                bodyParams.push(`$body: ${method.body.type.toTypeScriptType()},`);
+            }
+            // .replace(/\+/g, '%2B'); fix: + handling that it's bugged in Angular 5
+            // keep an eye in the thread to see if fix is merged, may collide with the
+            // workaround
+            // https://github.com/angular/angular/issues/11058
+            const responseType = method.getSuccessResponse().type;
+            const responseTypeTS = responseType.toTypeScriptType();
+            ts.push(`
+
+      ${method.operationId}(
+        ${pathParams.join("\n")}
+        ${queryParams.join("\n")}
+        ${headerParams.join("\n")}
+        ${bodyParams.join("\n")}
+        $reqOptions: RequestOptions = null,
+        subjectCb: (subject: Subject<${responseTypeTS}>) => void = null
+      ): Promise<${responseTypeTS}> {
+        const x = this.api.${method.operationId}(
+          ${pathParamsNames
+                .concat(queryParamsNames)
+                .concat(headerParamsNames)
+                .concat(bodyParamsNames)
+                .join(",")}
+        );
+
+        if (subjectCb) {
+          subjectCb(x);
+        }
+
+        return x.toPromise();
+      }
+`);
+        }, false);
         ts.push(`}`);
         return ts.toString(filename);
     }

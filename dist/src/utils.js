@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const _ = require("lodash");
+const swagger_parser_1 = require("swagger-parser");
+const chalk = require("chalk");
 class Limitation extends Error {
 }
 exports.Limitation = Limitation;
@@ -111,4 +113,38 @@ function checkContent(content, context = undefined) {
     }
 }
 exports.checkContent = checkContent;
+function green(text) {
+    console.log(chalk.green.bold(text));
+}
+exports.green = green;
+function red(text) {
+    console.log(chalk.red.bold(text));
+}
+exports.red = red;
+function blue(text) {
+    console.log(chalk.cyanBright(text));
+}
+exports.blue = blue;
+function yellow(text) {
+    console.log(chalk.yellowBright(text));
+}
+exports.yellow = yellow;
+function swaggerParseAndConvert(filename, cb) {
+    console.info(`parsing: ${filename}`);
+    swagger_parser_1.parse(filename, (err, swagger) => {
+        if (err)
+            throw err;
+        if (!swagger.openapi) {
+            var converter = require('swagger2openapi');
+            return converter.convertObj(swagger, {}, function (err, options) {
+                if (err)
+                    throw err;
+                // options.openapi contains the converted definition
+                cb(options.openapi);
+            });
+        }
+        cb(swagger);
+    });
+}
+exports.swaggerParseAndConvert = swaggerParseAndConvert;
 //# sourceMappingURL=utils.js.map

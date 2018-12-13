@@ -14,7 +14,8 @@ import { Config } from "./Config";
 import * as path from "path";
 import * as fs from "fs";
 import * as program from "commander";
-const chalk = require("chalk");
+import { green, red, blue, yellow, swaggerParseAndConvert } from "./utils";
+import * as async from "async";
 
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
 
@@ -22,22 +23,6 @@ console.log(`
  _  _  _ _  _
 | |(/_| | |(_|${packageJSON.version}
 `);
-
-export function green(text) {
-  console.log(chalk.green.bold(text));
-}
-
-export function red(text) {
-  console.log(chalk.red.bold(text));
-}
-
-export function blue(text) {
-  console.log(chalk.cyanBright(text));
-}
-
-export function yellow(text) {
-  console.log(chalk.yellowBright(text));
-}
 
 program
   .version(packageJSON.version)
@@ -127,31 +112,8 @@ if (dstPath && !path.isAbsolute(dstPath)) {
   dstPath = path.join(process.cwd(), dstPath);
 }
 
-import { parse as parseSwagger } from "swagger-parser";
-
-export function parseAndConvert(filename, cb: (openApi3) => void) {
-  console.info(`parsing: ${filename}`);
-  parseSwagger(filename, (err, swagger) => {
-    if (err) throw err;
-
-    if (!swagger.openapi) {
-      var converter = require('swagger2openapi');
-      return converter.convertObj(swagger, {}, function(err, options){
-        if (err) throw err;
-
-        // options.openapi contains the converted definition
-        cb(options.openapi);
-      });
-    }
-
-    cb(swagger);
-  });
-}
-
-import * as async from "async";
-
 async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
-  parseAndConvert(swaggerOrOpenApiFilename, (openApi3) => {
+  swaggerParseAndConvert(swaggerOrOpenApiFilename, (openApi3) => {
     if (!dstPath) {
       dstPath = path.dirname(swaggerOrOpenApiFilename);
     }

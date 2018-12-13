@@ -5,11 +5,12 @@ const Config_1 = require("../src/Config");
 const AngularApi_1 = require("../src/generators/AngularApi");
 const ava_1 = require("ava");
 const path = require("path");
-const nema_1 = require("../src/nema");
+const utils_1 = require("../src/utils");
+const dstPath = path.join(__dirname, `../test-generated/api-test-001/`);
 let api;
 ava_1.default.cb.serial("parse swagger", (t) => {
-    nema_1.parseAndConvert(path.join(__dirname, "..", "..", "test", "swaggers", "api-test-001.yaml"), (openApi3) => {
-        api = Api_1.Api.parseOpenApi("api-test-001", path.join(__dirname, "..", "..", "test", "generated", "api-test-001.yaml"), openApi3);
+    utils_1.swaggerParseAndConvert(path.join(__dirname, "..", "..", "test", "swaggers", "api-test-001.yaml"), (openApi3) => {
+        api = Api_1.Api.parseOpenApi("api-test-001", dstPath, openApi3);
         t.end();
     });
 });
@@ -80,13 +81,15 @@ ava_1.default.cb.serial("check models", (t) => {
 ava_1.default.cb.serial("check models/methods", (t) => {
     t.deepEqual(api.models.ParametersDto.type.toTypeScriptType(), "ParametersDto", "typescript type ok");
     t.deepEqual(api.methods.createStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["string", "string"], "typescript type ok");
-    t.deepEqual(api.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["InitiParametersDto", "string"], "typescript type ok");
-    t.deepEqual(api.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends");
+    console.log(api.methods.initStrategyRest.parameters[0]);
+    t.deepEqual(api.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()), ["string"], "typescript type ok");
+    t.deepEqual(api.methods.initStrategyRest.body.type.toTypeScriptType(), "InitiParametersDto", "typescript type ok");
+    t.deepEqual(api.models.OrderMonitoring.extends, "#/components/schemas/MonitoringDto", "type extends");
     t.deepEqual(Object.keys(api.models.OrderMonitoring.type.properties), ["type", "quantity", "monitoringType"], "type extends parsed ok");
     t.end();
 });
 ava_1.default.cb.serial("generate angular 5 api", (t) => {
-    const config = new Config_1.Config(path.join(__dirname, `../test-generated/api-test-001/`), api, true, false, true);
+    const config = new Config_1.Config(dstPath, api, true, false, true);
     new AngularApi_1.AngularApi(config);
     t.end();
 });

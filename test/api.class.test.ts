@@ -4,16 +4,18 @@ import { AngularApi } from "../src/generators/AngularApi";
 import test from "ava";
 import * as path from "path";
 import { validateTypes } from "./common";
-import { parseAndConvert } from "../src/nema";
+import { swaggerParseAndConvert } from "../src/utils";
+
+const dstPath = path.join(__dirname, `../test-generated/api-test-001/`);
 
 let api: Api;
 test.cb.serial("parse swagger", (t) => {
-  parseAndConvert(
+  swaggerParseAndConvert(
     path.join(__dirname, "..", "..", "test", "swaggers", "api-test-001.yaml"),
     (openApi3) => {
       api = Api.parseOpenApi(
         "api-test-001",
-        path.join(__dirname, "..", "..", "test", "generated", "api-test-001.yaml"),
+        dstPath,
         openApi3
       );
 
@@ -94,14 +96,23 @@ test.cb.serial("check models/methods", (t) => {
     ["string", "string"],
     "typescript type ok",
   );
+
+  console.log(api.methods.initStrategyRest.parameters[0]);
+
   t.deepEqual(
     api.methods.initStrategyRest.parameters.map((x) => x.type.toTypeScriptType()),
-    ["InitiParametersDto", "string"],
+    ["string"],
     "typescript type ok",
   );
 
   t.deepEqual(
-    api.models.OrderMonitoring.extends, "#/definitions/MonitoringDto", "type extends",
+    api.methods.initStrategyRest.body.type.toTypeScriptType(),
+    "InitiParametersDto",
+    "typescript type ok",
+  );
+
+  t.deepEqual(
+    api.models.OrderMonitoring.extends, "#/components/schemas/MonitoringDto", "type extends",
   );
 
   t.deepEqual(
@@ -114,7 +125,7 @@ test.cb.serial("check models/methods", (t) => {
 
 test.cb.serial("generate angular 5 api", (t) => {
   const config = new Config(
-    path.join(__dirname, `../test-generated/api-test-001/`),
+    dstPath,
     api,
     true,
     false,

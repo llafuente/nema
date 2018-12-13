@@ -1,6 +1,7 @@
 import { OpenAPIObject, PathItemObject, SchemaObject, MediaTypeObject } from "openapi3-ts";
 import * as _ from "lodash";
-
+import { parse as parseSwagger } from "swagger-parser";
+const chalk = require("chalk");
 
 export class Limitation extends Error {};
 export class Deprecation extends Error {};
@@ -116,4 +117,39 @@ export function checkContent(content, context = undefined) {
     console.error(content, context);
     throw new Error(`Unsupported content type: ${k[0]}`)
   }
+}
+
+export function green(text) {
+  console.log(chalk.green.bold(text));
+}
+
+export function red(text) {
+  console.log(chalk.red.bold(text));
+}
+
+export function blue(text) {
+  console.log(chalk.cyanBright(text));
+}
+
+export function yellow(text) {
+  console.log(chalk.yellowBright(text));
+}
+
+export function swaggerParseAndConvert(filename, cb: (openApi3) => void) {
+  console.info(`parsing: ${filename}`);
+  parseSwagger(filename, (err, swagger) => {
+    if (err) throw err;
+
+    if (!swagger.openapi) {
+      var converter = require('swagger2openapi');
+      return converter.convertObj(swagger, {}, function(err, options){
+        if (err) throw err;
+
+        // options.openapi contains the converted definition
+        cb(options.openapi);
+      });
+    }
+
+    cb(swagger);
+  });
 }

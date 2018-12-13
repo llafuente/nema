@@ -14,28 +14,13 @@ const Config_1 = require("./Config");
 const path = require("path");
 const fs = require("fs");
 const program = require("commander");
-const chalk = require("chalk");
+const utils_1 = require("./utils");
+const async = require("async");
 const packageJSON = require(path.join(__dirname, "..", "..", "package.json"));
 console.log(`
  _  _  _ _  _
 | |(/_| | |(_|${packageJSON.version}
 `);
-function green(text) {
-    console.log(chalk.green.bold(text));
-}
-exports.green = green;
-function red(text) {
-    console.log(chalk.red.bold(text));
-}
-exports.red = red;
-function blue(text) {
-    console.log(chalk.cyanBright(text));
-}
-exports.blue = blue;
-function yellow(text) {
-    console.log(chalk.yellowBright(text));
-}
-exports.yellow = yellow;
 program
     .version(packageJSON.version)
     .description("Code generation from OpenApi 2/3")
@@ -76,7 +61,7 @@ program.on("--help", function () {
     console.log("");
 });
 if (!program.src) {
-    red("--src <path> is required");
+    utils_1.red("--src <path> is required");
     program.help();
     process.exit(1);
 }
@@ -88,12 +73,12 @@ const targets = (program.angularApi ? 1 : 0) +
     (program.expressCsv ? 1 : 0) +
     (program.angular5FormTemplate ? 1 : 0);
 if (targets == 0) {
-    red("You must specify a target to generate");
+    utils_1.red("You must specify a target to generate");
     program.help();
     process.exit(1);
 }
 if (targets == 2) {
-    red("You must specify just one target to generate");
+    utils_1.red("You must specify just one target to generate");
     program.help();
     process.exit(1);
 }
@@ -103,28 +88,8 @@ let dstPath = program.dst || null;
 if (dstPath && !path.isAbsolute(dstPath)) {
     dstPath = path.join(process.cwd(), dstPath);
 }
-const swagger_parser_1 = require("swagger-parser");
-function parseAndConvert(filename, cb) {
-    console.info(`parsing: ${filename}`);
-    swagger_parser_1.parse(filename, (err, swagger) => {
-        if (err)
-            throw err;
-        if (!swagger.openapi) {
-            var converter = require('swagger2openapi');
-            return converter.convertObj(swagger, {}, function (err, options) {
-                if (err)
-                    throw err;
-                // options.openapi contains the converted definition
-                cb(options.openapi);
-            });
-        }
-        cb(swagger);
-    });
-}
-exports.parseAndConvert = parseAndConvert;
-const async = require("async");
 async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
-    parseAndConvert(swaggerOrOpenApiFilename, (openApi3) => {
+    utils_1.swaggerParseAndConvert(swaggerOrOpenApiFilename, (openApi3) => {
         if (!dstPath) {
             dstPath = path.dirname(swaggerOrOpenApiFilename);
         }
@@ -144,7 +109,7 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     if (err)
         throw err;
     if (!api.filename && !dstPath) {
-        red("You must specify target directory when no definition is sent");
+        utils_1.red("You must specify target directory when no definition is sent");
         program.help();
         process.exit(1);
     }
@@ -156,32 +121,32 @@ async.eachSeries(program.src, (swaggerOrOpenApiFilename, next) => {
     // create all projectGenerators
     // some generator may modify api metadata
     if (program.angularApi) {
-        green("Instancing generator: angular-api");
+        utils_1.green("Instancing generator: angular-api");
         new AngularApi_1.AngularApi(config);
     }
     else if (program.expressApi) {
-        green("Instancing generator: express");
+        utils_1.green("Instancing generator: express");
         new ExpressApi_1.ExpressApi(config);
     }
     else if (program.expressApp) {
-        green("Instancing generator: express App");
+        utils_1.green("Instancing generator: express App");
         new ExpressApp_1.ExpressApp(config);
     }
     else if (program.mongooseApi) {
-        green("Instancing generator: mongoose");
+        utils_1.green("Instancing generator: mongoose");
         new MongooseApi_1.MongooseApi(config);
     }
     else if (program.mongooseApp) {
-        green("Instancing generator: mongoose App");
+        utils_1.green("Instancing generator: mongoose App");
         new MongooseApp_1.MongooseApp(config);
     }
     else if (program.expressCsv) {
-        green("Instancing generator: express CSV");
+        utils_1.green("Instancing generator: express CSV");
         new ExpressCSV_1.ExpressCSV(config);
     }
     else if (program.angular5FormTemplate) {
         const t = new Angular5FormTemplate_1.Angular5FormTemplate(api);
-        green("Generate Angular 5 template");
+        utils_1.green("Generate Angular 5 template");
         t.generate(program.angular5FormTemplate, program.file);
     }
     else {

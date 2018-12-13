@@ -42,7 +42,7 @@ paths:
           x-auto-injected: true
           type: string
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -65,7 +65,7 @@ paths:
           x-auto-injected: true
           type: string
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -90,7 +90,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -115,7 +115,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -139,7 +139,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -164,7 +164,7 @@ paths:
 
 
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -182,7 +182,7 @@ paths:
           type: string
 
       responses:
-        - 200:
+        200:
             description: The available strategies
             schema:
               type: array
@@ -202,7 +202,7 @@ paths:
           type: string
 
       responses:
-        - 200:
+        200:
             description: The active strategies
             schema:
               type: array
@@ -225,7 +225,7 @@ paths:
           x-auto-injected: true
           type: string
       responses:
-        - 200:
+        200:
             description: The active strategies of type
             schema:
               type: array
@@ -249,14 +249,14 @@ paths:
       operationId: getStrategyRest
       description: Get the strategy data
       parameters:
-      x-front-resolve:
+      x-nema-resolve:
         name: StrategiesResolve
         errorURL: /error
         parameters:
           strategyId: strategyId
 
       responses:
-        - 200:
+        200:
             description: The strategy dto
             schema:
               $ref: '#/definitions/StrategyDto'
@@ -280,7 +280,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the created strategy
             schema:
               $ref: '#/definitions/StrategyIdDto'
@@ -297,7 +297,7 @@ paths:
           x-auto-injected: true
           type: string
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
   /getDefinedParameters/{strategyName}:
@@ -319,7 +319,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of parameters
             schema:
               type: array
@@ -352,7 +352,7 @@ paths:
             items:
               $ref: '#/definitions/StringStringMap'
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
 
@@ -375,7 +375,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of orders
             schema:
               type: array
@@ -401,7 +401,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of executions
             schema:
               type: array
@@ -427,7 +427,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of messages
             schema:
               type: array
@@ -448,7 +448,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An map with the markets and their status
             schema:
               type: array
@@ -469,7 +469,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: A JSON with the error messages
             schema:
               type: string
@@ -495,7 +495,7 @@ paths:
           schema:
             $ref: '#/definitions/AuthorizedGroup'
       responses:
-        - 200:
+        200:
             description: The identificator of the created group
             schema:
               $ref: '#/definitions/StringStringMap'
@@ -518,7 +518,7 @@ paths:
           schema:
             $ref: '#/definitions/AuthorizedGroup'
       responses:
-        - 200:
+        200:
             description: The identificator of the updated group
             schema:
               $ref: '#/definitions/StringStringMap'
@@ -542,7 +542,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: Weight
             schema:
               $ref: '#/definitions/AuthorizedGroup'
@@ -552,7 +552,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the group deleted
             schema:
               $ref: '#/definitions/StringBooleanMap'
@@ -570,7 +570,7 @@ paths:
       operationId: getAuthorizedGroups
       description: Get the authorized groups
       responses:
-        - 200:
+        200:
             description: An array of groups
             schema:
               type: array
@@ -591,7 +591,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of groups of the user
             schema:
               type: array
@@ -617,7 +617,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: Weight
             schema:
               $ref: '#/definitions/Weight'
@@ -627,7 +627,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the weight deleted
             schema:
               $ref: '#/definitions/StringBooleanMap'
@@ -646,7 +646,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: An array of Weights
             schema:
               type: array
@@ -678,7 +678,7 @@ paths:
           schema:
             $ref: '#/definitions/Weight'
       responses:
-        - 200:
+        200:
             description: The identifier of the instrument created
             schema:
               $ref: '#/definitions/StringStringMap'
@@ -703,7 +703,7 @@ paths:
           schema:
             $ref: '#/definitions/Weight'
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
   /autohedger/instruments:
@@ -720,7 +720,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The instrument founded
             schema:
               type: array
@@ -751,7 +751,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The identifier of the instrument deleted
             schema:
               $ref: '#/definitions/StringBooleanMap'
@@ -775,7 +775,7 @@ paths:
           schema:
             $ref: '#/definitions/InstrumentDto'
       responses:
-        - 200:
+        200:
             description: The identifier of the instrument created
             schema:
               $ref: '#/definitions/StringStringMap'
@@ -799,7 +799,7 @@ paths:
           schema:
             $ref: '#/definitions/InstrumentDto'
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
   /autohedger/start/{type}:
@@ -821,7 +821,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
   /autohedger/stop/{type}:
@@ -843,7 +843,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: Nothing to return
 
   /autohedger/status:
@@ -860,7 +860,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The status of auto Hedger
             schema:
               $ref: '#/definitions/StringBooleanMap'
@@ -889,7 +889,7 @@ paths:
       parameters:
 
       responses:
-        - 200:
+        200:
             description: The executions of the order
             schema:
               type: array
